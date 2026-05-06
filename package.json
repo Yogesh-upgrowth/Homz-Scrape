@@ -1,0 +1,25 @@
+{
+  "name": "homz-scrape",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/Yogesh-upgrowth/Homz-Scrape#readme",
+  "bugs": {
+    "url": "https://github.com/Yogesh-upgrowth/Homz-Scrape/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Yogesh-upgrowth/Homz-Scrape.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "delhiPDPScraper.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "puppeteer": "^24.43.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2"
+  }
+}
