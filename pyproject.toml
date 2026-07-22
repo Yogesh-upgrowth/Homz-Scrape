@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "homz-intel"
+version = "1.0.0"
+description = "Real-estate intelligence pipeline for Delhi NCR — scrapers, ETL, AI enrichment and search."
+requires-python = ">=3.11"
+readme = "README.md"
+
+[project.scripts]
+homz = "homz.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ASYNC", "C4", "SIM"]
+ignore = ["B008", "E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["homz"]
