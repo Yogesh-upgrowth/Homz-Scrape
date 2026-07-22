@@ -1,1 +1,41 @@
+# --- secrets ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# --- python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# --- node (legacy puppeteer scripts) ---------------------------------------
 node_modules
+
+# --- scraped data ----------------------------------------------------------
+# The raw archive can reach tens of GB and is reproducible. Never commit it.
+data/
+!data/.gitkeep
+*.html.gz
+*.meta.json
+
+# --- logs / local db -------------------------------------------------------
+*.log
+logs/
+pgdata/
+
+# --- editors / os ----------------------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+*.swp
