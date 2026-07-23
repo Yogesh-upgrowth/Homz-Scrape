@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from pathlib import Path
 from typing import Any
 
 import typer
@@ -367,6 +368,57 @@ def db_search_status() -> None:
             "[green]yes[/green]" if queryable else "[yellow]building[/yellow]",
         )
     console.print(table)
+
+
+@db_app.command("set-uri")
+def db_set_uri(
+    uri: str = typer.Argument(..., help="Atlas connection string (quote it!)"),
+    env_file: Path = typer.Option(Path(".env"), "--env-file"),
+) -> None:
+    """Write HOMZ_MONGODB_URI into .env, then verify it.
+
+    Exists because the Atlas string contains `&`, which most shells read as
+    "background this command" — pasting it unquoted silently truncates the URI
+    at the first `&`. This validates the shape before writing.
+    """
+    import re
+
+    if not uri.startswith(("mongodb://", "mongodb+srv://")):
+        console.print("[red]not a MongoDB URI — expected mongodb:// or mongodb+srv://[/red]")
+        raise typer.Exit(1)
+    if "USER:PASSWORD" in uri or "xxxxx" in uri:
+        console.print("[red]that is still the placeholder, not your real string[/red]")
+        raise typer.Exit(1)
+    if "&" not in uri and "retryWrites" in uri:
+        console.print(
+            "[yellow]warning: the URI has 'retryWrites' but no '&' — if you pasted "
+            "unquoted, your shell may have truncated it. Wrap it in single quotes.[/yellow]"
+        )
+    if "@" not in uri:
+        console.print("[yellow]warning: no credentials in the URI (no '@')[/yellow]")
+
+    if not env_file.exists():
+        example = Path(".env.example")
+        if not example.exists():
+            console.print(f"[red]{env_file} not found and no .env.example to copy[/red]")
+            raise typer.Exit(1)
+        env_file.write_text(example.read_text(encoding="utf-8"), encoding="utf-8")
+        console.print(f"created {env_file} from .env.example")
+
+    lines = env_file.read_text(encoding="utf-8").splitlines()
+    replaced = False
+    for i, line in enumerate(lines):
+        if line.startswith("HOMZ_MONGODB_URI="):
+            lines[i] = f"HOMZ_MONGODB_URI={uri}"
+            replaced = True
+            break
+    if not replaced:
+        lines.append(f"HOMZ_MONGODB_URI={uri}")
+    env_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    redacted = re.sub(r"://[^@/]+@", "://***:***@", uri)
+    console.print(f"[green]wrote[/green] {env_file}: {redacted}")
+    console.print("now run: [cyan]homz db ping[/cyan] then [cyan]homz db init[/cyan]")
 
 
 @db_app.command("ping")
