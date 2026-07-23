@@ -185,3 +185,67 @@ class TestIngestValidation:
         with pytest.raises(IngestError) as exc:
             await service.ingest_records([{"record_type": "property"}] * 501)
         assert exc.value.status_code == 413
+
+
+class TestDryRunIsolation:
+    """A dry run must leave no trace.
+
+    The bug this pins: `--dry-run` shares the scraper's normal StateStore, so
+    it recorded content hashes as "seen" without writing the records. The next
+    real run then skipped them as already-known and stored nothing — testing
+    silently poisoned the first production run.
+    """
+
+    async def test_dry_run_uses_in_memory_state(self) -> None:
+        import inspect
+
+        from homz.etl import pipeline
+
+        source = inspect.getsource(pipeline.run_source)
+        assert "None if dry_run else db" in source, (
+            "run_source must pass an in-memory StateStore when dry_run is set"
+        )
+
+    async def test_in_memory_state_does_not_persist_across_stores(self) -> None:
+        from homz.common.state import StateStore
+
+        first = StateStore(None)
+        state = await first.load("magicbricks", "job")
+        state.mark_seen("hash-abc")
+        await first.save(state)
+
+        # A separate store (i.e. the next process / the real run) must not see it.
+        second = StateStore(None)
+        fresh = await second.load("magicbricks", "job")
+        assert not fresh.is_known("hash-abc")
+
+
+class TestRecordRunContract:
+    """`record_run` takes the serialised report, not the ScrapeReport object.
+
+    Passing the object raised `TypeError: 'ScrapeReport' object is not
+    subscriptable` on the very first non-dry-run write — a path no test
+    exercised because every prior test either dry-ran or called the
+    repository directly.
+    """
+
+    def test_run_source_passes_the_serialised_report(self) -> None:
+        import inspect
+
+        from homz.etl import pipeline
+
+        source = inspect.getsource(pipeline.run_source)
+        assert "report.as_dict()" in source, (
+            "run_source must serialise the report before record_run"
+        )
+
+    def test_report_as_dict_has_every_key_record_run_reads(self) -> None:
+        from homz.common.base import ScrapeReport
+
+        payload = ScrapeReport(source="magicbricks", job="t").as_dict()
+        for key in (
+            "source", "job", "status", "started_at", "finished_at", "duration_s",
+            "discovered", "fetched", "parsed", "skipped_known", "skipped_robots",
+            "errors", "blocked",
+        ):
+            assert key in payload, f"record_run reads {key!r}, missing from as_dict()"

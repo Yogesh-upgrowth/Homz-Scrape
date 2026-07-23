@@ -632,18 +632,28 @@ def ops_config() -> None:
 
 
 def _render_pipeline_results(results: list[Any]) -> None:
+    any_dry_run = any(r.as_dict().get("dry_run") for r in results)
+    if any_dry_run:
+        console.print(
+            "[yellow]DRY RUN — parsed records were discarded, nothing was "
+            "written to the database.[/yellow]\n"
+            "[dim]'parsed' is the number that tells you scraping works. "
+            "Re-run without --dry-run to persist.[/dim]"
+        )
+
     table = Table("source", "parsed", "inserted", "updated", "failed", "dupes", "sec")
     for result in results:
         payload = result.as_dict()
         parsed = sum(r["parsed"] for r in payload["reports"]) if payload["reports"] else 0
         load = payload["load"]
+        skipped = "[dim]—[/dim]" if payload.get("dry_run") else None
         table.add_row(
             payload["source"],
-            str(parsed),
-            str(load["inserted"]),
-            str(load["updated"]),
-            str(load["failed"]),
-            str(load["duplicates_linked"]),
+            f"[green]{parsed}[/green]" if parsed else "[red]0[/red]",
+            skipped or str(load["inserted"]),
+            skipped or str(load["updated"]),
+            skipped or str(load["failed"]),
+            skipped or str(load["duplicates_linked"]),
             str(payload["duration_s"]),
         )
     console.print(table)
