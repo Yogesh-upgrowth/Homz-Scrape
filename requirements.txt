@@ -1,47 +1,59 @@
+# Floors, not exact pins.
+#
+# Python 3.14 is new enough that several packages here only gained prebuilt
+# wheels in recent releases. Pinning to older versions makes pip fall back to
+# compiling from source, and the Rust extensions (pydantic-core, orjson) fail
+# to build because their bundled PyO3 predates 3.14 support:
+#
+#   error: the configured Python interpreter version (3.14) is newer than
+#          PyO3's maximum supported version (3.13)
+#
+# `requirements.lock.txt` holds the exact resolved set for reproducible
+# deploys — regenerate it with `make lock`.
+
 # ---- core runtime -------------------------------------------------------
-python-dotenv==1.0.1
-pydantic==2.9.2
-pydantic-settings==2.6.1
-structlog==24.4.0
-orjson==3.10.11
-tenacity==9.0.0
-typer==0.12.5
-rich==13.9.4
+python-dotenv>=1.0.1
+pydantic>=2.12.0            # 2.12 is the first release with cp314 wheels
+pydantic-settings>=2.7.0
+structlog>=24.4.0
+orjson>=3.11.0              # 3.11 is the first release with cp314 wheels
+tenacity>=9.0.0
+typer>=0.15.0
+rich>=13.9.4
 
 # ---- scraping -----------------------------------------------------------
-httpx[http2]==0.27.2
-beautifulsoup4==4.12.3
-lxml==5.3.0
-playwright==1.48.0
-python-dateutil==2.9.0.post0
-price-parser==0.3.4
-tldextract==5.1.2
+httpx[http2]>=0.28.0
+beautifulsoup4>=4.12.3
+lxml>=5.3.0
+playwright>=1.49.0
+python-dateutil>=2.9.0
+price-parser>=0.3.4
+tldextract>=5.1.2
 
 # ---- database (MongoDB Atlas) -------------------------------------------
 # motor is the async driver; pymongo ships the BSON types (Decimal128) and the
 # createSearchIndexes command used for Atlas Search.
-motor==3.7.1
-pymongo==4.17.0
+motor>=3.7.0
+pymongo>=4.10
 # Required to resolve mongodb+srv:// Atlas URIs. pymongo dropped the [srv]
 # extra in 4.13 — dnspython must be listed explicitly.
-dnspython==2.8.0
+dnspython>=2.7.0
 
 # ---- api ----------------------------------------------------------------
-fastapi==0.115.5
-uvicorn[standard]==0.32.1
+fastapi>=0.115.5
+uvicorn[standard]>=0.32.1
 
 # ---- ai enrichment ------------------------------------------------------
-anthropic==0.40.0
+anthropic>=0.40.0
 
 # ---- scheduling ---------------------------------------------------------
-apscheduler==3.10.4
+apscheduler>=3.10.4
 
 # ---- observability ------------------------------------------------------
-prometheus-client==0.21.0
+prometheus-client>=0.21.0
 
 # ---- dev / test ---------------------------------------------------------
-pytest==8.3.3
-pytest-asyncio==0.24.0
-mongomock-motor==0.0.34       # in-memory Mongo for repository unit tests
-respx==0.21.1
-ruff==0.7.4
+pytest>=8.3.3
+pytest-asyncio>=0.24.0
+respx>=0.21.1
+ruff>=0.7.4

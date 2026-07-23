@@ -1,4 +1,4 @@
-.PHONY: help install install-browsers db-up db-migrate lint fmt test scrape etl enrich api docker-build docker-up clean
+.PHONY: help install install-browsers lock db-up db-migrate lint fmt test scrape etl enrich api docker-build docker-up clean
 
 PY ?= python3
 VENV ?= .venv
@@ -26,6 +26,10 @@ db-init: ## Create collections, indexes and Atlas Search indexes (idempotent)
 
 db-status: ## Atlas Search index build state
 	$(BIN)/homz db search-status
+
+lock: ## Freeze the resolved dependency set for reproducible deploys
+	$(BIN)/pip freeze --exclude-editable > requirements.lock.txt
+	@echo "wrote requirements.lock.txt"
 
 lint: ## Ruff check
 	$(BIN)/ruff check src tests
