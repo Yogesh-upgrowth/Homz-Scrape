@@ -67,12 +67,16 @@ class PipelineResult:
     source: str
     reports: list[dict[str, Any]] = field(default_factory=list)
     load: LoadResult = field(default_factory=LoadResult)
+    #: True when --dry-run skipped the write. Without this the summary shows
+    #: inserted=0 with no explanation, which reads as a failed load.
+    dry_run: bool = False
     started_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     finished_at: datetime | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "source": self.source,
+            "dry_run": self.dry_run,
             "reports": self.reports,
             "load": self.load.as_dict(),
             "duration_s": round(
@@ -198,7 +202,11 @@ async def run_source(
     outcome = PipelineResult(source=source)
 
     db = get_database()
-    state_store = StateStore(db)
+    # A dry run must not persist incremental state. Otherwise it marks records
+    # as "already seen" without ever writing them, and the next real run skips
+    # them and stores nothing — testing with --dry-run would silently poison
+    # the first production run. StateStore(None) keeps it in memory.
+    state_store = StateStore(None if dry_run else db)
 
     async with scraper_cls(state_store=state_store) as scraper:
         records, reports = await scraper.run(jobs)
@@ -208,6 +216,7 @@ async def run_source(
 
     if dry_run:
         log.info("etl.dry_run_skipping_load", source=source, records=len(records))
+        outcome.dry_run = True
         outcome.finished_at = datetime.now(UTC)
         return outcome
 
@@ -216,8 +225,9 @@ async def run_source(
 
     repo = Repository(db)
     for report in reports:
+        # record_run takes the serialised form, not the ScrapeReport object.
         await repo.record_run(
-            report, inserted=outcome.load.inserted, updated=outcome.load.updated
+            report.as_dict(), inserted=outcome.load.inserted, updated=outcome.load.updated
         )
 
     outcome.finished_at = datetime.now(UTC)
