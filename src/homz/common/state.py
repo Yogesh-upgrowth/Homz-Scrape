@@ -1,9 +1,9 @@
 """Incremental-scrape state.
 
-Each (source, job) pair keeps a cursor row in `scrape_state`:
+Each (source, job) pair keeps a cursor document in `scrape_state`:
 
   * `last_run_at`      — when the job last completed
-  * `cursor`           — an opaque JSON blob the scraper defines (page number,
+  * `cursor`           — an opaque blob the scraper defines (page number,
                          reddit fullname, last listing id, …)
   * `seen_hashes`      — bounded set of recently seen content hashes, so a
                          re-listed page doesn't get re-parsed and re-written
@@ -22,11 +22,12 @@ from typing import TYPE_CHECKING, Any
 from homz.logging_setup import get_logger
 
 if TYPE_CHECKING:  # pragma: no cover
-    from sqlalchemy.ext.asyncio import AsyncSession
+    from motor.motor_asyncio import AsyncIOMotorDatabase
 
 log = get_logger(__name__)
 
 _MAX_TRACKED_HASHES = 20_000
+_COLLECTION = "scrape_state"
 
 
 @dataclass
@@ -59,82 +60,53 @@ class ScrapeState:
 class StateStore:
     """Persistence for ScrapeState.
 
-    Falls back to in-memory when no session is provided, which keeps unit tests
-    and dry-runs free of a database. SQLAlchemy is imported lazily for the same
-    reason: a parser must be usable without the DB stack installed.
+    Falls back to in-memory when no database handle is provided, which keeps
+    unit tests and dry-runs free of a database.
     """
 
-    def __init__(self, session: AsyncSession | None = None) -> None:
-        self._session = session
+    def __init__(self, db: AsyncIOMotorDatabase | None = None) -> None:
+        self._db = db
         self._memory: dict[tuple[str, str], ScrapeState] = {}
 
     async def load(self, source: str, job: str) -> ScrapeState:
-        if self._session is None:
+        if self._db is None:
             return self._memory.setdefault((source, job), ScrapeState(source=source, job=job))
 
-        from sqlalchemy import text
-
-        row = (
-            await self._session.execute(
-                text(
-                    "SELECT cursor, last_run_at, seen_hashes, stats "
-                    "FROM scrape_state WHERE source = :source AND job = :job"
-                ),
-                {"source": source, "job": job},
-            )
-        ).first()
-
-        if row is None:
+        document = await self._db[_COLLECTION].find_one({"_id": f"{source}::{job}"})
+        if document is None:
             return ScrapeState(source=source, job=job)
 
-        cursor, last_run_at, seen_hashes, stats = row
         return ScrapeState(
             source=source,
             job=job,
-            cursor=cursor or {},
-            last_run_at=last_run_at,
-            seen_hashes=set(seen_hashes or []),
-            stats=stats or {},
+            cursor=document.get("cursor") or {},
+            last_run_at=document.get("last_run_at"),
+            seen_hashes=set(document.get("seen_hashes") or []),
+            stats=document.get("stats") or {},
         )
 
     async def save(self, state: ScrapeState) -> None:
         state.touch()
-        if self._session is None:
+        if self._db is None:
             self._memory[(state.source, state.job)] = state
             return
 
-        from sqlalchemy import text
-
-        await self._session.execute(
-            text(
-                """
-                INSERT INTO scrape_state (source, job, cursor, last_run_at, seen_hashes, stats)
-                VALUES (:source, :job, CAST(:cursor AS JSONB), :last_run_at,
-                        :seen_hashes, CAST(:stats AS JSONB))
-                ON CONFLICT (source, job) DO UPDATE SET
-                    cursor       = EXCLUDED.cursor,
-                    last_run_at  = EXCLUDED.last_run_at,
-                    seen_hashes  = EXCLUDED.seen_hashes,
-                    stats        = EXCLUDED.stats,
-                    updated_at   = NOW()
-                """
-            ),
+        await self._db[_COLLECTION].update_one(
+            {"_id": f"{state.source}::{state.job}"},
             {
-                "source": state.source,
-                "job": state.job,
-                "cursor": _dumps(state.cursor),
-                "last_run_at": state.last_run_at,
-                # Persist a bounded tail — the full set would bloat the row.
-                "seen_hashes": list(state.seen_hashes)[:_MAX_TRACKED_HASHES],
-                "stats": _dumps(state.stats),
+                "$set": {
+                    "source": state.source,
+                    "job": state.job,
+                    "cursor": state.cursor,
+                    "last_run_at": state.last_run_at,
+                    # Persist a bounded tail — the full set would bloat the
+                    # document toward the 16 MB ceiling on a long-running job.
+                    "seen_hashes": list(state.seen_hashes)[:_MAX_TRACKED_HASHES],
+                    "stats": state.stats,
+                    "updated_at": datetime.now(UTC),
+                }
             },
+            upsert=True,
         )
-        await self._session.commit()
         log.debug("state.saved", source=state.source, job=state.job,
                   hashes=len(state.seen_hashes))
-
-
-def _dumps(value: Any) -> str:
-    import orjson
-
-    return orjson.dumps(value, default=str).decode()

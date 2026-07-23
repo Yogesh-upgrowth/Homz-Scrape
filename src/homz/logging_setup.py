@@ -26,7 +26,7 @@ def configure_logging(level: str | None = None, json_logs: bool | None = None) -
 
     logging.basicConfig(format="%(message)s", stream=sys.stdout, level=level)
     # Third-party loggers are noisy at DEBUG; keep them at WARNING.
-    for noisy in ("httpx", "httpcore", "asyncio", "sqlalchemy.engine", "anthropic"):
+    for noisy in ("httpx", "httpcore", "asyncio", "anthropic", "pymongo", "motor"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
     processors: list = [

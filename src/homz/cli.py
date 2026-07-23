@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-from pathlib import Path
 from typing import Any
 
 import typer
@@ -165,48 +164,52 @@ def etl_insights(days: int = typer.Option(90, "--days")) -> None:
 
 @etl_app.command("dedupe")
 def etl_dedupe(limit: int = typer.Option(5000, "--limit")) -> None:
-    """Re-run cross-source dedupe over recent active listings."""
-    from sqlalchemy import text
+    """Re-run cross-source dedupe over active listings.
 
-    from homz.db.engine import session_scope
+    Documents sharing a `dedupe_key` are the same unit by construction, so the
+    richest one becomes canonical and the rest point at it.
+    """
+    from pymongo import UpdateOne
+
+    from homz.db import documents as D
+    from homz.db.mongo import get_database
 
     async def _run() -> dict[str, Any]:
-        async with session_scope() as session:
-            # Records sharing a dedupe_key are the same unit by construction.
-            result = await session.execute(
-                text(
-                    """
-                    WITH ranked AS (
-                        SELECT id, dedupe_key,
-                               ROW_NUMBER() OVER (
-                                   PARTITION BY dedupe_key
-                                   ORDER BY (title IS NOT NULL)::int
-                                          + (description IS NOT NULL)::int
-                                          + (rera_number IS NOT NULL)::int DESC,
-                                            last_seen_at DESC
-                               ) AS rn,
-                               FIRST_VALUE(id) OVER (
-                                   PARTITION BY dedupe_key
-                                   ORDER BY (title IS NOT NULL)::int
-                                          + (description IS NOT NULL)::int
-                                          + (rera_number IS NOT NULL)::int DESC,
-                                            last_seen_at DESC
-                               ) AS canonical_id
-                        FROM properties
-                        WHERE is_active AND dedupe_key IS NOT NULL
-                          AND canonical_property_id IS NULL
-                        LIMIT :limit
-                    )
-                    UPDATE properties p
-                    SET canonical_property_id = r.canonical_id
-                    FROM ranked r
-                    WHERE p.id = r.id AND r.rn > 1
-                    """
-                ),
-                {"limit": limit},
-            )
-            await session.commit()
-            return {"linked": result.rowcount or 0}
+        db = get_database()
+        pipeline = [
+            {"$match": {"is_active": True, "dedupe_key": {"$ne": None},
+                        "canonical_id": None}},
+            {"$addFields": {"_completeness": {"$add": [
+                {"$cond": [{"$ne": ["$title", None]}, 1, 0]},
+                {"$cond": [{"$ne": ["$description", None]}, 1, 0]},
+                {"$cond": [{"$ne": ["$rera_number", None]}, 1, 0]},
+                {"$size": {"$ifNull": ["$images", []]}},
+            ]}}},
+            {"$sort": {"_completeness": -1, "last_seen_at": -1}},
+            {"$group": {"_id": "$dedupe_key", "ids": {"$push": "$_id"}}},
+            {"$match": {"$expr": {"$gt": [{"$size": "$ids"}, 1]}}},
+            {"$limit": limit},
+        ]
+        clusters = await db[D.PROPERTIES].aggregate(
+            pipeline, allowDiskUse=True
+        ).to_list(length=limit)
+
+        operations, links = [], []
+        for cluster in clusters:
+            canonical, *duplicates = cluster["ids"]
+            for duplicate in duplicates:
+                operations.append(UpdateOne(
+                    {"_id": duplicate}, {"$set": {"canonical_id": canonical}}
+                ))
+                links.append(UpdateOne(
+                    {"canonical_id": canonical, "duplicate_id": duplicate},
+                    {"$set": {"score": 1.0, "reason": "identical dedupe_key"}},
+                    upsert=True,
+                ))
+        if operations:
+            await db[D.PROPERTIES].bulk_write(operations, ordered=False)
+            await db[D.PROPERTY_DUPLICATES].bulk_write(links, ordered=False)
+        return {"clusters": len(clusters), "linked": len(operations)}
 
     _print_json(asyncio.run(_run()))
 
@@ -225,17 +228,16 @@ def enrich_run(
     limit: int = typer.Option(None, "--limit", help="Max rows for the LLM tier"),
 ) -> None:
     """Run the full enrichment pipeline."""
-    from homz.db.engine import session_scope
+    from homz.db.mongo import get_database
     from homz.enrichment.pipeline import EnrichmentPipeline
 
     async def _run() -> dict[str, Any]:
-        async with session_scope() as session:
-            pipeline = EnrichmentPipeline(session, use_llm=llm, use_batch=batch)
-            try:
-                report = await pipeline.run_all(llm_limit=limit)
-                return report.as_dict()
-            finally:
-                await pipeline.aclose()
+        pipeline = EnrichmentPipeline(get_database(), use_llm=llm, use_batch=batch)
+        try:
+            report = await pipeline.run_all(llm_limit=limit)
+            return report.as_dict()
+        finally:
+            await pipeline.aclose()
 
     _print_json(asyncio.run(_run()))
 
@@ -245,15 +247,14 @@ def enrich_scores(
     force: bool = typer.Option(False, "--force", help="Rescore everything, not just pending")
 ) -> None:
     """Recompute deterministic scores only (no LLM calls, no cost)."""
-    from homz.db.engine import session_scope
+    from homz.db.mongo import get_database
     from homz.enrichment.pipeline import EnrichmentPipeline
 
     async def _run() -> dict[str, int]:
-        async with session_scope() as session:
-            pipeline = EnrichmentPipeline(session, use_llm=False)
-            builders = await pipeline.score_builders()
-            properties = await pipeline.score_properties(force=force)
-            return {"builders": builders, "properties": properties}
+        pipeline = EnrichmentPipeline(get_database(), use_llm=False)
+        builders = await pipeline.score_builders()
+        properties = await pipeline.score_properties(force=force)
+        return {"builders": builders, "properties": properties}
 
     _print_json(asyncio.run(_run()))
 
@@ -261,32 +262,17 @@ def enrich_scores(
 @enrich_app.command("estimate")
 def enrich_estimate(limit: int = typer.Option(100, "--limit")) -> None:
     """Estimate LLM cost for the pending backlog before spending anything."""
-    from sqlalchemy import text
-
-    from homz.db.engine import session_scope
+    from homz.db import documents as D
+    from homz.db.mongo import get_database
     from homz.enrichment import prompts
     from homz.enrichment.llm import LLMClient, LLMRequest, LLMUsage, estimate_cost
 
     async def _run() -> dict[str, Any]:
-        async with session_scope() as session:
-            pending = (
-                await session.execute(
-                    text("SELECT COUNT(*) FROM reddit_posts WHERE enriched_at IS NULL")
-                )
-            ).scalar_one()
-            sample = (
-                (
-                    await session.execute(
-                        text(
-                            "SELECT title, body FROM reddit_posts WHERE enriched_at IS NULL "
-                            "ORDER BY score DESC LIMIT :n"
-                        ),
-                        {"n": min(limit, 20)},
-                    )
-                )
-                .mappings()
-                .all()
-            )
+        db = get_database()
+        pending = await db[D.REDDIT_POSTS].count_documents({"enriched_at": None})
+        sample = await db[D.REDDIT_POSTS].find(
+            {"enriched_at": None}, projection={"title": 1, "body": 1}
+        ).sort("score", -1).limit(min(limit, 20)).to_list(length=20)
 
         if not sample:
             return {"pending": 0, "note": "nothing to enrich"}
@@ -332,58 +318,129 @@ def enrich_estimate(limit: int = typer.Option(100, "--limit")) -> None:
 
 @db_app.command("init")
 def db_init(
-    sql_dir: Path = typer.Option(Path("sql"), "--sql-dir", help="Directory of .sql migrations")
+    force_backend: str = typer.Option(
+        None, "--backend", help="atlas | text (default: probe the server)"
+    ),
 ) -> None:
-    """Apply the SQL schema files in order (idempotent)."""
-    from homz.db.engine import session_scope
+    """Create collections, indexes and Atlas Search indexes. Idempotent."""
+    from homz.db.documents import ensure_schema
+    from homz.db.mongo import detect_backend, get_database
 
-    files = sorted(sql_dir.glob("*.sql"))
-    if not files:
-        console.print(f"[red]no .sql files found in {sql_dir}[/red]")
+    async def _run() -> dict[str, Any]:
+        backend = force_backend or await detect_backend()
+        report = await ensure_schema(get_database(), backend=backend)
+        report["backend"] = backend
+        return report
+
+    report = asyncio.run(_run())
+    _print_json(report)
+    if report.get("warnings"):
+        console.print("[yellow]warnings above — schema is usable but check them[/yellow]")
+    if report.get("backend") == "atlas":
+        console.print(
+            "[dim]Atlas Search indexes build asynchronously — "
+            "run `homz db search-status` until queryable=true.[/dim]"
+        )
+
+
+@db_app.command("search-status")
+def db_search_status() -> None:
+    """Atlas Search index build state.
+
+    A freshly created index returns zero results until `queryable` is true,
+    which otherwise looks exactly like a broken search.
+    """
+    from homz.db.documents import search_index_status
+    from homz.db.mongo import get_database
+
+    rows = asyncio.run(search_index_status(get_database()))
+    if not rows:
+        console.print("[yellow]no search indexes found[/yellow]")
+        return
+    table = Table("collection", "index", "status", "queryable")
+    for row in rows:
+        queryable = row.get("queryable")
+        table.add_row(
+            row.get("collection", ""),
+            row.get("name", row.get("error", "")),
+            str(row.get("status", "")),
+            "[green]yes[/green]" if queryable else "[yellow]building[/yellow]",
+        )
+    console.print(table)
+
+
+@db_app.command("ping")
+def db_ping() -> None:
+    """Test the Atlas connection and explain any failure.
+
+    Atlas problems all look like the same timeout; this maps each cause to the
+    thing you actually have to change.
+    """
+    from homz.db.mongo import diagnose
+
+    report = asyncio.run(diagnose())
+    _print_json(report)
+    if report.get("ok"):
+        backend = report.get("backend")
+        console.print(f"[green]connected[/green] — search backend: [cyan]{backend}[/cyan]")
+        if backend != "atlas":
+            console.print(
+                "[yellow]not an Atlas cluster: search falls back to $text "
+                "(no fuzzy/typo tolerance)[/yellow]"
+            )
+    else:
+        console.print(f"[red]{report.get('error', 'connection failed')}[/red]")
+        if report.get("fix"):
+            console.print(f"[yellow]{report['fix']}[/yellow]")
         raise typer.Exit(1)
-
-    async def _run() -> None:
-        for path in files:
-            console.print(f"applying [cyan]{path.name}[/cyan] …")
-            statements = path.read_text(encoding="utf-8")
-            async with session_scope() as session:
-                # Execute as one script: the file contains functions and DO
-                # blocks whose bodies contain semicolons.
-                raw = await session.connection()
-                await raw.exec_driver_sql(statements)
-        console.print("[green]schema applied[/green]")
-
-    asyncio.run(_run())
 
 
 @db_app.command("check")
 def db_check() -> None:
-    """Verify connectivity and print row counts."""
-    from homz.db.engine import healthcheck, session_scope
+    """Verify connectivity and print document counts."""
+    from homz.db.mongo import get_database, healthcheck, server_info
     from homz.db.repository import Repository
 
     async def _run() -> dict[str, Any]:
         ok = await healthcheck()
         if not ok:
-            return {"database": False}
-        async with session_scope() as session:
-            return {"database": True, "counts": await Repository(session).counts()}
+            return {"database": False, "uri": settings.redacted_mongodb_uri}
+        return {
+            "database": True,
+            "uri": settings.redacted_mongodb_uri,
+            "server": await server_info(),
+            "counts": await Repository(get_database()).counts(),
+        }
 
     _print_json(asyncio.run(_run()))
 
 
 @db_app.command("refresh-views")
-def db_refresh_views(concurrent: bool = typer.Option(True, "--concurrent/--blocking")) -> None:
-    """Refresh the materialized rollups."""
-    from homz.db.engine import session_scope
+def db_refresh_views() -> None:
+    """Rebuild the four rollup collections."""
+    from homz.db.mongo import get_database
     from homz.db.repository import Repository
 
-    async def _run() -> None:
-        async with session_scope() as session:
-            await Repository(session).refresh_market_views(concurrent=concurrent)
+    asyncio.run(Repository(get_database()).refresh_market_views())
+    console.print("[green]rollups refreshed[/green]")
 
-    asyncio.run(_run())
-    console.print("[green]views refreshed[/green]")
+
+@db_app.command("reset")
+def db_reset(
+    yes: bool = typer.Option(False, "--yes", help="Skip the confirmation prompt")
+) -> None:
+    """Drop every collection. Destructive."""
+    from homz.db.documents import drop_all
+    from homz.db.mongo import get_database
+
+    if not yes:
+        typer.confirm(
+            f"Drop ALL collections in {settings.mongodb_database} "
+            f"({settings.redacted_mongodb_uri})?",
+            abort=True,
+        )
+    dropped = asyncio.run(drop_all(get_database()))
+    console.print(f"[red]dropped {len(dropped)} collections[/red]")
 
 
 # ===========================================================================
@@ -399,17 +456,16 @@ def search_cli(
     limit: int = typer.Option(10, "--limit"),
 ) -> None:
     """Query the warehouse from the terminal."""
-    from homz.db.engine import session_scope
+    from homz.db.mongo import get_database
     from homz.search.query import PropertySearchQuery, search_properties
 
     async def _run() -> tuple[list[dict[str, Any]], int]:
-        async with session_scope() as session:
-            return await search_properties(
-                session,
-                PropertySearchQuery(
-                    q=query, city=city, listing_type=listing_type, page_size=limit
-                ),
-            )
+        return await search_properties(
+            get_database(),
+            PropertySearchQuery(
+                q=query, city=city, listing_type=listing_type, page_size=limit
+            ),
+        )
 
     results, total = asyncio.run(_run())
     from homz.common.parsing import format_price_inr
@@ -431,34 +487,22 @@ def search_cli(
 @ops_app.command("status")
 def ops_status() -> None:
     """Recent run history and current warehouse size."""
-    from sqlalchemy import text
-
-    from homz.db.engine import session_scope
+    from homz.db import documents as D
+    from homz.db.mongo import get_database
     from homz.db.repository import Repository
 
     async def _run() -> tuple[dict[str, int], list[dict[str, Any]]]:
-        async with session_scope() as session:
-            counts = await Repository(session).counts()
-            runs = (
-                (
-                    await session.execute(
-                        text(
-                            """
-                            SELECT source, job, status, started_at, duration_s,
-                                   parsed, errors, blocked
-                            FROM scrape_runs ORDER BY started_at DESC LIMIT 20
-                            """
-                        )
-                    )
-                )
-                .mappings()
-                .all()
-            )
-            return counts, [dict(r) for r in runs]
+        db = get_database()
+        counts = await Repository(db).counts()
+        runs = await db[D.SCRAPE_RUNS].find(
+            projection={"_id": 0, "source": 1, "job": 1, "status": 1, "started_at": 1,
+                        "duration_s": 1, "parsed": 1, "errors": 1, "blocked": 1},
+        ).sort("started_at", -1).limit(20).to_list(length=20)
+        return counts, runs
 
     counts, runs = asyncio.run(_run())
 
-    counts_table = Table("table", "rows")
+    counts_table = Table("collection", "documents")
     for name, value in counts.items():
         counts_table.add_row(name, f"{value:,}")
     console.print(counts_table)
@@ -504,6 +548,25 @@ def ops_raw(
         f"archive root: {store.root}\nsize: {store.usage_bytes() / 1e6:.1f} MB\n"
         f"retention: {settings.raw_html_retention_days} days"
     )
+
+
+@ops_app.command("tasks")
+def ops_tasks(
+    claim: int = typer.Option(0, "--claim", help="Claim N tasks and print them"),
+    worker: str = typer.Option("cli", "--worker"),
+) -> None:
+    """Inspect (or claim from) the on-demand fill queue."""
+    from homz.db.mongo import get_database
+    from homz.services.ondemand import DemandFiller
+
+    async def _run() -> dict[str, Any]:
+        filler = DemandFiller(get_database())
+        payload: dict[str, Any] = {"stats": await filler.stats()}
+        if claim:
+            payload["claimed"] = await filler.claim(worker=worker, limit=claim)
+        return payload
+
+    _print_json(asyncio.run(_run()))
 
 
 @ops_app.command("config")

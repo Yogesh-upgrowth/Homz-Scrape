@@ -22,11 +22,41 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     log_json: bool = False
 
-    # ---- database ---------------------------------------------------------
-    database_url: str = "postgresql+asyncpg://homz:homz@localhost:5432/homz"
-    db_pool_size: int = 10
-    db_max_overflow: int = 10
-    db_echo: bool = False
+    # ---- database (MongoDB Atlas) -----------------------------------------
+    #: mongodb+srv://user:pass@cluster.xxxxx.mongodb.net/?retryWrites=true&w=majority
+    mongodb_uri: str = "mongodb://localhost:27017"
+    mongodb_database: str = "homz"
+    mongodb_max_pool_size: int = 20
+    mongodb_min_pool_size: int = 0
+    mongodb_timeout_ms: int = 20_000
+    #: Atlas Search index names. Only used when the cluster is Atlas.
+    atlas_search_index: str = "properties_search"
+    atlas_autocomplete_index: str = "properties_autocomplete"
+    atlas_reddit_index: str = "reddit_search"
+    #: Force the search backend instead of auto-detecting the cluster type.
+    #: auto | atlas | text
+    search_backend: str = "auto"
+
+    # ---- on-demand fill ---------------------------------------------------
+    #: When a search returns fewer than this many rows, queue a fill task so
+    #: the gap is scraped and the next identical search is a cache hit.
+    ondemand_enabled: bool = True
+    ondemand_min_results: int = 5
+    #: Don't re-queue the same query more often than this.
+    ondemand_cooldown_minutes: int = 360
+    #: Hard ceiling on tasks created per day. Demand-driven crawling is still
+    #: crawling — this is what stops a bot hammering search from turning into
+    #: a thousand requests against a portal.
+    ondemand_daily_budget: int = 500
+    ondemand_task_ttl_hours: int = 24
+
+    # ---- ingest (client-submitted scrapes) --------------------------------
+    #: Bearer token clients must present to POST scraped payloads. Empty
+    #: disables the ingest endpoints entirely — never leave it unset in prod,
+    #: an open ingest endpoint lets anyone poison the warehouse.
+    ingest_token: str = ""
+    ingest_max_payload_bytes: int = 4_000_000
+    ingest_rate_limit_per_minute: int = 120
 
     # ---- scraping ---------------------------------------------------------
     respect_robots: bool = True
@@ -104,9 +134,21 @@ class Settings(BaseSettings):
         return v
 
     @property
-    def sync_database_url(self) -> str:
-        """psycopg URL for tooling (alembic, one-off scripts)."""
-        return self.database_url.replace("+asyncpg", "+psycopg")
+    def is_atlas(self) -> bool:
+        """Atlas clusters use the mongodb+srv:// scheme or a *.mongodb.net host.
+
+        Only a hint — `homz.db.mongo.detect_backend()` confirms against the
+        live server, since a self-hosted cluster can sit behind any hostname.
+        """
+        uri = self.mongodb_uri.lower()
+        return uri.startswith("mongodb+srv://") or "mongodb.net" in uri
+
+    @property
+    def redacted_mongodb_uri(self) -> str:
+        """Safe for logs — strips credentials."""
+        import re
+
+        return re.sub(r"://[^@/]+@", "://***:***@", self.mongodb_uri)
 
     @property
     def is_prod(self) -> bool:
