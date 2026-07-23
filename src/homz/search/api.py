@@ -1,14 +1,19 @@
-"""FastAPI search + intelligence API.
+"""FastAPI search + intelligence API (MongoDB).
 
     uvicorn homz.search.api:app --host 0.0.0.0 --port 8000
 
-Read-only. Everything is served from the warehouse; no endpoint triggers a
-scrape, so a traffic spike can never turn into a traffic spike against a
-source portal.
+Two surfaces:
 
-CORS is open to the origins in `HOMZ_API_CORS_ORIGINS` so the `<homz-search>`
-widget on homzrealtor.com can call this cross-origin. Every endpoint is public
-and read-only, so the origin list is about correctness, not access control.
+* **Public read** (`/properties`, `/builders`, `/market/*`, …) — served
+  entirely from the warehouse. CORS-open to `HOMZ_API_CORS_ORIGINS` so the
+  `<homz-search>` widget can call it cross-origin.
+* **Authenticated ingest** (`/ingest/*`) — where client-side scraping submits
+  what it collected, and where it claims work from the on-demand fill queue.
+  Bearer-token authenticated and rate-limited.
+
+A search that finds nothing queues a *fill task* rather than scraping inline,
+so no user request ever blocks on a portal fetch, and the daily task budget
+caps how much traffic search demand can generate against a source.
 """
 
 from __future__ import annotations
@@ -18,14 +23,15 @@ from decimal import Decimal
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel, Field
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from homz.db.engine import dispose_engine, get_db, healthcheck
+from homz.db import documents as D
+from homz.db.codecs import jsonable
+from homz.db.mongo import close_client, detect_backend, get_database, healthcheck, server_info
 from homz.logging_setup import configure_logging, get_logger
 from homz.search.query import (
     PropertySearchQuery,
@@ -35,17 +41,40 @@ from homz.search.query import (
     search_properties,
     search_reddit,
 )
+from homz.services.ingest import (
+    IngestError,
+    IngestService,
+    check_rate_limit,
+    verify_token,
+)
+from homz.services.ondemand import DemandFiller
 from homz.settings import settings
 
 log = get_logger(__name__)
 
 
+async def get_db() -> AsyncIOMotorDatabase:
+    return get_database()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     configure_logging()
-    log.info("api.starting", env=settings.env, cors_origins=len(settings.api_cors_origins))
+    backend = await detect_backend()
+    log.info(
+        "api.starting",
+        env=settings.env,
+        database=settings.mongodb_database,
+        search_backend=backend,
+        cors_origins=len(settings.api_cors_origins),
+    )
+    if backend != "atlas":
+        log.warning(
+            "api.text_search_fallback",
+            detail="not an Atlas cluster — search has no fuzzy/typo tolerance",
+        )
     yield
-    await dispose_engine()
+    await close_client()
     log.info("api.stopped")
 
 
@@ -55,7 +84,7 @@ app = FastAPI(
         "Unified search over Delhi NCR property listings, projects, builders "
         "and public discussion, with derived investment/risk scoring."
     ),
-    version="1.0.0",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
@@ -69,7 +98,7 @@ app.add_middleware(
     max_age=3600,
 )
 
-DB = Annotated[AsyncSession, Depends(get_db)]
+DB = Annotated[AsyncIOMotorDatabase, Depends(get_db)]
 
 
 class Page(BaseModel):
@@ -78,23 +107,31 @@ class Page(BaseModel):
     page_size: int
     pages: int
     results: list[dict[str, Any]]
+    #: Present when the search found little or nothing and a scrape was
+    #: queued to fill the gap. The client can poll and re-search shortly.
+    backfill: dict[str, Any] | None = None
 
 
 class HealthResponse(BaseModel):
     status: str
     database: bool
+    search_backend: str | None = None
     counts: dict[str, int] = Field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------
-# health
+# ops
 # ---------------------------------------------------------------------------
 
 
 @app.get("/health", response_model=HealthResponse, tags=["ops"])
 async def health() -> HealthResponse:
     db_ok = await healthcheck()
-    return HealthResponse(status="ok" if db_ok else "degraded", database=db_ok)
+    return HealthResponse(
+        status="ok" if db_ok else "degraded",
+        database=db_ok,
+        search_backend=await detect_backend() if db_ok else None,
+    )
 
 
 @app.get("/stats", tags=["ops"])
@@ -102,21 +139,15 @@ async def stats(db: DB) -> dict[str, Any]:
     from homz.db.repository import Repository
 
     counts = await Repository(db).counts()
-    runs = (
-        (
-            await db.execute(
-                text(
-                    """
-                    SELECT source, job, status, started_at, parsed, errors
-                    FROM scrape_runs ORDER BY started_at DESC LIMIT 15
-                    """
-                )
-            )
-        )
-        .mappings()
-        .all()
-    )
-    return {"counts": counts, "recent_runs": [dict(r) for r in runs]}
+    runs = await db[D.SCRAPE_RUNS].find(
+        projection={"_id": 0, "source": 1, "job": 1, "status": 1,
+                    "started_at": 1, "parsed": 1, "errors": 1},
+    ).sort("started_at", -1).limit(15).to_list(length=15)
+    return {
+        "counts": counts,
+        "recent_runs": jsonable(runs),
+        "server": await server_info(),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -151,46 +182,41 @@ async def properties(
     has_rera: bool | None = None,
     min_investment_score: float | None = Query(None, ge=0, le=100),
     max_risk_score: float | None = Query(None, ge=0, le=100),
+    near_lat: float | None = Query(None, ge=-90, le=90),
+    near_lng: float | None = Query(None, ge=-180, le=180),
+    radius_km: float | None = Query(None, gt=0, le=100),
     sort: str = Query("relevance"),
     page: int = Query(1, ge=1),
     page_size: int = Query(settings.api_page_size, ge=1, le=settings.api_max_page_size),
 ) -> Page:
     query = PropertySearchQuery(
-        q=q,
-        city=city,
-        sector=sector,
-        locality=locality,
-        micro_market=micro_market,
-        builder=builder,
-        project=project,
-        listing_type=listing_type,
-        property_type=property_type or [],
-        configuration=configuration,
-        bedrooms_min=bedrooms_min,
-        bedrooms_max=bedrooms_max,
-        price_min=price_min,
-        price_max=price_max,
-        area_min=area_min,
-        area_max=area_max,
-        possession_status=possession_status or [],
-        segment=segment or [],
-        amenities=amenities or [],
-        keywords=keywords or [],
-        is_commercial=is_commercial,
-        has_rera=has_rera,
-        min_investment_score=min_investment_score,
-        max_risk_score=max_risk_score,
-        sort=sort,
-        page=page,
-        page_size=page_size,
+        q=q, city=city, sector=sector, locality=locality, micro_market=micro_market,
+        builder=builder, project=project, listing_type=listing_type,
+        property_type=property_type or [], configuration=configuration,
+        bedrooms_min=bedrooms_min, bedrooms_max=bedrooms_max,
+        price_min=price_min, price_max=price_max,
+        area_min=area_min, area_max=area_max,
+        possession_status=possession_status or [], segment=segment or [],
+        amenities=amenities or [], keywords=keywords or [],
+        is_commercial=is_commercial, has_rera=has_rera,
+        min_investment_score=min_investment_score, max_risk_score=max_risk_score,
+        near_lat=near_lat, near_lng=near_lng, radius_km=radius_km,
+        sort=sort, page=page, page_size=page_size,
     )
     results, total = await search_properties(db, query)
+
+    # Cache-miss → queue a scrape. Never blocks: the caller gets whatever the
+    # warehouse already has, plus a note that a backfill is in flight.
+    backfill = None
+    if page == 1:
+        decision = await DemandFiller(db).consider(query, total)
+        if decision.task_id:
+            backfill = decision.as_dict()
+
     return Page(
-        total=total,
-        page=page,
-        page_size=query.limit,
-        pages=(total + query.limit - 1) // query.limit,
-        results=results,
+        total=total, page=page, page_size=query.limit,
+        pages=(total + query.limit - 1) // query.limit, results=results,
+        backfill=backfill,
     )
 
 
@@ -201,76 +227,38 @@ async def property_facets(
     city: str | None = None,
     listing_type: str | None = None,
 ) -> dict[str, Any]:
-    query = PropertySearchQuery(q=q, city=city, listing_type=listing_type)
-    return await facets(db, query)
+    return await facets(db, PropertySearchQuery(q=q, city=city, listing_type=listing_type))
 
 
 @app.get("/properties/{property_id}", tags=["properties"])
-async def property_detail(property_id: int, db: DB) -> dict[str, Any]:
-    row = (
-        (await db.execute(text("SELECT * FROM properties WHERE id = :id"), {"id": property_id}))
-        .mappings()
-        .first()
-    )
-    if row is None:
+async def property_detail(property_id: str, db: DB) -> dict[str, Any]:
+    document = await db[D.PROPERTIES].find_one({"_id": property_id})
+    if document is None:
         raise HTTPException(status_code=404, detail="property not found")
 
-    record = dict(row)
-    record.pop("search_vector", None)
+    record = jsonable(document)
+    record["id"] = record.pop("_id")
 
-    images = (
-        (
-            await db.execute(
-                text(
-                    """
-                    SELECT url, caption, is_primary FROM property_images
-                    WHERE property_id = :id ORDER BY is_primary DESC, position ASC
-                    """
-                ),
-                {"id": property_id},
-            )
-        )
-        .mappings()
-        .all()
-    )
-    record["images"] = [dict(i) for i in images]
+    history = await db[D.PRICE_HISTORY].find(
+        {"meta.property_id": property_id},
+        projection={"_id": 0, "observed_at": 1, "price": 1, "price_per_sqft": 1,
+                    "rent_monthly": 1, "change_pct": 1},
+    ).sort("observed_at", -1).limit(50).to_list(length=50)
+    record["price_history"] = jsonable(history)
 
-    history = (
-        (
-            await db.execute(
-                text(
-                    """
-                    SELECT observed_at, price, price_per_sqft, rent_monthly, change_pct
-                    FROM price_history WHERE property_id = :id
-                    ORDER BY observed_at DESC LIMIT 50
-                    """
-                ),
-                {"id": property_id},
-            )
-        )
-        .mappings()
-        .all()
-    )
-    record["price_history"] = [dict(h) for h in history]
-
-    duplicates = (
-        (
-            await db.execute(
-                text(
-                    """
-                    SELECT p.id, p.source, p.listing_url, p.price, d.score, d.reason
-                    FROM property_duplicates d
-                    JOIN properties p ON p.id = d.duplicate_id
-                    WHERE d.canonical_id = :id
-                    """
-                ),
-                {"id": property_id},
-            )
-        )
-        .mappings()
-        .all()
-    )
-    record["duplicate_listings"] = [dict(d) for d in duplicates]
+    duplicates = await db[D.PROPERTY_DUPLICATES].aggregate([
+        {"$match": {"canonical_id": property_id}},
+        {"$lookup": {
+            "from": D.PROPERTIES, "localField": "duplicate_id", "foreignField": "_id",
+            "pipeline": [{"$project": {"source": 1, "listing_url": 1, "price": 1}}],
+            "as": "listing",
+        }},
+        {"$unwind": "$listing"},
+        {"$project": {"_id": 0, "id": "$listing._id", "source": "$listing.source",
+                      "listing_url": "$listing.listing_url", "price": "$listing.price",
+                      "score": 1, "reason": 1}},
+    ]).to_list(length=20)
+    record["duplicate_listings"] = jsonable(duplicates)
     return record
 
 
@@ -294,108 +282,71 @@ async def builders(
     page: int = Query(1, ge=1),
     page_size: int = Query(25, ge=1, le=100),
 ) -> Page:
-    conditions = ["TRUE"]
-    params: dict[str, Any] = {"limit": page_size, "offset": (page - 1) * page_size}
-    if q:
-        conditions.append(
-            "(b.search_vector @@ websearch_to_tsquery('english', :q) OR b.name ILIKE :like)"
-        )
-        params["q"] = q
-        params["like"] = f"%{q}%"
-    if min_trust is not None:
-        conditions.append("b.trust_score >= :min_trust")
-        params["min_trust"] = min_trust
-    where_sql = " AND ".join(conditions)
+    import re
 
-    rows = (
-        (
-            await db.execute(
-                text(
-                    f"""
-                    SELECT b.id, b.name, b.normalized_name, b.description, b.website,
-                           b.established_year, b.rating, b.rating_count,
-                           b.total_projects, b.completed_projects, b.ongoing_projects,
-                           b.trust_score, b.risk_score, b.sentiment,
-                           b.reputation_summary,
-                           s.reddit_mentions, s.reddit_positive, s.reddit_negative,
-                           s.listing_count, s.avg_price_per_sqft
-                    FROM builders b
-                    LEFT JOIN mv_builder_scorecard s ON s.builder_id = b.id
-                    WHERE {where_sql}
-                    ORDER BY b.trust_score DESC NULLS LAST, b.total_projects DESC NULLS LAST
-                    LIMIT :limit OFFSET :offset
-                    """
-                ),
-                params,
-            )
-        )
-        .mappings()
-        .all()
-    )
-    total = (
-        await db.execute(text(f"SELECT COUNT(*) FROM builders b WHERE {where_sql}"), params)
-    ).scalar_one()
+    conditions: dict[str, Any] = {}
+    if q:
+        conditions["name"] = {"$regex": re.escape(q), "$options": "i"}
+    if min_trust is not None:
+        conditions["trust_score"] = {"$gte": min_trust}
+
+    pipeline: list[dict[str, Any]] = [
+        {"$match": conditions} if conditions else {"$match": {}},
+        {"$lookup": {
+            "from": D.MV_BUILDER_SCORECARD, "localField": "_id",
+            "foreignField": "_id", "as": "_card",
+        }},
+        {"$addFields": {"card": {"$first": "$_card"}}},
+        {"$project": {
+            "name": 1, "normalized_name": 1, "description": 1, "website": 1,
+            "established_year": 1, "rating": 1, "rating_count": 1,
+            "total_projects": 1, "completed_projects": 1, "ongoing_projects": 1,
+            "trust_score": 1, "risk_score": 1, "sentiment": 1, "reputation_summary": 1,
+            "reddit_mentions": "$card.reddit_mentions",
+            "reddit_positive": "$card.reddit_positive",
+            "reddit_negative": "$card.reddit_negative",
+            "listing_count": "$card.listing_count",
+            "avg_price_per_sqft": "$card.avg_price_per_sqft",
+        }},
+        {"$sort": {"trust_score": -1, "total_projects": -1}},
+        {"$facet": {
+            "results": [{"$skip": (page - 1) * page_size}, {"$limit": page_size}],
+            "total": [{"$count": "value"}],
+        }},
+    ]
+    payload = await db[D.BUILDERS].aggregate(pipeline).to_list(length=1)
+    block = payload[0] if payload else {"results": [], "total": []}
+    results = [{**jsonable(r), "id": r["_id"]} for r in block["results"]]
+    total = int(block["total"][0]["value"]) if block["total"] else 0
 
     return Page(
-        total=int(total),
-        page=page,
-        page_size=page_size,
-        pages=(int(total) + page_size - 1) // page_size,
-        results=[dict(r) for r in rows],
+        total=total, page=page, page_size=page_size,
+        pages=(total + page_size - 1) // page_size, results=results,
     )
 
 
 @app.get("/builders/{builder_id}", tags=["builders"])
-async def builder_detail(builder_id: int, db: DB) -> dict[str, Any]:
-    row = (
-        (await db.execute(text("SELECT * FROM builders WHERE id = :id"), {"id": builder_id}))
-        .mappings()
-        .first()
-    )
-    if row is None:
+async def builder_detail(builder_id: str, db: DB) -> dict[str, Any]:
+    document = await db[D.BUILDERS].find_one({"_id": builder_id})
+    if document is None:
         raise HTTPException(status_code=404, detail="builder not found")
 
-    record = dict(row)
-    record.pop("search_vector", None)
+    record = jsonable(document)
+    record["id"] = record.pop("_id")
 
-    projects = (
-        (
-            await db.execute(
-                text(
-                    """
-                    SELECT id, name, status, possession_date, price_min, price_max,
-                           rera_number FROM projects WHERE builder_id = :id
-                    ORDER BY COALESCE(possession_date, launch_date) DESC NULLS LAST
-                    """
-                ),
-                {"id": builder_id},
-            )
-        )
-        .mappings()
-        .all()
-    )
-    record["projects"] = [dict(p) for p in projects]
+    projects = await db[D.PROJECTS].find(
+        {"builder_id": builder_id},
+        projection={"name": 1, "status": 1, "possession_date": 1,
+                    "price_min": 1, "price_max": 1, "rera_number": 1},
+    ).sort("possession_date", -1).limit(100).to_list(length=100)
+    record["projects"] = jsonable(projects)
 
-    # Public discussion about this builder, most recent first.
-    chatter = (
-        (
-            await db.execute(
-                text(
-                    """
-                    SELECT source_id, permalink, title, score, sentiment, topics,
-                           created_utc, summary
-                    FROM reddit_posts
-                    WHERE detected_builders && CAST(:names AS text[])
-                    ORDER BY created_utc DESC NULLS LAST LIMIT 40
-                    """
-                ),
-                {"names": [record["name"]]},
-            )
-        )
-        .mappings()
-        .all()
-    )
-    record["public_discussion"] = [dict(c) for c in chatter]
+    chatter = await db[D.REDDIT_POSTS].find(
+        {"detected_builders": record["name"]},
+        projection={"source_id": 1, "permalink": 1, "title": 1, "score": 1,
+                    "sentiment": 1, "topics": 1, "created_utc": 1, "summary": 1},
+    ).sort("created_utc", -1).limit(40).to_list(length=40)
+    record["public_discussion"] = jsonable(chatter)
     return record
 
 
@@ -408,58 +359,32 @@ async def projects(
     page: int = Query(1, ge=1),
     page_size: int = Query(25, ge=1, le=100),
 ) -> Page:
-    conditions = ["TRUE"]
-    params: dict[str, Any] = {"limit": page_size, "offset": (page - 1) * page_size}
+    import re
+
+    conditions: dict[str, Any] = {}
     if q:
-        conditions.append("pr.search_vector @@ websearch_to_tsquery('english', :q)")
-        params["q"] = q
+        conditions["name"] = {"$regex": re.escape(q), "$options": "i"}
     if city:
-        conditions.append("l.city = CAST(:city AS city_enum)")
-        params["city"] = city
+        conditions["city"] = city
     if status:
-        conditions.append("pr.status = CAST(:status AS possession_status_enum)")
-        params["status"] = status
-    where_sql = " AND ".join(conditions)
+        conditions["status"] = status
 
-    rows = (
-        (
-            await db.execute(
-                text(
-                    f"""
-                    SELECT pr.id, pr.name, pr.builder_name, pr.status, pr.launch_date,
-                           pr.possession_date, pr.price_min, pr.price_max,
-                           pr.price_per_sqft, pr.total_units, pr.rera_number,
-                           pr.amenities, pr.investment_score, pr.risk_score,
-                           l.city, l.sector, l.micro_market
-                    FROM projects pr
-                    LEFT JOIN locations l ON l.id = pr.location_id
-                    WHERE {where_sql}
-                    ORDER BY COALESCE(pr.launch_date, pr.created_at::date) DESC
-                    LIMIT :limit OFFSET :offset
-                    """
-                ),
-                params,
-            )
-        )
-        .mappings()
-        .all()
-    )
-    total = (
-        await db.execute(
-            text(
-                f"SELECT COUNT(*) FROM projects pr "
-                f"LEFT JOIN locations l ON l.id = pr.location_id WHERE {where_sql}"
-            ),
-            params,
-        )
-    ).scalar_one()
+    total = await db[D.PROJECTS].count_documents(conditions)
+    rows = await db[D.PROJECTS].find(
+        conditions,
+        projection={"name": 1, "builder_name": 1, "status": 1, "launch_date": 1,
+                    "possession_date": 1, "price_min": 1, "price_max": 1,
+                    "price_per_sqft": 1, "total_units": 1, "rera_number": 1,
+                    "amenities": 1, "investment_score": 1, "risk_score": 1,
+                    "city": 1, "sector": 1, "micro_market": 1},
+    ).sort([("launch_date", -1), ("created_at", -1)]).skip(
+        (page - 1) * page_size
+    ).limit(page_size).to_list(length=page_size)
 
+    results = [{**jsonable(r), "id": r["_id"]} for r in rows]
     return Page(
-        total=int(total),
-        page=page,
-        page_size=page_size,
-        pages=(int(total) + page_size - 1) // page_size,
-        results=[dict(r) for r in rows],
+        total=total, page=page, page_size=page_size,
+        pages=(total + page_size - 1) // page_size, results=results,
     )
 
 
@@ -484,49 +409,26 @@ async def reddit(
     page_size: int = Query(settings.api_page_size, ge=1, le=settings.api_max_page_size),
 ) -> Page:
     query = RedditSearchQuery(
-        q=q,
-        builder=builder,
-        project=project,
-        sector=sector,
-        city=city,
-        topics=topics or [],
-        sentiment=sentiment,
-        min_score=min_score,
-        subreddit=subreddit,
-        page=page,
-        page_size=page_size,
+        q=q, builder=builder, project=project, sector=sector, city=city,
+        topics=topics or [], sentiment=sentiment, min_score=min_score,
+        subreddit=subreddit, page=page, page_size=page_size,
     )
     results, total = await search_reddit(db, query)
     return Page(
-        total=total,
-        page=page,
-        page_size=query.limit,
-        pages=(total + query.limit - 1) // query.limit,
-        results=results,
+        total=total, page=page, page_size=query.limit,
+        pages=(total + query.limit - 1) // query.limit, results=results,
     )
 
 
 @app.get("/reddit/{post_source_id}/comments", tags=["reddit"])
 async def reddit_comments(post_source_id: str, db: DB) -> list[dict[str, Any]]:
-    rows = (
-        (
-            await db.execute(
-                text(
-                    """
-                    SELECT c.comment_id, c.author, c.body, c.score, c.depth,
-                           c.sentiment, c.topics, c.created_utc, c.permalink
-                    FROM reddit_comments c
-                    WHERE c.post_source_id = :sid
-                    ORDER BY c.score DESC LIMIT 200
-                    """
-                ),
-                {"sid": post_source_id},
-            )
-        )
-        .mappings()
-        .all()
-    )
-    return [dict(r) for r in rows]
+    rows = await db[D.REDDIT_COMMENTS].find(
+        {"post_source_id": post_source_id},
+        projection={"_id": 0, "comment_id": 1, "author": 1, "body": 1, "score": 1,
+                    "depth": 1, "sentiment": 1, "topics": 1, "created_utc": 1,
+                    "permalink": 1},
+    ).sort("score", -1).limit(200).to_list(length=200)
+    return jsonable(rows)
 
 
 # ---------------------------------------------------------------------------
@@ -542,90 +444,47 @@ async def market_trends(
     listing_type: str = "sale",
     months: int = Query(12, ge=1, le=60),
 ) -> list[dict[str, Any]]:
-    conditions = [
-        "listing_type = CAST(:lt AS listing_type_enum)",
-        "period > (CURRENT_DATE - make_interval(months => :months))",
-    ]
-    params: dict[str, Any] = {"lt": listing_type, "months": months}
-    if city:
-        conditions.append("city = CAST(:city AS city_enum)")
-        params["city"] = city
-    if sector:
-        conditions.append("sector ILIKE :sector")
-        params["sector"] = f"%{sector}%"
+    from datetime import UTC, datetime, timedelta
 
-    rows = (
-        (
-            await db.execute(
-                text(
-                    f"""
-                    SELECT city, sector, micro_market, property_type, period,
-                           listing_count, median_price_per_sqft, avg_price_per_sqft,
-                           median_price, avg_rent, avg_area_sqft
-                    FROM mv_locality_price_trends
-                    WHERE {' AND '.join(conditions)}
-                    ORDER BY period DESC, listing_count DESC
-                    LIMIT 500
-                    """
-                ),
-                params,
-            )
-        )
-        .mappings()
-        .all()
-    )
-    return [dict(r) for r in rows]
+    conditions: dict[str, Any] = {
+        "listing_type": listing_type,
+        "period": {"$gte": datetime.now(UTC) - timedelta(days=months * 31)},
+    }
+    if city:
+        conditions["city"] = city
+    if sector:
+        import re
+
+        conditions["sector"] = {"$regex": re.escape(sector), "$options": "i"}
+
+    rows = await db[D.MV_LOCALITY_TRENDS].find(
+        conditions, projection={"_id": 0}
+    ).sort([("period", -1), ("listing_count", -1)]).limit(500).to_list(length=500)
+    return jsonable(rows)
 
 
 @app.get("/market/yield", tags=["market"])
 async def rental_yield(
     db: DB, city: str | None = None, bedrooms: int | None = None
 ) -> list[dict[str, Any]]:
-    conditions = ["TRUE"]
-    params: dict[str, Any] = {}
+    conditions: dict[str, Any] = {}
     if city:
-        conditions.append("city = CAST(:city AS city_enum)")
-        params["city"] = city
+        conditions["city"] = city
     if bedrooms is not None:
-        conditions.append("bedrooms = :bedrooms")
-        params["bedrooms"] = bedrooms
-    rows = (
-        (
-            await db.execute(
-                text(
-                    f"SELECT * FROM mv_rental_yield WHERE {' AND '.join(conditions)} "
-                    f"ORDER BY rental_yield_pct DESC LIMIT 300"
-                ),
-                params,
-            )
-        )
-        .mappings()
-        .all()
-    )
-    return [dict(r) for r in rows]
+        conditions["bedrooms"] = bedrooms
+    rows = await db[D.MV_RENTAL_YIELD].find(
+        conditions, projection={"_id": 0}
+    ).sort("rental_yield_pct", -1).limit(300).to_list(length=300)
+    return jsonable(rows)
 
 
 @app.get("/market/supply-demand", tags=["market"])
 async def supply_demand(db: DB, city: str | None = None) -> list[dict[str, Any]]:
-    params: dict[str, Any] = {}
-    where = "TRUE"
-    if city:
-        where = "city = CAST(:city AS city_enum)"
-        params["city"] = city
-    rows = (
-        (
-            await db.execute(
-                text(
-                    f"SELECT * FROM mv_supply_demand WHERE {where} "
-                    f"ORDER BY active_supply DESC LIMIT 300"
-                ),
-                params,
-            )
-        )
-        .mappings()
-        .all()
-    )
-    return [dict(r) for r in rows]
+    conditions = {"city": city} if city else {}
+    rows = await db[D.MV_SUPPLY_DEMAND].find(
+        conditions, projection={"_id": 0}
+    ).sort("active_supply", -1).limit(300).to_list(length=300)
+    return jsonable(rows)
 
 
 @app.get("/market/insights", tags=["market"])
@@ -636,37 +495,23 @@ async def market_insights(
     sector: str | None = None,
     limit: int = Query(100, ge=1, le=500),
 ) -> list[dict[str, Any]]:
-    conditions = ["TRUE"]
-    params: dict[str, Any] = {"limit": limit}
+    conditions: dict[str, Any] = {}
     if metric:
-        conditions.append("metric = :metric")
-        params["metric"] = metric
+        conditions["metric"] = metric
     if city:
-        conditions.append("city = CAST(:city AS city_enum)")
-        params["city"] = city
+        conditions["city"] = city
     if sector:
-        conditions.append("sector ILIKE :sector")
-        params["sector"] = f"%{sector}%"
-    rows = (
-        (
-            await db.execute(
-                text(
-                    f"""
-                    SELECT metric, city, sector, period_start, period_end, value, unit,
-                           change_pct, sample_size, notes
-                    FROM market_insights
-                    WHERE {' AND '.join(conditions)}
-                    ORDER BY period_end DESC, ABS(COALESCE(change_pct, 0)) DESC
-                    LIMIT :limit
-                    """
-                ),
-                params,
-            )
-        )
-        .mappings()
-        .all()
-    )
-    return [dict(r) for r in rows]
+        import re
+
+        conditions["sector"] = {"$regex": re.escape(sector), "$options": "i"}
+
+    rows = await db[D.MARKET_INSIGHTS].find(
+        conditions,
+        projection={"_id": 0, "metric": 1, "city": 1, "sector": 1, "period_start": 1,
+                    "period_end": 1, "value": 1, "unit": 1, "change_pct": 1,
+                    "sample_size": 1, "notes": 1},
+    ).sort("period_end", -1).limit(limit).to_list(length=limit)
+    return jsonable(rows)
 
 
 @app.get("/market/new-launches", tags=["market"])
@@ -674,6 +519,126 @@ async def new_launches(db: DB, days: int = Query(90, ge=1, le=365)) -> list[dict
     from homz.etl.price_history import new_launch_feed
 
     return await new_launch_feed(db, days=days)
+
+
+# ---------------------------------------------------------------------------
+# ingest — client-side scraping submits its results here
+#
+# This is the only write surface on the API. It is token-authenticated,
+# rate-limited and size-bounded, and every payload is run through the same
+# parser the server-side scrapers use, so client-sourced data is validated
+# rather than trusted.
+# ---------------------------------------------------------------------------
+
+
+class IngestPagePayload(BaseModel):
+    source: str = Field(description="magicbricks | housing | squareyards")
+    url: str = Field(description="Absolute URL the HTML was captured from")
+    html: str = Field(description="Raw page HTML")
+    kind: str = Field("auto", description="auto | property | project")
+    task_id: str | None = Field(None, description="Fill task this satisfies, if any")
+
+
+class IngestRecordsPayload(BaseModel):
+    records: list[dict[str, Any]] = Field(
+        description="Normalized records; each needs a record_type of "
+                    "property | project | reddit_post"
+    )
+    task_id: str | None = None
+
+
+def _auth(authorization: str | None) -> str:
+    try:
+        client = verify_token(authorization)
+        check_rate_limit(client)
+        return client
+    except IngestError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+
+
+@app.post("/ingest/page", tags=["ingest"])
+async def ingest_page(
+    db: DB,
+    payload: IngestPagePayload,
+    authorization: Annotated[str | None, Header()] = None,
+) -> dict[str, Any]:
+    """Submit one scraped page. Parsed server-side, then upserted."""
+    client = _auth(authorization)
+    service = IngestService(db)
+    try:
+        result = await service.ingest_page(
+            source=payload.source, url=payload.url, html=payload.html,
+            client=client, kind=payload.kind, task_id=payload.task_id,
+        )
+    except IngestError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+    # The service settles payload.task_id itself — see IngestService._close_task.
+    return result.as_dict()
+
+
+@app.post("/ingest/records", tags=["ingest"])
+async def ingest_records(
+    db: DB,
+    payload: IngestRecordsPayload,
+    authorization: Annotated[str | None, Header()] = None,
+) -> dict[str, Any]:
+    """Submit already-normalized records (trusted internal workers)."""
+    client = _auth(authorization)
+    try:
+        result = await IngestService(db).ingest_records(
+            payload.records, client=client, task_id=payload.task_id
+        )
+    except IngestError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
+    return result.as_dict()
+
+
+# ---------------------------------------------------------------------------
+# fill tasks — what the client should scrape next
+# ---------------------------------------------------------------------------
+
+
+@app.get("/ingest/tasks", tags=["ingest"])
+async def claim_tasks(
+    db: DB,
+    worker: str = Query("client", max_length=64, description="Worker identity"),
+    limit: int = Query(1, ge=1, le=25),
+    authorization: Annotated[str | None, Header()] = None,
+) -> dict[str, Any]:
+    """Claim pending fill tasks.
+
+    Claiming is atomic, so several clients can poll concurrently without two
+    of them taking the same task. A task claimed but not completed within 30
+    minutes returns to the pool.
+    """
+    _auth(authorization)
+    tasks = await DemandFiller(db).claim(worker=worker, limit=limit)
+    return {"tasks": jsonable(tasks), "count": len(tasks)}
+
+
+@app.post("/ingest/tasks/{task_id}/complete", tags=["ingest"])
+async def complete_task(
+    db: DB,
+    task_id: str,
+    records_written: int = Body(0, embed=True),
+    error: str | None = Body(None, embed=True),
+    authorization: Annotated[str | None, Header()] = None,
+) -> dict[str, Any]:
+    """Report a task finished (or failed, so it can be retried sooner)."""
+    _auth(authorization)
+    found = await DemandFiller(db).complete(
+        task_id, records_written=records_written, error=error
+    )
+    if not found:
+        raise HTTPException(status_code=404, detail="task not found")
+    return {"ok": True, "task_id": task_id}
+
+
+@app.get("/ingest/stats", tags=["ingest"])
+async def ingest_stats(db: DB) -> dict[str, Any]:
+    """Queue depth and remaining daily crawl budget. Unauthenticated: it
+    exposes no data, only counters, and is useful for monitoring."""
+    return await DemandFiller(db).stats()
 
 
 # ---------------------------------------------------------------------------

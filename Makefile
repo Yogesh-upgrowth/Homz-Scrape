@@ -18,12 +18,14 @@ install: $(VENV) ## Create venv and install deps
 install-browsers: ## Install Playwright chromium
 	$(BIN)/playwright install chromium
 
-db-up: ## Start postgres via docker compose
-	docker compose up -d postgres
+db-up: ## Start a local MongoDB replica set (offline dev; no Atlas Search)
+	docker compose --profile local up -d mongo
 
-db-migrate: ## Apply SQL schema (idempotent)
-	docker compose exec -T postgres psql -U homz -d homz < sql/001_schema.sql
-	docker compose exec -T postgres psql -U homz -d homz < sql/002_search.sql
+db-init: ## Create collections, indexes and Atlas Search indexes (idempotent)
+	$(BIN)/homz db init
+
+db-status: ## Atlas Search index build state
+	$(BIN)/homz db search-status
 
 lint: ## Ruff check
 	$(BIN)/ruff check src tests

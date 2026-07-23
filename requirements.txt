@@ -17,11 +17,14 @@ python-dateutil==2.9.0.post0
 price-parser==0.3.4
 tldextract==5.1.2
 
-# ---- database -----------------------------------------------------------
-SQLAlchemy[asyncio]==2.0.36
-asyncpg==0.30.0
-alembic==1.14.0
-psycopg[binary]>=3.2.3          # sync driver used by alembic / psql-less tooling
+# ---- database (MongoDB Atlas) -------------------------------------------
+# motor is the async driver; pymongo ships the BSON types (Decimal128) and the
+# createSearchIndexes command used for Atlas Search.
+motor==3.7.1
+pymongo==4.17.0
+# Required to resolve mongodb+srv:// Atlas URIs. pymongo dropped the [srv]
+# extra in 4.13 — dnspython must be listed explicitly.
+dnspython==2.8.0
 
 # ---- api ----------------------------------------------------------------
 fastapi==0.115.5
@@ -39,5 +42,6 @@ prometheus-client==0.21.0
 # ---- dev / test ---------------------------------------------------------
 pytest==8.3.3
 pytest-asyncio==0.24.0
+mongomock-motor==0.0.34       # in-memory Mongo for repository unit tests
 respx==0.21.1
 ruff==0.7.4

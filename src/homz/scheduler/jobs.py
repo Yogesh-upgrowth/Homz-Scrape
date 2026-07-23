@@ -102,29 +102,27 @@ async def job_etl() -> dict[str, Any]:
 
 
 async def job_enrich() -> dict[str, Any]:
-    from homz.db.engine import session_scope
+    from homz.db.mongo import get_database
     from homz.enrichment.pipeline import EnrichmentPipeline
 
     log.info("cron.enrich_start")
-    async with session_scope() as session:
-        pipeline = EnrichmentPipeline(session)
-        try:
-            report = await pipeline.run_all()
-        finally:
-            await pipeline.aclose()
+    pipeline = EnrichmentPipeline(get_database())
+    try:
+        report = await pipeline.run_all()
+    finally:
+        await pipeline.aclose()
     log.info("cron.enrich_done", **report.as_dict())
     return report.as_dict()
 
 
 async def job_scores_only() -> dict[str, Any]:
     """Deterministic rescoring — free, so it can run often."""
-    from homz.db.engine import session_scope
+    from homz.db.mongo import get_database
     from homz.enrichment.pipeline import EnrichmentPipeline
 
-    async with session_scope() as session:
-        pipeline = EnrichmentPipeline(session, use_llm=False)
-        builders = await pipeline.score_builders()
-        properties = await pipeline.score_properties()
+    pipeline = EnrichmentPipeline(get_database(), use_llm=False)
+    builders = await pipeline.score_builders()
+    properties = await pipeline.score_properties()
     return {"builders": builders, "properties": properties}
 
 
@@ -190,9 +188,9 @@ async def run_forever() -> None:
 
     log.info("cron.shutting_down")
     scheduler.shutdown(wait=True)
-    from homz.db.engine import dispose_engine
+    from homz.db.mongo import close_client
 
-    await dispose_engine()
+    await close_client()
 
 
 def main() -> None:

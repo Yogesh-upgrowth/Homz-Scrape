@@ -1,35 +1,76 @@
-"""Search query construction.
+"""Search over MongoDB.
 
-All filtering is parameterized SQL — user input never reaches a string
-concatenation. The dynamic part is *which* conditions get appended, never their
-content.
+Two backends behind one interface:
 
-Ranking blends three signals:
-  * `ts_rank_cd` on the generated `search_vector` (relevance)
-  * trigram similarity on project/builder name (typo tolerance)
-  * freshness decay (a live listing beats a stale one at equal relevance)
+* **Atlas Search** (`$search`) — per-field boosts, fuzzy matching for typos,
+  `$searchMeta` facet counts. This is the intended production path and is what
+  the field boosts in `db/documents.py` are designed for.
+* **`$text` fallback** — used when the cluster is self-hosted. Weighted, but no
+  fuzzy matching, so "godrej aristocat" finds nothing. Autocomplete degrades to
+  a prefix regex.
+
+The backend is chosen once per process by probing the server
+(`db.mongo.detect_backend`), so the same code runs against a local Docker Mongo
+in development and Atlas in production.
+
+All user input goes into the pipeline as *values*, never interpolated into
+operator keys, so there is no injection surface. Regex input is escaped.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
+from homz.db import documents as D
+from homz.db.codecs import jsonable
+from homz.db.mongo import detect_backend
+from homz.logging_setup import get_logger
 from homz.settings import settings
 
-SORT_OPTIONS: dict[str, str] = {
-    "relevance": "rank DESC, p.last_seen_at DESC",
-    "newest": "COALESCE(p.listed_at, p.first_seen_at) DESC NULLS LAST",
-    "price_asc": "COALESCE(p.price, p.rent_monthly) ASC NULLS LAST",
-    "price_desc": "COALESCE(p.price, p.rent_monthly) DESC NULLS LAST",
-    "ppsf_asc": "p.price_per_sqft ASC NULLS LAST",
-    "area_desc": "p.area_sqft DESC NULLS LAST",
-    "investment": "p.investment_score DESC NULLS LAST",
-    "lowest_risk": "p.risk_score ASC NULLS LAST",
+log = get_logger(__name__)
+
+# Mongo sort specs. Atlas `$search` returns results in relevance order, so the
+# "relevance" mode deliberately applies no `$sort` at all.
+SORT_OPTIONS: dict[str, list[tuple[str, int]] | None] = {
+    "relevance": None,
+    "newest": [("listed_at", -1), ("first_seen_at", -1)],
+    "price_asc": [("price", 1)],
+    "price_desc": [("price", -1)],
+    "ppsf_asc": [("price_per_sqft", 1)],
+    "area_desc": [("area_sqft", -1)],
+    "investment": [("investment_score", -1)],
+    "lowest_risk": [("risk_score", 1)],
+}
+
+#: Fields returned by a search hit. Excluding `raw`, `description` and
+#: `specifications` keeps the response small — a 200-result page would
+#: otherwise carry megabytes of scraped prose nobody renders.
+RESULT_PROJECTION: dict[str, Any] = {
+    "source": 1, "source_id": 1, "listing_url": 1, "title": 1,
+    "project_name": 1, "builder_name": 1, "society_name": 1,
+    "listing_type": 1, "property_type": 1, "segment": 1, "configuration": 1,
+    "bedrooms": 1, "bathrooms": 1, "area_sqft": 1, "carpet_area_sqft": 1,
+    "price": 1, "price_max": 1, "price_display": 1, "price_per_sqft": 1,
+    "rent_monthly": 1, "is_price_on_request": 1,
+    "city": 1, "sector": 1, "locality": 1, "micro_market": 1,
+    "latitude": 1, "longitude": 1,
+    "possession_status": 1, "possession_date": 1, "rera_number": 1,
+    "amenities": 1, "tags": 1, "keywords": 1,
+    "investment_score": 1, "risk_score": 1, "location_score": 1,
+    "builder_trust_score": 1, "ai_summary": 1,
+    "listed_at": 1, "first_seen_at": 1, "last_seen_at": 1, "duplicate_count": 1,
+    "primary_image": {
+        "$let": {
+            "vars": {"first": {"$arrayElemAt": ["$images", 0]}},
+            "in": "$$first.url",
+        }
+    },
 }
 
 
@@ -59,239 +100,388 @@ class PropertySearchQuery:
     has_rera: bool | None = None
     min_investment_score: float | None = None
     max_risk_score: float | None = None
+    #: Geo radius search — a capability the Postgres schema lacked without PostGIS.
+    near_lat: float | None = None
+    near_lng: float | None = None
+    radius_km: float | None = None
     sort: str = "relevance"
     page: int = 1
     page_size: int = 25
     include_duplicates: bool = False
 
     @property
-    def offset(self) -> int:
-        return max(0, (self.page - 1) * self.limit)
-
-    @property
     def limit(self) -> int:
         return max(1, min(self.page_size, settings.api_max_page_size))
 
+    @property
+    def skip(self) -> int:
+        return max(0, (self.page - 1) * self.limit)
 
-def build_property_search(query: PropertySearchQuery) -> tuple[str, str, dict[str, Any]]:
-    """Returns (rows_sql, count_sql, params)."""
-    conditions: list[str] = ["p.is_active"]
-    params: dict[str, Any] = {}
 
+def _escape_regex(value: str) -> str:
+    return re.escape(value)
+
+
+def build_filter(query: PropertySearchQuery) -> dict[str, Any]:
+    """The non-text part of the query — shared by both backends."""
+    conditions: dict[str, Any] = {"is_active": True}
     if not query.include_duplicates:
-        conditions.append("p.canonical_property_id IS NULL")
-
-    # --- full text ---------------------------------------------------------
-    rank_expr = "0.0"
-    if query.q:
-        params["q"] = query.q
-        params["q_like"] = f"%{query.q}%"
-        conditions.append(
-            "(p.search_vector @@ websearch_to_tsquery('english', :q)"
-            " OR p.project_name ILIKE :q_like"
-            " OR p.builder_name ILIKE :q_like)"
-        )
-        rank_expr = (
-            "ts_rank_cd(p.search_vector, websearch_to_tsquery('english', :q)) * 3"
-            " + GREATEST("
-            "     similarity(COALESCE(p.project_name, ''), :q),"
-            "     similarity(COALESCE(p.builder_name, ''), :q)"
-            "   )"
-            # Freshness decay: full credit today, ~half after 60 days.
-            " + (1.0 / (1.0 + EXTRACT(EPOCH FROM (NOW() - p.last_seen_at)) / 5184000.0))"
-        )
-
-    def add(condition: str, **kwargs: Any) -> None:
-        conditions.append(condition)
-        params.update(kwargs)
+        conditions["canonical_id"] = None
 
     if query.city:
-        add("p.city = CAST(:city AS city_enum)", city=query.city)
+        conditions["city"] = query.city
     if query.sector:
-        add("p.sector ILIKE :sector", sector=f"%{query.sector}%")
+        conditions["sector"] = {"$regex": _escape_regex(query.sector), "$options": "i"}
     if query.locality:
-        add("p.locality ILIKE :locality", locality=f"%{query.locality}%")
+        conditions["locality"] = {"$regex": _escape_regex(query.locality), "$options": "i"}
     if query.micro_market:
-        add("p.micro_market ILIKE :micro_market", micro_market=f"%{query.micro_market}%")
+        conditions["micro_market"] = {
+            "$regex": _escape_regex(query.micro_market), "$options": "i"
+        }
     if query.builder:
-        add(
-            "(p.builder_name ILIKE :builder OR b.normalized_name ILIKE :builder_norm)",
-            builder=f"%{query.builder}%",
-            builder_norm=f"%{query.builder.lower()}%",
-        )
+        conditions["builder_name"] = {"$regex": _escape_regex(query.builder), "$options": "i"}
     if query.project:
-        add("p.project_name ILIKE :project", project=f"%{query.project}%")
+        conditions["project_name"] = {"$regex": _escape_regex(query.project), "$options": "i"}
     if query.listing_type:
-        add(
-            "p.listing_type = CAST(:listing_type AS listing_type_enum)",
-            listing_type=query.listing_type,
-        )
+        conditions["listing_type"] = query.listing_type
     if query.property_type:
-        add(
-            "p.property_type = ANY(CAST(:property_type AS property_type_enum[]))",
-            property_type=query.property_type,
-        )
+        conditions["property_type"] = {"$in": query.property_type}
     if query.configuration:
-        add("p.configuration ILIKE :configuration", configuration=f"%{query.configuration}%")
-    if query.bedrooms_min is not None:
-        add("p.bedrooms >= :bedrooms_min", bedrooms_min=query.bedrooms_min)
-    if query.bedrooms_max is not None:
-        add("p.bedrooms <= :bedrooms_max", bedrooms_max=query.bedrooms_max)
-
-    # Budget filters apply to sale price or monthly rent, whichever the
-    # listing carries — so one budget control works for both modes.
-    if query.price_min is not None:
-        add("COALESCE(p.price, p.rent_monthly) >= :price_min", price_min=query.price_min)
-    if query.price_max is not None:
-        add("COALESCE(p.price, p.rent_monthly) <= :price_max", price_max=query.price_max)
-
-    if query.area_min is not None:
-        add("p.area_sqft >= :area_min", area_min=query.area_min)
-    if query.area_max is not None:
-        add("p.area_sqft <= :area_max", area_max=query.area_max)
+        conditions["configuration"] = {
+            "$regex": _escape_regex(query.configuration), "$options": "i"
+        }
     if query.possession_status:
-        add(
-            "p.possession_status = ANY(CAST(:possession AS possession_status_enum[]))",
-            possession=query.possession_status,
-        )
+        conditions["possession_status"] = {"$in": query.possession_status}
     if query.segment:
-        add("p.segment = ANY(CAST(:segment AS segment_enum[]))", segment=query.segment)
+        conditions["segment"] = {"$in": query.segment}
     if query.amenities:
-        # `@>` uses the GIN index on amenities.
-        add("p.amenities @> CAST(:amenities AS text[])", amenities=query.amenities)
+        conditions["amenities"] = {"$all": query.amenities}
     if query.keywords:
-        add(
-            "(p.keywords && CAST(:keywords AS text[]) OR p.tags && CAST(:keywords AS text[]))",
-            keywords=query.keywords,
-        )
+        conditions["$or"] = [
+            {"keywords": {"$in": query.keywords}},
+            {"tags": {"$in": query.keywords}},
+        ]
     if query.is_commercial is not None:
-        add("p.is_commercial = :is_commercial", is_commercial=query.is_commercial)
+        conditions["is_commercial"] = query.is_commercial
     if query.has_rera is not None:
-        conditions.append(
-            "p.rera_number IS NOT NULL" if query.has_rera else "p.rera_number IS NULL"
-        )
+        conditions["rera_number"] = {"$ne": None} if query.has_rera else None
+
+    _range(conditions, "bedrooms", query.bedrooms_min, query.bedrooms_max)
+    _range(conditions, "area_sqft", query.area_min, query.area_max)
     if query.min_investment_score is not None:
-        add("p.investment_score >= :min_inv", min_inv=query.min_investment_score)
+        conditions["investment_score"] = {"$gte": query.min_investment_score}
     if query.max_risk_score is not None:
-        add("p.risk_score <= :max_risk", max_risk=query.max_risk_score)
+        conditions["risk_score"] = {"$lte": query.max_risk_score}
 
-    where_sql = " AND ".join(conditions)
-    order_sql = SORT_OPTIONS.get(query.sort, SORT_OPTIONS["relevance"])
-    if query.sort == "relevance" and not query.q:
-        order_sql = SORT_OPTIONS["newest"]
+    # Budget applies to sale price or monthly rent, whichever the listing
+    # carries, so one control works for both modes.
+    if query.price_min is not None or query.price_max is not None:
+        bounds: dict[str, Any] = {}
+        if query.price_min is not None:
+            bounds["$gte"] = query.price_min
+        if query.price_max is not None:
+            bounds["$lte"] = query.price_max
+        conditions.setdefault("$and", []).append(
+            {"$or": [{"price": bounds}, {"rent_monthly": bounds}]}
+        )
 
-    params["limit"] = query.limit
-    params["offset"] = query.offset
+    if query.near_lat is not None and query.near_lng is not None and query.radius_km:
+        conditions["geo"] = {
+            "$geoWithin": {
+                "$centerSphere": [
+                    [query.near_lng, query.near_lat],
+                    query.radius_km / 6378.1,  # radians: km ÷ Earth radius
+                ]
+            }
+        }
 
-    rows_sql = f"""
-        SELECT
-            p.id, p.source, p.source_id, p.listing_url, p.title,
-            p.project_name, p.builder_name, p.society_name,
-            p.listing_type, p.property_type, p.segment, p.configuration,
-            p.bedrooms, p.bathrooms, p.area_sqft, p.carpet_area_sqft,
-            p.price, p.price_max, p.price_display, p.price_per_sqft,
-            p.rent_monthly, p.is_price_on_request,
-            p.city, p.sector, p.locality, p.micro_market,
-            p.latitude, p.longitude,
-            p.possession_status, p.possession_date, p.rera_number,
-            p.amenities, p.tags, p.keywords,
-            p.investment_score, p.risk_score, p.location_score,
-            p.builder_trust_score, p.ai_summary,
-            p.listed_at, p.first_seen_at, p.last_seen_at, p.duplicate_count,
-            (SELECT url FROM property_images pi
-              WHERE pi.property_id = p.id
-              ORDER BY pi.is_primary DESC, pi.position ASC LIMIT 1) AS primary_image,
-            {rank_expr} AS rank
-        FROM properties p
-        LEFT JOIN builders b ON b.id = p.builder_id
-        WHERE {where_sql}
-        ORDER BY {order_sql}
-        LIMIT :limit OFFSET :offset
-    """
-
-    count_sql = f"""
-        SELECT COUNT(*) FROM properties p
-        LEFT JOIN builders b ON b.id = p.builder_id
-        WHERE {where_sql}
-    """
-    return rows_sql, count_sql, params
+    return conditions
 
 
-async def search_properties(
-    session: AsyncSession, query: PropertySearchQuery
-) -> tuple[list[dict[str, Any]], int]:
-    rows_sql, count_sql, params = build_property_search(query)
-    rows = (await session.execute(text(rows_sql), params)).mappings().all()
-    total = (await session.execute(text(count_sql), params)).scalar_one()
-    return [dict(row) for row in rows], int(total)
+def _range(target: dict[str, Any], key: str, low: Any, high: Any) -> None:
+    if low is None and high is None:
+        return
+    bounds: dict[str, Any] = {}
+    if low is not None:
+        bounds["$gte"] = low
+    if high is not None:
+        bounds["$lte"] = high
+    target[key] = bounds
 
 
 # ---------------------------------------------------------------------------
-# facets / suggestions
+# Atlas Search backend
 # ---------------------------------------------------------------------------
 
 
-async def facets(session: AsyncSession, query: PropertySearchQuery) -> dict[str, Any]:
-    """Counts for the filter sidebar, honouring the current filters."""
-    _, count_sql, params = build_property_search(query)
-    base_where = count_sql.split("WHERE", 1)[1]
+def _atlas_search_stage(query: PropertySearchQuery) -> dict[str, Any]:
+    """Compound `$search` mirroring the tsvector weights of the SQL version.
 
-    async def group(column: str, limit: int = 25) -> list[dict[str, Any]]:
-        sql = f"""
-            SELECT {column} AS value, COUNT(*) AS count
-            FROM properties p
-            LEFT JOIN builders b ON b.id = p.builder_id
-            WHERE {base_where} AND {column} IS NOT NULL
-            GROUP BY 1 ORDER BY 2 DESC LIMIT {int(limit)}
-        """
-        rows = (await session.execute(text(sql), params)).mappings().all()
-        return [{"value": str(r["value"]), "count": int(r["count"])} for r in rows]
-
+    `fuzzy` on the name fields is what makes "godrej aristocat" still find
+    Godrej Aristocrat — the single largest UX gain over the Postgres
+    implementation, which needed a separate trigram index for the same effect.
+    """
+    text = query.q or ""
     return {
-        "city": await group("p.city", 12),
-        "sector": await group("p.sector", 40),
-        "micro_market": await group("p.micro_market", 20),
-        "property_type": await group("p.property_type", 15),
-        "possession_status": await group("p.possession_status", 6),
-        "segment": await group("p.segment", 6),
-        "builder": await group("p.builder_name", 30),
-        "configuration": await group("p.configuration", 15),
+        "$search": {
+            "index": settings.atlas_search_index,
+            "compound": {
+                "should": [
+                    {"text": {"query": text, "path": "project_name",
+                              "score": {"boost": {"value": 10}},
+                              "fuzzy": {"maxEdits": 1, "prefixLength": 2}}},
+                    {"text": {"query": text, "path": "builder_name",
+                              "score": {"boost": {"value": 10}},
+                              "fuzzy": {"maxEdits": 1, "prefixLength": 2}}},
+                    {"text": {"query": text, "path": "society_name",
+                              "score": {"boost": {"value": 8}}}},
+                    {"text": {"query": text, "path": "sector",
+                              "score": {"boost": {"value": 6}}}},
+                    {"text": {"query": text, "path": "locality",
+                              "score": {"boost": {"value": 6}}}},
+                    {"text": {"query": text, "path": "micro_market",
+                              "score": {"boost": {"value": 6}}}},
+                    {"text": {"query": text, "path": "configuration",
+                              "score": {"boost": {"value": 4}}}},
+                    {"text": {"query": text, "path": "title",
+                              "score": {"boost": {"value": 3}}}},
+                    {"text": {"query": text, "path": ["amenities", "tags"],
+                              "score": {"boost": {"value": 2}}}},
+                    {"text": {"query": text, "path": "description"}},
+                ],
+                "minimumShouldMatch": 1,
+            },
+            # Freshness decay: full credit today, roughly half at 60 days —
+            # the same intent as the SQL ranking's recency term.
+            "scoreDetails": False,
+        }
     }
 
 
-async def autocomplete(
-    session: AsyncSession, term: str, *, limit: int = 10
-) -> list[dict[str, str]]:
-    """Typo-tolerant suggestions across projects, builders and localities."""
-    rows = await session.execute(
-        text(
-            """
-            (SELECT DISTINCT project_name AS value, 'project' AS kind,
-                    similarity(project_name, :term) AS sim
-             FROM properties
-             WHERE project_name IS NOT NULL AND project_name % :term
-             ORDER BY sim DESC LIMIT :limit)
-            UNION ALL
-            (SELECT DISTINCT name, 'builder', similarity(name, :term)
-             FROM builders WHERE name % :term ORDER BY 3 DESC LIMIT :limit)
-            UNION ALL
-            (SELECT DISTINCT COALESCE(sector, locality), 'locality',
-                    similarity(COALESCE(sector, locality), :term)
-             FROM properties
-             WHERE COALESCE(sector, locality) IS NOT NULL
-               AND COALESCE(sector, locality) % :term
-             ORDER BY 3 DESC LIMIT :limit)
-            ORDER BY sim DESC
-            LIMIT :limit
-            """
-        ),
-        {"term": term, "limit": limit},
-    )
-    return [{"value": r[0], "kind": r[1]} for r in rows if r[0]]
+async def _atlas_pipeline(query: PropertySearchQuery) -> list[dict[str, Any]]:
+    pipeline: list[dict[str, Any]] = []
+    if query.q:
+        pipeline.append(_atlas_search_stage(query))
+        pipeline.append({"$addFields": {"score": {"$meta": "searchScore"}}})
+
+    filters = build_filter(query)
+    if filters:
+        pipeline.append({"$match": filters})
+
+    sort_spec = SORT_OPTIONS.get(query.sort)
+    if query.sort == "relevance" and query.q:
+        # Blend text relevance with freshness so a stale exact match doesn't
+        # outrank a fresh near-match.
+        pipeline.append({"$addFields": {
+            "_rank": {"$add": [
+                {"$ifNull": ["$score", 0]},
+                {"$divide": [
+                    1,
+                    {"$add": [1, {"$divide": [
+                        {"$subtract": [datetime.now(UTC), "$last_seen_at"]},
+                        5_184_000_000,  # 60 days in ms
+                    ]}]},
+                ]},
+            ]}
+        }})
+        pipeline.append({"$sort": {"_rank": -1}})
+    elif sort_spec:
+        pipeline.append({"$sort": dict(sort_spec)})
+    else:
+        pipeline.append({"$sort": {"listed_at": -1, "first_seen_at": -1}})
+
+    return pipeline
 
 
 # ---------------------------------------------------------------------------
-# reddit search
+# $text fallback backend
+# ---------------------------------------------------------------------------
+
+
+async def _text_pipeline(query: PropertySearchQuery) -> list[dict[str, Any]]:
+    filters = build_filter(query)
+    pipeline: list[dict[str, Any]] = []
+
+    if query.q:
+        filters["$text"] = {"$search": query.q}
+        pipeline.append({"$match": filters})
+        pipeline.append({"$addFields": {"score": {"$meta": "textScore"}}})
+    else:
+        pipeline.append({"$match": filters})
+
+    sort_spec = SORT_OPTIONS.get(query.sort)
+    if query.sort == "relevance" and query.q:
+        pipeline.append({"$sort": {"score": -1, "last_seen_at": -1}})
+    elif sort_spec:
+        pipeline.append({"$sort": dict(sort_spec)})
+    else:
+        pipeline.append({"$sort": {"listed_at": -1, "first_seen_at": -1}})
+
+    return pipeline
+
+
+# ---------------------------------------------------------------------------
+# public API
+# ---------------------------------------------------------------------------
+
+
+async def search_properties(
+    db: AsyncIOMotorDatabase, query: PropertySearchQuery
+) -> tuple[list[dict[str, Any]], int]:
+    backend = await detect_backend()
+    base = (
+        await _atlas_pipeline(query) if backend == "atlas" else await _text_pipeline(query)
+    )
+
+    # `$facet` runs the count and the page in one round trip. `$count` after
+    # the same match is exact, unlike an estimate.
+    pipeline = base + [
+        {"$facet": {
+            "results": [
+                {"$skip": query.skip},
+                {"$limit": query.limit},
+                {"$project": RESULT_PROJECTION},
+            ],
+            "total": [{"$count": "value"}],
+        }}
+    ]
+
+    cursor = db[D.PROPERTIES].aggregate(pipeline, allowDiskUse=True)
+    payload = await cursor.to_list(length=1)
+    if not payload:
+        return [], 0
+
+    block = payload[0]
+    results = [jsonable(_with_id(row)) for row in block.get("results", [])]
+    total_block = block.get("total", [])
+    total = int(total_block[0]["value"]) if total_block else 0
+    return results, total
+
+
+def _with_id(row: dict[str, Any]) -> dict[str, Any]:
+    """Expose `_id` as `id` — the frontend and API contract use `id`."""
+    row = dict(row)
+    row["id"] = row.pop("_id", None)
+    return row
+
+
+async def facets(db: AsyncIOMotorDatabase, query: PropertySearchQuery) -> dict[str, Any]:
+    """Filter counts honouring the current filters.
+
+    One `$facet` computes every group in a single pass over the matched set,
+    which is the direct equivalent of the eight separate GROUP BY queries the
+    SQL version issued.
+    """
+    backend = await detect_backend()
+    base = (
+        await _atlas_pipeline(query) if backend == "atlas" else await _text_pipeline(query)
+    )
+    # Sorting is irrelevant for counting and costs real time on large sets.
+    base = [stage for stage in base if "$sort" not in stage]
+
+    def group(field_name: str, limit: int) -> list[dict[str, Any]]:
+        return [
+            {"$match": {field_name: {"$ne": None}}},
+            {"$group": {"_id": f"${field_name}", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": limit},
+            {"$project": {"_id": 0, "value": {"$toString": "$_id"}, "count": 1}},
+        ]
+
+    pipeline = base + [{
+        "$facet": {
+            "city": group("city", 12),
+            "sector": group("sector", 40),
+            "micro_market": group("micro_market", 20),
+            "property_type": group("property_type", 15),
+            "possession_status": group("possession_status", 6),
+            "segment": group("segment", 6),
+            "builder": group("builder_name", 30),
+            "configuration": group("configuration", 15),
+        }
+    }]
+
+    payload = await db[D.PROPERTIES].aggregate(pipeline, allowDiskUse=True).to_list(length=1)
+    return jsonable(payload[0]) if payload else {}
+
+
+async def autocomplete(
+    db: AsyncIOMotorDatabase, term: str, *, limit: int = 10
+) -> list[dict[str, str]]:
+    """Typo-tolerant suggestions across projects, builders and localities."""
+    backend = await detect_backend()
+    if backend == "atlas":
+        return await _atlas_autocomplete(db, term, limit)
+    return await _regex_autocomplete(db, term, limit)
+
+
+async def _atlas_autocomplete(
+    db: AsyncIOMotorDatabase, term: str, limit: int
+) -> list[dict[str, str]]:
+    pipeline = [
+        {"$search": {
+            "index": settings.atlas_search_index,
+            "compound": {"should": [
+                {"autocomplete": {"query": term, "path": "project_name",
+                                  "fuzzy": {"maxEdits": 1},
+                                  "score": {"boost": {"value": 3}}}},
+                {"autocomplete": {"query": term, "path": "builder_name",
+                                  "fuzzy": {"maxEdits": 1},
+                                  "score": {"boost": {"value": 2}}}},
+                {"autocomplete": {"query": term, "path": "sector"}},
+            ]},
+        }},
+        {"$match": {"is_active": True}},
+        {"$limit": limit * 6},
+        {"$project": {
+            "_id": 0,
+            "project_name": 1, "builder_name": 1,
+            "locality": {"$ifNull": ["$sector", "$locality"]},
+        }},
+    ]
+    rows = await db[D.PROPERTIES].aggregate(pipeline).to_list(length=limit * 6)
+    return _dedupe_suggestions(rows, term, limit)
+
+
+async def _regex_autocomplete(
+    db: AsyncIOMotorDatabase, term: str, limit: int
+) -> list[dict[str, str]]:
+    """Prefix match. No typo tolerance — the honest limit of self-hosted."""
+    pattern = {"$regex": f"^{_escape_regex(term)}", "$options": "i"}
+    rows = await db[D.PROPERTIES].find(
+        {"is_active": True,
+         "$or": [{"project_name": pattern}, {"builder_name": pattern},
+                 {"sector": pattern}, {"locality": pattern}]},
+        projection={"_id": 0, "project_name": 1, "builder_name": 1,
+                    "locality": {"$ifNull": ["$sector", "$locality"]}},
+    ).limit(limit * 6).to_list(length=limit * 6)
+    return _dedupe_suggestions(rows, term, limit)
+
+
+def _dedupe_suggestions(
+    rows: list[dict[str, Any]], term: str, limit: int
+) -> list[dict[str, str]]:
+    lowered = term.lower()
+    out: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for kind, key in (("project", "project_name"), ("builder", "builder_name"),
+                      ("locality", "locality")):
+        for row in rows:
+            value = row.get(key)
+            if not value or not isinstance(value, str):
+                continue
+            marker = f"{kind}:{value.lower()}"
+            if marker in seen or lowered not in value.lower():
+                continue
+            seen.add(marker)
+            out.append({"value": value, "kind": kind})
+            if len(out) >= limit:
+                return out
+    return out
+
+
+# ---------------------------------------------------------------------------
+# reddit
 # ---------------------------------------------------------------------------
 
 
@@ -314,77 +504,80 @@ class RedditSearchQuery:
         return max(1, min(self.page_size, settings.api_max_page_size))
 
     @property
-    def offset(self) -> int:
+    def skip(self) -> int:
         return max(0, (self.page - 1) * self.limit)
 
 
 async def search_reddit(
-    session: AsyncSession, query: RedditSearchQuery
+    db: AsyncIOMotorDatabase, query: RedditSearchQuery
 ) -> tuple[list[dict[str, Any]], int]:
-    conditions = ["TRUE"]
-    params: dict[str, Any] = {"limit": query.limit, "offset": query.offset}
-    rank = "0.0"
-
-    if query.q:
-        params["q"] = query.q
-        conditions.append("r.search_vector @@ websearch_to_tsquery('english', :q)")
-        rank = "ts_rank_cd(r.search_vector, websearch_to_tsquery('english', :q))"
+    conditions: dict[str, Any] = {}
     if query.builder:
-        conditions.append("r.detected_builders && CAST(:builders AS text[])")
-        params["builders"] = [query.builder]
+        conditions["detected_builders"] = query.builder
     if query.project:
-        conditions.append("r.detected_projects && CAST(:projects AS text[])")
-        params["projects"] = [query.project]
+        conditions["detected_projects"] = query.project
     if query.sector:
-        conditions.append("r.detected_sectors && CAST(:sectors AS text[])")
-        params["sectors"] = [query.sector]
+        conditions["detected_sectors"] = query.sector
     if query.city:
-        conditions.append("r.detected_city = CAST(:city AS city_enum)")
-        params["city"] = query.city
+        conditions["detected_city"] = query.city
     if query.topics:
-        conditions.append("r.topics && CAST(:topics AS text[])")
-        params["topics"] = query.topics
+        conditions["topics"] = {"$in": query.topics}
     if query.sentiment:
-        conditions.append("r.sentiment = CAST(:sentiment AS sentiment_enum)")
-        params["sentiment"] = query.sentiment
+        conditions["sentiment"] = query.sentiment
     if query.min_score is not None:
-        conditions.append("r.score >= :min_score")
-        params["min_score"] = query.min_score
+        conditions["score"] = {"$gte": query.min_score}
     if query.subreddit:
-        conditions.append("r.subreddit = :subreddit")
-        params["subreddit"] = query.subreddit
+        conditions["subreddit"] = query.subreddit
 
-    where_sql = " AND ".join(conditions)
-    order = f"{rank} DESC, r.score DESC" if query.q else "r.created_utc DESC NULLS LAST"
+    backend = await detect_backend()
+    pipeline: list[dict[str, Any]] = []
 
-    rows = (
-        (
-            await session.execute(
-                text(
-                    f"""
-                    SELECT r.id, r.source_id, r.subreddit, r.permalink, r.title, r.body,
-                           r.author, r.created_utc, r.score, r.num_comments,
-                           r.sentiment, r.sentiment_score, r.detected_builders,
-                           r.detected_projects, r.detected_sectors, r.detected_city,
-                           r.topics, r.keywords, r.summary, r.relevance_score,
-                           {rank} AS rank
-                    FROM reddit_posts r
-                    WHERE {where_sql}
-                    ORDER BY {order}
-                    LIMIT :limit OFFSET :offset
-                    """
-                ),
-                params,
-            )
-        )
-        .mappings()
-        .all()
-    )
+    if query.q and backend == "atlas":
+        pipeline.append({"$search": {
+            "index": settings.atlas_reddit_index,
+            "compound": {"should": [
+                {"text": {"query": query.q, "path": "title",
+                          "score": {"boost": {"value": 5}},
+                          "fuzzy": {"maxEdits": 1, "prefixLength": 2}}},
+                {"text": {"query": query.q,
+                          "path": ["detected_builders", "detected_projects"],
+                          "score": {"boost": {"value": 4}}}},
+                {"text": {"query": query.q, "path": "body"}},
+            ], "minimumShouldMatch": 1},
+        }})
+        if conditions:
+            pipeline.append({"$match": conditions})
+    elif query.q:
+        conditions["$text"] = {"$search": query.q}
+        pipeline.append({"$match": conditions})
+        pipeline.append({"$addFields": {"score_text": {"$meta": "textScore"}}})
+        pipeline.append({"$sort": {"score_text": -1}})
+    else:
+        if conditions:
+            pipeline.append({"$match": conditions})
+        pipeline.append({"$sort": {"created_utc": -1}})
 
-    total = (
-        await session.execute(
-            text(f"SELECT COUNT(*) FROM reddit_posts r WHERE {where_sql}"), params
-        )
-    ).scalar_one()
+    pipeline.append({"$facet": {
+        "results": [
+            {"$skip": query.skip},
+            {"$limit": query.limit},
+            {"$project": {
+                "source_id": 1, "subreddit": 1, "permalink": 1, "title": 1,
+                "body": {"$substrCP": [{"$ifNull": ["$body", ""]}, 0, 2000]},
+                "author": 1, "created_utc": 1, "score": 1, "num_comments": 1,
+                "sentiment": 1, "sentiment_score": 1, "detected_builders": 1,
+                "detected_projects": 1, "detected_sectors": 1, "detected_city": 1,
+                "topics": 1, "keywords": 1, "summary": 1, "relevance_score": 1,
+                "top_comments": 1,
+            }},
+        ],
+        "total": [{"$count": "value"}],
+    }})
 
-    return [dict(row) for row in rows], int(total)
+    payload = await db[D.REDDIT_POSTS].aggregate(pipeline, allowDiskUse=True).to_list(length=1)
+    if not payload:
+        return [], 0
+    block = payload[0]
+    results = [jsonable(_with_id(row)) for row in block.get("results", [])]
+    total_block = block.get("total", [])
+    return results, int(total_block[0]["value"]) if total_block else 0

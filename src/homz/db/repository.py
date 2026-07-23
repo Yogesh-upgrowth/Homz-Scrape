@@ -1,20 +1,50 @@
-"""Persistence layer: idempotent UPSERTs keyed on natural identity.
+"""Persistence layer for MongoDB.
 
-Every write here is `INSERT ... ON CONFLICT DO UPDATE` on `(source, source_id)`,
-so re-running a scraper is safe and cheap. The `COALESCE(EXCLUDED.x, table.x)`
-pattern is deliberate: a thin re-scrape (search-card only) must never blank out
-a field that a richer detail-page scrape already filled.
+Every write is an idempotent upsert keyed on `_id` (the natural key), so
+re-running a scraper updates rather than duplicates.
+
+## The `$set` / `$setOnInsert` split
+
+Mongo has no `ON CONFLICT DO UPDATE ... COALESCE(EXCLUDED.x, table.x)`, so the
+"don't let a thin re-scrape blank a rich field" rule is expressed differently:
+
+* `$set` — fields that reflect the *current* state of the listing and should
+  always be overwritten (price, availability, scrape timestamps).
+* `$setOnInsert` — fields written once at creation (`first_seen_at`).
+* Descriptive fields that a partial scrape may legitimately lack are stripped
+  from the update when `None`, by `_without_nulls()`. A search-card scrape that
+  has no description simply doesn't mention `description`, so the value a
+  detail-page scrape already stored survives.
+
+## Price history without a trigger
+
+Postgres captured price changes in an `AFTER UPDATE` trigger, which made
+capture a database guarantee. Mongo has no triggers, so this moves into
+`upsert_property()` — but not naively:
+
+    find_one_and_update(..., upsert=True, return_document=BEFORE)
+
+returns the document *as it was before the write*, atomically, in the same
+round trip. So old price and new price are known without a separate read that
+could race another writer. The subsequent `price_history` insert is a second
+operation: if the process dies between them, one observation is lost — the
+property document itself is still correct, and the next scrape re-detects the
+delta against the stored price. That is the honest tradeoff versus a trigger.
+
+(Atlas Change Streams could make this fully transactional, at the cost of a
+separate always-on consumer process. Not worth it for a price log where a
+missed sample self-heals.)
 """
 
 from __future__ import annotations
 
-import hashlib
 from datetime import UTC, datetime
+from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import func, select, text, update
-from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.ext.asyncio import AsyncSession
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from pymongo import ASCENDING, DESCENDING, ReturnDocument, UpdateOne
+from pymongo.errors import BulkWriteError, PyMongoError
 
 from homz.common.parsing import normalize_name
 from homz.common.schema import (
@@ -27,21 +57,25 @@ from homz.common.schema import (
 from homz.common.schema import (
     Location as LocationSchema,
 )
-from homz.db import models as m
+from homz.db import documents as D
+from homz.db.codecs import as_decimal, to_bson_safe
 from homz.logging_setup import get_logger
 
 log = get_logger(__name__)
 
 
-def _jsonable(value: Any) -> Any:
-    """Pydantic sub-documents → plain JSON for JSONB columns."""
-    import orjson
-
-    return orjson.loads(orjson.dumps(value, default=str))
+def utcnow() -> datetime:
+    return datetime.now(UTC)
 
 
-def _url_hash(url: str) -> str:
-    return hashlib.sha1(url.split("?")[0].encode("utf-8")).hexdigest()
+def _without_nulls(payload: dict[str, Any]) -> dict[str, Any]:
+    """Drop keys whose value is None/empty so a partial scrape cannot erase a
+    field that a richer scrape already filled."""
+    return {k: v for k, v in payload.items() if v is not None and v != [] and v != {}}
+
+
+def _dump(model: Any, exclude: set[str] | None = None) -> dict[str, Any]:
+    return to_bson_safe(model.model_dump(exclude=exclude or set(), mode="python"))
 
 
 def infer_builder_from_project(project_name: str | None) -> str | None:
@@ -59,26 +93,31 @@ def infer_builder_from_project(project_name: str | None) -> str | None:
     return matches[0] if len(matches) == 1 else None
 
 
+def _geojson(location: LocationSchema) -> dict[str, Any] | None:
+    """GeoJSON Point for the 2dsphere index — note [lng, lat] ordering."""
+    if location.geo is None:
+        return None
+    return {"type": "Point", "coordinates": [location.geo.longitude, location.geo.latitude]}
+
+
 class Repository:
-    def __init__(self, session: AsyncSession) -> None:
-        self.session = session
-        self._location_cache: dict[str, int] = {}
-        self._builder_cache: dict[str, int] = {}
+    def __init__(self, db: AsyncIOMotorDatabase) -> None:
+        self.db = db
+        self._location_cache: dict[str, str] = {}
+        self._builder_cache: dict[str, str] = {}
 
     # ------------------------------------------------------------------ locations
 
-    async def upsert_location(self, location: LocationSchema) -> int | None:
+    async def upsert_location(self, location: LocationSchema) -> str | None:
         if location.city.value == "unknown" and not (location.locality or location.sector):
             return None
 
         slug = location.slug()
         if slug in self._location_cache:
-            return self._location_cache[slug]
+            return slug
 
-        values = {
-            "slug": slug,
-            "city": location.city.value,
-            "state": location.state,
+        now = utcnow()
+        payload = _without_nulls({
             "locality": location.locality,
             "sector": location.sector,
             "sub_locality": location.sub_locality,
@@ -86,81 +125,76 @@ class Repository:
             "pincode": location.pincode,
             "latitude": location.geo.latitude if location.geo else None,
             "longitude": location.geo.longitude if location.geo else None,
-        }
-        stmt = (
-            insert(m.Location)
-            .values(**values)
-            .on_conflict_do_update(
-                index_elements=[m.Location.slug],
-                set_={
-                    # Keep the first non-null we ever saw for coordinates —
-                    # a card-level scrape often has none.
-                    "locality": func.coalesce(text("EXCLUDED.locality"), m.Location.locality),
-                    "sector": func.coalesce(text("EXCLUDED.sector"), m.Location.sector),
-                    "micro_market": func.coalesce(
-                        text("EXCLUDED.micro_market"), m.Location.micro_market
-                    ),
-                    "pincode": func.coalesce(text("EXCLUDED.pincode"), m.Location.pincode),
-                    "latitude": func.coalesce(text("EXCLUDED.latitude"), m.Location.latitude),
-                    "longitude": func.coalesce(text("EXCLUDED.longitude"), m.Location.longitude),
-                    "updated_at": func.now(),
+            "geo": _geojson(location),
+        })
+        await self.db[D.LOCATIONS].update_one(
+            {"_id": slug},
+            {
+                "$set": {**payload, "updated_at": now},
+                "$setOnInsert": {
+                    "city": location.city.value,
+                    "state": location.state,
+                    "created_at": now,
+                    "listing_count": 0,
                 },
-            )
-            .returning(m.Location.id)
+            },
+            upsert=True,
         )
-        location_id = (await self.session.execute(stmt)).scalar_one()
-        self._location_cache[slug] = location_id
-        return location_id
+        self._location_cache[slug] = slug
+        return slug
 
     # ------------------------------------------------------------------ builders
 
-    async def resolve_builder(self, name: str | None, source: str) -> int | None:
-        """Find-or-create a builder from just a name (as seen on a listing)."""
+    async def resolve_builder(self, name: str | None, source: str) -> str | None:
+        """Find-or-create a builder from just a name seen on a listing.
+
+        `_id` is the normalized name, so "M3M India Pvt. Ltd." from MagicBricks
+        and "M3M" from Housing converge on one document without a merge step.
+        """
         normalized = normalize_name(name)
         if not normalized:
             return None
         if normalized in self._builder_cache:
-            return self._builder_cache[normalized]
+            return normalized
 
-        existing = (
-            await self.session.execute(
-                select(m.Builder.id)
-                .where(m.Builder.normalized_name == normalized)
-                .order_by(m.Builder.total_projects.desc().nullslast())
-                .limit(1)
-            )
-        ).scalar_one_or_none()
-        if existing:
-            self._builder_cache[normalized] = existing
-            return existing
-
-        stmt = (
-            insert(m.Builder)
-            .values(
-                source=source,
-                source_id=f"derived:{normalized}",
-                name=name.strip(),
-                normalized_name=normalized,
-            )
-            .on_conflict_do_update(
-                index_elements=[m.Builder.source, m.Builder.source_id],
-                set_={"updated_at": func.now()},
-            )
-            .returning(m.Builder.id)
+        now = utcnow()
+        await self.db[D.BUILDERS].update_one(
+            {"_id": normalized},
+            {
+                "$set": {"updated_at": now},
+                "$setOnInsert": {
+                    "name": name.strip(),
+                    "normalized_name": normalized,
+                    "created_at": now,
+                    "scraped_at": now,
+                },
+                # `sources` is deliberately NOT in $setOnInsert: two operators
+                # touching the same path is a write conflict in Mongo, and
+                # $addToSet already creates the array when it is missing.
+                "$addToSet": {"sources": source},
+            },
+            upsert=True,
         )
-        builder_id = (await self.session.execute(stmt)).scalar_one()
-        self._builder_cache[normalized] = builder_id
-        return builder_id
+        self._builder_cache[normalized] = normalized
+        return normalized
 
-    async def upsert_builder(self, record: BuilderRecord) -> int:
+    async def upsert_builder(self, record: BuilderRecord) -> str:
         normalized = normalize_name(record.name) or record.name.lower()
         contact = record.contact
-        values = {
-            "source": record.source.value,
-            "source_id": record.source_id,
-            "profile_url": record.profile_url,
+        now = utcnow()
+
+        always = {
             "name": record.name,
             "normalized_name": normalized,
+            "reviews": to_bson_safe(record.reviews),
+            "cities": record.cities,
+            "raw": to_bson_safe(record.raw),
+            "raw_html_key": record.raw_html_key,
+            "scraped_at": record.scraped_at,
+            "updated_at": now,
+        }
+        preserve = _without_nulls({
+            "profile_url": record.profile_url,
             "description": record.description,
             "established_year": record.established_year,
             "headquarters": record.headquarters,
@@ -172,64 +206,58 @@ class Repository:
             "rating": record.rating,
             "rating_count": record.rating_count,
             "review_count": record.review_count,
-            "reviews": _jsonable(record.reviews),
-            "cities": record.cities,
             "contact_name": contact.name if contact else None,
             "contact_phone": contact.phone if contact else None,
             "contact_email": contact.email if contact else None,
-            "raw_html_key": record.raw_html_key,
-            "raw": _jsonable(record.raw),
-            "scraped_at": record.scraped_at,
-        }
-        preserve = (
-            "profile_url", "description", "established_year", "headquarters", "website",
-            "total_projects", "ongoing_projects", "completed_projects", "upcoming_projects",
-            "rating", "rating_count", "review_count", "contact_name", "contact_phone",
-            "contact_email",
-        )
-        set_ = {col: func.coalesce(text(f"EXCLUDED.{col}"), getattr(m.Builder, col))
-                for col in preserve}
-        set_.update(
+        })
+
+        await self.db[D.BUILDERS].update_one(
+            {"_id": normalized},
             {
-                "name": text("EXCLUDED.name"),
-                "normalized_name": text("EXCLUDED.normalized_name"),
-                "reviews": text("EXCLUDED.reviews"),
-                "cities": text("EXCLUDED.cities"),
-                "raw_html_key": text("EXCLUDED.raw_html_key"),
-                "raw": text("EXCLUDED.raw"),
-                "scraped_at": text("EXCLUDED.scraped_at"),
-                "updated_at": func.now(),
-            }
+                "$set": {**always, **preserve},
+                "$setOnInsert": {"created_at": now},
+                "$addToSet": {"sources": record.source.value},
+            },
+            upsert=True,
         )
-        stmt = (
-            insert(m.Builder)
-            .values(**values)
-            .on_conflict_do_update(
-                index_elements=[m.Builder.source, m.Builder.source_id], set_=set_
-            )
-            .returning(m.Builder.id)
-        )
-        builder_id = (await self.session.execute(stmt)).scalar_one()
-        self._builder_cache[normalized] = builder_id
-        return builder_id
+        self._builder_cache[normalized] = normalized
+        return normalized
 
     # ------------------------------------------------------------------ projects
 
-    async def upsert_project(self, record: ProjectRecord) -> int:
+    async def upsert_project(self, record: ProjectRecord) -> str:
+        key = D.natural_key(record.source.value, record.source_id)
         location_id = await self.upsert_location(record.location)
         builder_name = record.builder_name or infer_builder_from_project(record.name)
         builder_id = await self.resolve_builder(builder_name, record.source.value)
+        now = utcnow()
 
-        values = {
+        always = {
             "source": record.source.value,
             "source_id": record.source_id,
             "project_url": record.project_url,
             "name": record.name,
             "normalized_name": normalize_name(record.name) or record.name.lower(),
+            "status": record.status.value,
+            "configurations": to_bson_safe([c.model_dump() for c in record.configurations]),
+            "amenities": record.amenities,
+            "specifications": to_bson_safe(record.specifications),
+            "landmarks": to_bson_safe([lm.model_dump() for lm in record.landmarks]),
+            "construction_updates": record.construction_updates,
+            "images": to_bson_safe([i.model_dump() for i in record.images]),
+            "location": to_bson_safe(record.location.model_dump()),
+            "city": record.location.city.value,
+            "sector": record.location.sector,
+            "micro_market": record.location.micro_market,
+            "raw": to_bson_safe(record.raw),
+            "raw_html_key": record.raw_html_key,
+            "scraped_at": record.scraped_at,
+            "updated_at": now,
+        }
+        preserve = _without_nulls({
             "builder_id": builder_id,
             "builder_name": builder_name,
             "location_id": location_id,
-            "status": record.status.value,
             "launch_date": record.launch_date,
             "possession_date": record.possession_date,
             "rera_number": record.rera_number,
@@ -239,65 +267,33 @@ class Repository:
             "total_units": record.total_units,
             "total_towers": record.total_towers,
             "project_area_acres": record.project_area_acres,
-            "configurations": _jsonable([c.model_dump() for c in record.configurations]),
-            "amenities": record.amenities,
-            "specifications": _jsonable(record.specifications),
-            "landmarks": _jsonable([lm.model_dump() for lm in record.landmarks]),
-            "construction_updates": _jsonable(record.construction_updates),
             "description": record.description,
-            "raw_html_key": record.raw_html_key,
-            "raw": _jsonable(record.raw),
-            "scraped_at": record.scraped_at,
-        }
-        preserve = (
-            "builder_id", "builder_name", "location_id", "launch_date", "possession_date",
-            "rera_number", "price_min", "price_max", "price_per_sqft", "total_units",
-            "total_towers", "project_area_acres", "description",
+        })
+
+        await self.db[D.PROJECTS].update_one(
+            {"_id": key},
+            {"$set": {**always, **preserve}, "$setOnInsert": {"created_at": now}},
+            upsert=True,
         )
-        set_ = {col: func.coalesce(text(f"EXCLUDED.{col}"), getattr(m.Project, col))
-                for col in preserve}
-        set_.update(
-            {
-                "name": text("EXCLUDED.name"),
-                "normalized_name": text("EXCLUDED.normalized_name"),
-                "project_url": text("EXCLUDED.project_url"),
-                "status": text("EXCLUDED.status"),
-                "configurations": text("EXCLUDED.configurations"),
-                "amenities": text("EXCLUDED.amenities"),
-                "specifications": text("EXCLUDED.specifications"),
-                "landmarks": text("EXCLUDED.landmarks"),
-                "construction_updates": text("EXCLUDED.construction_updates"),
-                "raw_html_key": text("EXCLUDED.raw_html_key"),
-                "raw": text("EXCLUDED.raw"),
-                "scraped_at": text("EXCLUDED.scraped_at"),
-                "updated_at": func.now(),
-            }
-        )
-        stmt = (
-            insert(m.Project)
-            .values(**values)
-            .on_conflict_do_update(
-                index_elements=[m.Project.source, m.Project.source_id], set_=set_
-            )
-            .returning(m.Project.id)
-        )
-        project_id = (await self.session.execute(stmt)).scalar_one()
-        await self._upsert_images(record.images, project_id=project_id)
-        return project_id
+        return key
 
     # ------------------------------------------------------------------ properties
 
-    async def upsert_property(self, record: PropertyRecord) -> tuple[int, bool]:
-        """Returns (property_id, is_new)."""
+    async def upsert_property(self, record: PropertyRecord) -> tuple[str, bool]:
+        """Upsert one listing. Returns (id, is_new).
+
+        Captures a price-history observation as a side effect — see the module
+        docstring for why this lives here rather than in a trigger.
+        """
         if record.content_hash is None:
             record.finalize()
 
+        key = D.natural_key(record.source.value, record.source_id)
         location_id = await self.upsert_location(record.location)
 
-        # Most listings name the project but not the developer. "Godrej
-        # Aristocrat" implies Godrej Properties, and without this inference the
-        # builders table stays near-empty and every builder-trust feature has
-        # nothing to score.
+        # Most listings name the project but not the developer. Without this
+        # inference the builders collection stays near-empty and every
+        # builder-trust feature has nothing to score.
         builder_name = record.builder_name or record.developer_name
         if not builder_name:
             builder_name = infer_builder_from_project(
@@ -305,16 +301,52 @@ class Repository:
             )
             if builder_name:
                 record.builder_name = builder_name
-
         builder_id = await self.resolve_builder(builder_name, record.source.value)
-        project_id = await self._resolve_project(record, builder_id)
-        contact = record.contact
-        geo = record.location.geo
+        project_id = await self._resolve_project(record)
 
-        values = {
+        contact = record.contact
+        now = utcnow()
+
+        # Current state of the listing — always overwritten.
+        always: dict[str, Any] = {
             "source": record.source.value,
             "source_id": record.source_id,
             "listing_url": record.listing_url,
+            "listing_type": record.listing_type.value,
+            "property_type": record.property_type.value,
+            "segment": record.segment.value,
+            "is_commercial": record.is_commercial,
+            "is_luxury": record.is_luxury,
+            "is_affordable": record.is_affordable,
+            "price": record.price,
+            "price_per_sqft": record.price_per_sqft,
+            "rent_monthly": record.rent_monthly,
+            "is_price_on_request": record.is_price_on_request,
+            "city": record.location.city.value,
+            "possession_status": record.possession_status.value,
+            "amenities": record.amenities,
+            "specifications": to_bson_safe(record.specifications),
+            "unit_configurations": to_bson_safe(
+                [c.model_dump() for c in record.unit_configurations]
+            ),
+            "landmarks": to_bson_safe([lm.model_dump() for lm in record.landmarks]),
+            "images": to_bson_safe([i.model_dump() for i in record.images]),
+            "location": to_bson_safe(record.location.model_dump()),
+            "contact_seller_type": contact.seller_type.value if contact else "unknown",
+            "content_hash": record.content_hash,
+            "dedupe_key": record.dedupe_key,
+            "raw": to_bson_safe(record.raw),
+            "raw_html_key": record.raw_html_key,
+            "scraped_at": record.scraped_at,
+            "last_seen_at": record.scraped_at,
+            "is_active": True,
+            "delisted_at": None,
+            "updated_at": now,
+        }
+
+        # Descriptive fields — omitted entirely when absent, so a thin scrape
+        # never blanks what a detail-page scrape already wrote.
+        preserve = _without_nulls({
             "title": record.title,
             "description": record.description,
             "project_id": project_id,
@@ -323,13 +355,7 @@ class Repository:
             "builder_name": record.builder_name,
             "developer_name": record.developer_name,
             "society_name": record.society_name,
-            "listing_type": record.listing_type.value,
-            "property_type": record.property_type.value,
             "property_type_raw": record.property_type_raw,
-            "segment": record.segment.value,
-            "is_commercial": record.is_commercial,
-            "is_luxury": record.is_luxury,
-            "is_affordable": record.is_affordable,
             "configuration": record.configuration,
             "bedrooms": record.bedrooms,
             "bathrooms": record.bathrooms,
@@ -339,15 +365,11 @@ class Repository:
             "facing": record.facing,
             "furnishing": record.furnishing,
             "age_years": record.age_years,
-            "price": record.price,
             "price_max": record.price_max,
             "price_display": record.price_display,
-            "price_per_sqft": record.price_per_sqft,
             "booking_amount": record.booking_amount,
             "maintenance_charge": record.maintenance_charge,
-            "rent_monthly": record.rent_monthly,
             "security_deposit": record.security_deposit,
-            "is_price_on_request": record.is_price_on_request,
             "area_value": record.area_value,
             "area_unit": record.area_unit.value if record.area_unit else None,
             "area_sqft": record.area_sqft,
@@ -357,13 +379,12 @@ class Repository:
             "plot_area_sqft": record.plot_area_sqft,
             "location_id": location_id,
             "location_raw": record.location.raw,
-            "city": record.location.city.value,
             "sector": record.location.sector,
             "locality": record.location.locality,
             "micro_market": record.location.micro_market,
-            "latitude": geo.latitude if geo else None,
-            "longitude": geo.longitude if geo else None,
-            "possession_status": record.possession_status.value,
+            "latitude": record.location.geo.latitude if record.location.geo else None,
+            "longitude": record.location.geo.longitude if record.location.geo else None,
+            "geo": _geojson(record.location),
             "possession_date": record.possession_date,
             "possession_raw": record.possession_raw,
             "rera_number": record.rera_number,
@@ -371,420 +392,625 @@ class Repository:
             "total_units": record.total_units,
             "project_area_acres": record.project_area_acres,
             "launch_date": record.launch_date,
-            "amenities": record.amenities,
-            "specifications": _jsonable(record.specifications),
-            "unit_configurations": _jsonable(
-                [c.model_dump() for c in record.unit_configurations]
-            ),
-            "landmarks": _jsonable([lm.model_dump() for lm in record.landmarks]),
             "contact_name": contact.name if contact else None,
-            "contact_seller_type": contact.seller_type.value if contact else "unknown",
             "contact_company": contact.company if contact else None,
             "contact_phone": contact.phone if contact else None,
             "contact_email": contact.email if contact else None,
             "listed_at": record.listed_at,
             "listing_date_raw": record.listing_date_raw,
             "updated_at_source": record.updated_at_source,
-            "scraped_at": record.scraped_at,
-            "last_seen_at": record.scraped_at,
-            "is_active": True,
-            "delisted_at": None,
-            "content_hash": record.content_hash,
-            "dedupe_key": record.dedupe_key,
-            "raw_html_key": record.raw_html_key,
-            "raw": _jsonable(record.raw),
-        }
+        })
 
-        # Fields a partial re-scrape must not erase.
-        preserve = (
-            "title", "description", "project_id", "project_name", "builder_id", "builder_name",
-            "developer_name", "society_name", "configuration", "bedrooms", "bathrooms",
-            "balconies", "floor_number", "total_floors", "facing", "furnishing", "age_years",
-            "price_max", "price_display", "booking_amount", "maintenance_charge",
-            "security_deposit", "area_value", "area_unit", "area_sqft", "carpet_area_sqft",
-            "built_up_area_sqft", "super_built_up_area_sqft", "plot_area_sqft", "location_id",
-            "location_raw", "sector", "locality", "micro_market", "latitude", "longitude",
-            "possession_date", "possession_raw", "rera_number", "rera_status", "total_units",
-            "project_area_acres", "launch_date", "contact_name", "contact_company",
-            "contact_phone", "contact_email", "listed_at", "listing_date_raw",
-            "updated_at_source", "property_type_raw",
+        # Atomic: returns the pre-write document, so old and new price are known
+        # from one round trip with no read-modify-write race.
+        before = await self.db[D.PROPERTIES].find_one_and_update(
+            {"_id": key},
+            {
+                "$set": {**always, **preserve},
+                "$setOnInsert": {
+                    "_id": key,
+                    "first_seen_at": record.scraped_at,
+                    "created_at": now,
+                    "canonical_id": None,
+                    "duplicate_count": 0,
+                    "tags": [],
+                    "keywords": [],
+                    "enriched_at": None,
+                    "enrichment_version": 0,
+                },
+            },
+            upsert=True,
+            return_document=ReturnDocument.BEFORE,
+            projection={"price": 1, "rent_monthly": 1, "price_per_sqft": 1},
         )
-        set_ = {col: func.coalesce(text(f"EXCLUDED.{col}"), getattr(m.Property, col))
-                for col in preserve}
-        # Always-overwrite fields: current state of the listing.
-        for col in (
-            "listing_url", "listing_type", "property_type", "segment", "is_commercial",
-            "is_luxury", "is_affordable", "price", "price_per_sqft", "rent_monthly",
-            "is_price_on_request", "city", "possession_status", "amenities", "specifications",
-            "unit_configurations", "landmarks", "contact_seller_type", "scraped_at",
-            "last_seen_at", "is_active", "delisted_at", "content_hash", "dedupe_key",
-            "raw_html_key", "raw",
-        ):
-            set_[col] = text(f"EXCLUDED.{col}")
-        set_["updated_at"] = func.now()
 
-        stmt = (
-            insert(m.Property)
-            .values(**values)
-            .on_conflict_do_update(
-                index_elements=[m.Property.source, m.Property.source_id], set_=set_
+        is_new = before is None
+        await self._record_price_observation(key, record, before)
+        return key, is_new
+
+    async def _record_price_observation(
+        self, property_id: str, record: PropertyRecord, before: dict[str, Any] | None
+    ) -> None:
+        """Append to the price-history time series when the price moved.
+
+        Mirrors the two Postgres triggers: seed an observation on insert, and
+        record a delta whenever price or rent changes.
+        """
+        new_price = record.price or record.rent_monthly
+        if new_price is None:
+            return
+
+        old_price = None
+        if before is not None:
+            old_price = as_decimal(before.get("price")) or as_decimal(before.get("rent_monthly"))
+            if old_price == new_price:
+                return  # unchanged — nothing to record
+
+        change_amount = None
+        change_pct = None
+        if old_price is not None and old_price != 0:
+            change_amount = new_price - old_price
+            change_pct = float(
+                (change_amount / old_price * Decimal(100)).quantize(Decimal("0.001"))
             )
-            .returning(m.Property.id, text("(xmax = 0) AS inserted"))
-        )
-        row = (await self.session.execute(stmt)).one()
-        property_id, is_new = int(row[0]), bool(row[1])
 
-        await self._upsert_images(record.images, property_id=property_id)
-        return property_id, is_new
+        try:
+            await self.db[D.PRICE_HISTORY].insert_one({
+                # metaField: fields that identify the series rather than the
+                # measurement. Time series collections index and bucket on this.
+                "meta": {
+                    "property_id": property_id,
+                    "source": record.source.value,
+                    "city": record.location.city.value,
+                    "sector": record.location.sector,
+                    "listing_type": record.listing_type.value,
+                },
+                "observed_at": utcnow(),
+                "price": record.price,
+                "price_per_sqft": record.price_per_sqft,
+                "rent_monthly": record.rent_monthly,
+                "previous_price": old_price,
+                "change_amount": change_amount,
+                "change_pct": change_pct,
+            })
+        except PyMongoError as exc:
+            # A lost observation must not fail the ingest — the property row is
+            # already correct and the next scrape re-detects the delta.
+            log.warning("repo.price_history_failed", property_id=property_id,
+                        error=str(exc)[:200])
 
-    async def _resolve_project(
-        self, record: PropertyRecord, builder_id: int | None
-    ) -> int | None:
-        """Link a listing to a project row when we can match one confidently."""
+    async def _resolve_project(self, record: PropertyRecord) -> str | None:
         normalized = normalize_name(record.project_name)
         if not normalized:
             return None
-        stmt = select(m.Project.id).where(m.Project.normalized_name == normalized)
+        query: dict[str, Any] = {"normalized_name": normalized}
         if record.location.city.value != "unknown":
-            stmt = stmt.join(
-                m.Location, m.Project.location_id == m.Location.id, isouter=True
-            ).where(
-                (m.Location.city == record.location.city.value) | (m.Project.location_id.is_(None))
-            )
-        return (await self.session.execute(stmt.limit(1))).scalar_one_or_none()
-
-    async def _upsert_images(
-        self, images: list, *, property_id: int | None = None, project_id: int | None = None
-    ) -> int:
-        if not images:
-            return 0
-        rows = []
-        seen: set[str] = set()
-        for position, image in enumerate(images[:60]):
-            digest = _url_hash(image.url)
-            if digest in seen:
-                continue
-            seen.add(digest)
-            rows.append(
-                {
-                    "property_id": property_id,
-                    "project_id": project_id,
-                    "url": image.url,
-                    "url_hash": digest,
-                    "caption": image.caption,
-                    "is_primary": image.is_primary or position == 0,
-                    "width": image.width,
-                    "height": image.height,
-                    "position": position,
-                }
-            )
-        if not rows:
-            return 0
-
-        index_elements = (
-            [m.PropertyImage.property_id, m.PropertyImage.url_hash]
-            if property_id is not None
-            else [m.PropertyImage.project_id, m.PropertyImage.url_hash]
-        )
-        index_where = (
-            m.PropertyImage.property_id.isnot(None)
-            if property_id is not None
-            else m.PropertyImage.project_id.isnot(None)
-        )
-        stmt = (
-            insert(m.PropertyImage)
-            .values(rows)
-            .on_conflict_do_update(
-                index_elements=index_elements,
-                index_where=index_where,
-                set_={
-                    "caption": text("EXCLUDED.caption"),
-                    "is_primary": text("EXCLUDED.is_primary"),
-                    "position": text("EXCLUDED.position"),
-                },
-            )
-        )
-        await self.session.execute(stmt)
-        return len(rows)
+            query["$or"] = [
+                {"city": record.location.city.value},
+                {"city": {"$exists": False}},
+            ]
+        found = await self.db[D.PROJECTS].find_one(query, projection={"_id": 1})
+        return found["_id"] if found else None
 
     # ------------------------------------------------------------------ reddit
 
-    async def upsert_reddit_post(self, record: RedditPostRecord) -> int:
-        values = {
+    async def upsert_reddit_post(self, record: RedditPostRecord) -> str:
+        now = utcnow()
+        always = {
             "source_id": record.source_id,
             "subreddit": record.subreddit,
             "url": record.url,
             "permalink": record.permalink,
             "title": record.title,
-            "body": record.body,
             "author": record.author,
             "created_utc": record.created_utc,
+            # Score and comment count move constantly — always take the newest.
             "score": record.score,
             "upvote_ratio": record.upvote_ratio,
             "num_comments": record.num_comments,
-            "flair": record.flair,
             "is_self": record.is_self,
             "over_18": record.over_18,
             "detected_builders": record.detected_builders,
             "detected_projects": record.detected_projects,
             "detected_sectors": record.detected_sectors,
-            "detected_city": (record.detected_city.value if record.detected_city else "unknown"),
+            "detected_city": (
+                record.detected_city.value if record.detected_city else "unknown"
+            ),
             "topics": record.topics,
             "keywords": record.keywords,
             "relevance_score": record.relevance_score,
+            "raw": to_bson_safe(record.raw),
+            "scraped_at": record.scraped_at,
+            "updated_at": now,
+            # A denormalized slice so rendering a post needs no second query.
+            "top_comments": to_bson_safe([
+                {"comment_id": c.comment_id, "author": c.author,
+                 "body": (c.body or "")[:1000], "score": c.score}
+                for c in sorted(record.comments, key=lambda c: c.score, reverse=True)[:5]
+            ]),
+        }
+        # Enrichment output is preserved unless the new value is set, so a
+        # plain re-scrape does not wipe an LLM pass.
+        preserve = _without_nulls({
+            "body": record.body,
+            "flair": record.flair,
             "sentiment": record.sentiment.value if record.sentiment else None,
             "sentiment_score": record.sentiment_score,
             "summary": record.summary,
-            "raw": _jsonable(record.raw),
-            "scraped_at": record.scraped_at,
-        }
-        set_ = {
-            # Score and comment count move constantly — always take the newest.
-            "score": text("EXCLUDED.score"),
-            "upvote_ratio": text("EXCLUDED.upvote_ratio"),
-            "num_comments": text("EXCLUDED.num_comments"),
-            "body": func.coalesce(text("EXCLUDED.body"), m.RedditPost.body),
-            "flair": func.coalesce(text("EXCLUDED.flair"), m.RedditPost.flair),
-            "detected_builders": text("EXCLUDED.detected_builders"),
-            "detected_projects": text("EXCLUDED.detected_projects"),
-            "detected_sectors": text("EXCLUDED.detected_sectors"),
-            "detected_city": text("EXCLUDED.detected_city"),
-            "topics": text("EXCLUDED.topics"),
-            "keywords": text("EXCLUDED.keywords"),
-            "relevance_score": text("EXCLUDED.relevance_score"),
-            # Enrichment output is only overwritten when the new value is set,
-            # so a plain re-scrape doesn't wipe an LLM pass.
-            "sentiment": func.coalesce(text("EXCLUDED.sentiment"), m.RedditPost.sentiment),
-            "sentiment_score": func.coalesce(
-                text("EXCLUDED.sentiment_score"), m.RedditPost.sentiment_score
-            ),
-            "summary": func.coalesce(text("EXCLUDED.summary"), m.RedditPost.summary),
-            "raw": text("EXCLUDED.raw"),
-            "scraped_at": text("EXCLUDED.scraped_at"),
-            "updated_at": func.now(),
-        }
-        stmt = (
-            insert(m.RedditPost)
-            .values(**values)
-            .on_conflict_do_update(index_elements=[m.RedditPost.source_id], set_=set_)
-            .returning(m.RedditPost.id)
+        })
+
+        await self.db[D.REDDIT_POSTS].update_one(
+            {"_id": record.source_id},
+            {"$set": {**always, **preserve}, "$setOnInsert": {"created_at": now,
+                                                              "enriched_at": None}},
+            upsert=True,
         )
-        post_id = (await self.session.execute(stmt)).scalar_one()
 
         if record.comments:
-            await self._upsert_reddit_comments(post_id, record)
-        return post_id
+            await self._upsert_reddit_comments(record)
+        return record.source_id
 
-    async def _upsert_reddit_comments(self, post_id: int, record: RedditPostRecord) -> int:
-        rows = [
-            {
-                "comment_id": c.comment_id,
-                "post_id": post_id,
+    async def _upsert_reddit_comments(self, record: RedditPostRecord) -> int:
+        operations = []
+        for comment in record.comments:
+            payload = {
+                "comment_id": comment.comment_id,
+                "post_id": record.source_id,
                 "post_source_id": record.source_id,
-                "parent_id": c.parent_id,
-                "author": c.author,
-                "body": c.body,
-                "score": c.score,
-                "depth": c.depth,
-                "is_submitter": c.is_submitter,
-                "created_utc": c.created_utc,
-                "permalink": c.permalink,
-                "sentiment": c.sentiment.value if c.sentiment else None,
-                "sentiment_score": c.sentiment_score,
-                "detected_builders": c.detected_builders,
-                "detected_projects": c.detected_projects,
-                "detected_sectors": c.detected_sectors,
-                "topics": c.topics,
-                "keywords": c.keywords,
+                "parent_id": comment.parent_id,
+                "author": comment.author,
+                "score": comment.score,
+                "depth": comment.depth,
+                "is_submitter": comment.is_submitter,
+                "created_utc": comment.created_utc,
+                "permalink": comment.permalink,
+                "detected_builders": comment.detected_builders,
+                "detected_projects": comment.detected_projects,
+                "detected_sectors": comment.detected_sectors,
+                "topics": comment.topics,
+                "keywords": comment.keywords,
             }
-            for c in record.comments
-        ]
-        if not rows:
-            return 0
-        stmt = (
-            insert(m.RedditCommentRow)
-            .values(rows)
-            .on_conflict_do_update(
-                index_elements=[m.RedditCommentRow.comment_id],
-                set_={
-                    "score": text("EXCLUDED.score"),
-                    "body": func.coalesce(text("EXCLUDED.body"), m.RedditCommentRow.body),
-                    "sentiment": func.coalesce(
-                        text("EXCLUDED.sentiment"), m.RedditCommentRow.sentiment
-                    ),
-                    "sentiment_score": func.coalesce(
-                        text("EXCLUDED.sentiment_score"), m.RedditCommentRow.sentiment_score
-                    ),
-                    "detected_builders": text("EXCLUDED.detected_builders"),
-                    "detected_projects": text("EXCLUDED.detected_projects"),
-                    "detected_sectors": text("EXCLUDED.detected_sectors"),
-                    "topics": text("EXCLUDED.topics"),
-                    "keywords": text("EXCLUDED.keywords"),
-                },
+            preserve = _without_nulls({
+                "body": comment.body,
+                "sentiment": comment.sentiment.value if comment.sentiment else None,
+                "sentiment_score": comment.sentiment_score,
+            })
+            operations.append(
+                UpdateOne(
+                    {"_id": comment.comment_id},
+                    {"$set": {**payload, **preserve},
+                     "$setOnInsert": {"created_at": utcnow()}},
+                    upsert=True,
+                )
             )
-        )
-        await self.session.execute(stmt)
-        return len(rows)
+        if not operations:
+            return 0
+        try:
+            result = await self.db[D.REDDIT_COMMENTS].bulk_write(operations, ordered=False)
+            return (result.upserted_count or 0) + (result.modified_count or 0)
+        except BulkWriteError as exc:
+            log.warning("repo.comment_bulk_partial", errors=len(exc.details.get("writeErrors", [])))
+            return 0
 
     # ------------------------------------------------------------------ insights
 
-    async def upsert_market_insight(self, record: MarketInsightRecord) -> int:
-        values = {
-            "source": record.source.value,
-            "source_id": record.source_id,
-            "metric": record.metric,
-            "city": record.city.value,
-            "locality": record.locality,
-            "sector": record.sector,
-            "property_type": record.property_type.value if record.property_type else None,
-            "period_start": record.period_start,
-            "period_end": record.period_end,
-            "value": record.value,
-            "unit": record.unit,
-            "change_pct": record.change_pct,
-            "sample_size": record.sample_size,
-            "source_url": record.source_url,
-            "notes": record.notes,
-            "raw": _jsonable(record.raw),
-            "scraped_at": record.scraped_at,
-        }
-        stmt = (
-            insert(m.MarketInsight)
-            .values(**values)
-            .on_conflict_do_update(
-                index_elements=[m.MarketInsight.source, m.MarketInsight.source_id],
-                set_={
-                    "value": text("EXCLUDED.value"),
-                    "change_pct": text("EXCLUDED.change_pct"),
-                    "sample_size": text("EXCLUDED.sample_size"),
-                    "scraped_at": text("EXCLUDED.scraped_at"),
+    async def upsert_market_insight(self, record: MarketInsightRecord) -> str:
+        key = D.natural_key(record.source.value, record.source_id)
+        await self.db[D.MARKET_INSIGHTS].update_one(
+            {"_id": key},
+            {
+                "$set": {
+                    "metric": record.metric,
+                    "city": record.city.value,
+                    "locality": record.locality,
+                    "sector": record.sector,
+                    "property_type": (
+                        record.property_type.value if record.property_type else None
+                    ),
+                    "period_start": record.period_start,
+                    "period_end": record.period_end,
+                    "value": record.value,
+                    "unit": record.unit,
+                    "change_pct": record.change_pct,
+                    "sample_size": record.sample_size,
+                    "source_url": record.source_url,
+                    "notes": record.notes,
+                    "scraped_at": record.scraped_at,
                 },
-            )
-            .returning(m.MarketInsight.id)
+                "$setOnInsert": {"source": record.source.value, "created_at": utcnow()},
+            },
+            upsert=True,
         )
-        return (await self.session.execute(stmt)).scalar_one()
+        return key
 
     # ------------------------------------------------------------------ ops
 
-    async def record_run(self, report: dict[str, Any], *, inserted: int = 0, updated: int = 0):
-        stmt = insert(m.ScrapeRun).values(
-            source=report["source"],
-            job=report["job"],
-            status=report["status"],
-            started_at=report["started_at"],
-            finished_at=report["finished_at"],
-            duration_s=report["duration_s"],
-            discovered=report["discovered"],
-            fetched=report["fetched"],
-            parsed=report["parsed"],
-            inserted=inserted,
-            updated=updated,
-            skipped_known=report["skipped_known"],
-            skipped_robots=report["skipped_robots"],
-            errors=report["errors"],
-            blocked=report["blocked"],
-            details=_jsonable(
-                {
-                    "error_samples": report.get("error_samples", []),
-                    "fetcher_stats": report.get("fetcher_stats", {}),
-                }
-            ),
-        )
-        await self.session.execute(stmt)
+    async def record_run(
+        self, report: dict[str, Any], *, inserted: int = 0, updated: int = 0
+    ) -> None:
+        await self.db[D.SCRAPE_RUNS].insert_one({
+            "source": report["source"],
+            "job": report["job"],
+            "status": report["status"],
+            "started_at": _as_datetime(report["started_at"]),
+            "finished_at": _as_datetime(report["finished_at"]),
+            "duration_s": report["duration_s"],
+            "discovered": report["discovered"],
+            "fetched": report["fetched"],
+            "parsed": report["parsed"],
+            "inserted": inserted,
+            "updated": updated,
+            "skipped_known": report["skipped_known"],
+            "skipped_robots": report["skipped_robots"],
+            "errors": report["errors"],
+            "blocked": report["blocked"],
+            "details": {
+                "error_samples": report.get("error_samples", []),
+                "fetcher_stats": report.get("fetcher_stats", {}),
+            },
+        })
 
     async def mark_stale_inactive(self, source: str, *, older_than_days: int = 21) -> int:
-        """A listing we have not seen in N days is treated as delisted.
+        """A listing we have not seen in N days is treated as delisted."""
+        from datetime import timedelta
 
-        This is what makes `mv_supply_demand.avg_days_on_market` meaningful.
-        """
-        stmt = (
-            update(m.Property)
-            .where(
-                m.Property.source == source,
-                m.Property.is_active.is_(True),
-                m.Property.last_seen_at
-                < func.now() - text(f"INTERVAL '{int(older_than_days)} days'"),
-            )
-            .values(is_active=False, delisted_at=func.now())
+        cutoff = utcnow() - timedelta(days=older_than_days)
+        result = await self.db[D.PROPERTIES].update_many(
+            {"source": source, "is_active": True, "last_seen_at": {"$lt": cutoff}},
+            {"$set": {"is_active": False, "delisted_at": utcnow()}},
         )
-        result = await self.session.execute(stmt)
-        count = result.rowcount or 0
+        count = result.modified_count
         if count:
             log.info("repo.marked_delisted", source=source, count=count, days=older_than_days)
         return count
 
     async def link_duplicate(
-        self, canonical_id: int, duplicate_id: int, score: float, reason: str
+        self, canonical_id: str, duplicate_id: str, score: float, reason: str
     ) -> None:
         if canonical_id == duplicate_id:
             return
-        await self.session.execute(
-            insert(m.PropertyDuplicate)
-            .values(
-                canonical_id=canonical_id,
-                duplicate_id=duplicate_id,
-                score=score,
-                reason=reason[:500],
-            )
-            .on_conflict_do_nothing(
-                index_elements=[m.PropertyDuplicate.canonical_id, m.PropertyDuplicate.duplicate_id]
-            )
+        await self.db[D.PROPERTY_DUPLICATES].update_one(
+            {"canonical_id": canonical_id, "duplicate_id": duplicate_id},
+            {"$set": {"score": score, "reason": reason[:500], "detected_at": utcnow()}},
+            upsert=True,
         )
-        await self.session.execute(
-            update(m.Property)
-            .where(m.Property.id == duplicate_id)
-            .values(canonical_property_id=canonical_id)
+        await self.db[D.PROPERTIES].update_one(
+            {"_id": duplicate_id}, {"$set": {"canonical_id": canonical_id}}
         )
-        await self.session.execute(
-            update(m.Property)
-            .where(m.Property.id == canonical_id)
-            .values(duplicate_count=m.Property.duplicate_count + 1)
+        await self.db[D.PROPERTIES].update_one(
+            {"_id": canonical_id}, {"$inc": {"duplicate_count": 1}}
         )
 
     async def enqueue_enrichment(
-        self, entity_type: str, entity_ids: list[int], *, priority: int = 5
+        self, entity_type: str, entity_ids: list[str], *, priority: int = 5
     ) -> int:
         if not entity_ids:
             return 0
-        rows = [
-            {"entity_type": entity_type, "entity_id": eid, "priority": priority}
+        operations = [
+            UpdateOne(
+                {"entity_type": entity_type, "entity_id": eid},
+                {"$set": {"priority": priority, "processed_at": None},
+                 "$setOnInsert": {"enqueued_at": utcnow(), "attempts": 0}},
+                upsert=True,
+            )
             for eid in entity_ids
         ]
-        await self.session.execute(
-            insert(m.EnrichmentQueue)
-            .values(rows)
-            .on_conflict_do_update(
-                index_elements=[m.EnrichmentQueue.entity_type, m.EnrichmentQueue.entity_id],
-                set_={"processed_at": None, "priority": text("EXCLUDED.priority")},
-            )
-        )
-        return len(rows)
-
-    async def refresh_market_views(self, *, concurrent: bool = True) -> None:
-        """Materialized views cannot refresh inside a transaction block when
-        CONCURRENTLY is used, so commit first."""
-        await self.session.commit()
-        await self.session.execute(text("SELECT refresh_market_views(:c)"), {"c": concurrent})
-        await self.session.commit()
-        log.info("repo.market_views_refreshed", concurrent=concurrent)
+        await self.db[D.ENRICHMENT_QUEUE].bulk_write(operations, ordered=False)
+        return len(operations)
 
     async def counts(self) -> dict[str, int]:
-        rows = await self.session.execute(
-            text(
-                """
-                SELECT 'properties' AS t, COUNT(*) FROM properties
-                UNION ALL SELECT 'properties_active', COUNT(*) FROM properties WHERE is_active
-                UNION ALL SELECT 'projects', COUNT(*) FROM projects
-                UNION ALL SELECT 'builders', COUNT(*) FROM builders
-                UNION ALL SELECT 'reddit_posts', COUNT(*) FROM reddit_posts
-                UNION ALL SELECT 'reddit_comments', COUNT(*) FROM reddit_comments
-                UNION ALL SELECT 'price_history', COUNT(*) FROM price_history
-                UNION ALL SELECT 'locations', COUNT(*) FROM locations
-                """
-            )
+        """Row counts. `count_documents({})` is exact but scans; for the
+        unfiltered case `estimated_document_count()` reads metadata instead,
+        which matters once collections reach millions of rows."""
+        out: dict[str, int] = {}
+        for label, collection in (
+            ("properties", D.PROPERTIES),
+            ("projects", D.PROJECTS),
+            ("builders", D.BUILDERS),
+            ("reddit_posts", D.REDDIT_POSTS),
+            ("reddit_comments", D.REDDIT_COMMENTS),
+            ("price_history", D.PRICE_HISTORY),
+            ("locations", D.LOCATIONS),
+            ("market_insights", D.MARKET_INSIGHTS),
+        ):
+            try:
+                out[label] = await self.db[collection].estimated_document_count()
+            except PyMongoError:
+                out[label] = 0
+        out["properties_active"] = await self.db[D.PROPERTIES].count_documents(
+            {"is_active": True}
         )
-        return {row[0]: int(row[1]) for row in rows}
+        return out
+
+    # ------------------------------------------------------------------ rollups
+
+    async def refresh_market_views(self, **_: Any) -> None:
+        """Rebuild the four rollup collections.
+
+        `$merge` is the materialized-view equivalent: the pipeline's output
+        replaces matching documents in the target collection. Unlike a Postgres
+        `REFRESH MATERIALIZED VIEW`, readers never see an empty window — merge
+        is document-by-document, so the collection stays queryable throughout.
+        """
+        await self._refresh_locality_trends()
+        await self._refresh_rental_yield()
+        await self._refresh_builder_scorecard()
+        await self._refresh_supply_demand()
+        log.info("repo.market_views_refreshed")
+
+    async def _refresh_locality_trends(self) -> None:
+        pipeline: list[dict[str, Any]] = [
+            {"$match": {"is_active": True, "canonical_id": None}},
+            {"$addFields": {
+                "period": {"$dateTrunc": {
+                    "date": {"$ifNull": ["$listed_at", "$first_seen_at"]},
+                    "unit": "month",
+                }},
+                # $percentile needs a double; medians are statistics, not
+                # ledger values, so precision loss here is immaterial.
+                "ppsf_num": {"$toDouble": {"$ifNull": ["$price_per_sqft", 0]}},
+                "price_num": {"$toDouble": {"$ifNull": ["$price", 0]}},
+            }},
+            {"$group": {
+                "_id": {
+                    "city": "$city", "sector": "$sector", "micro_market": "$micro_market",
+                    "property_type": "$property_type", "listing_type": "$listing_type",
+                    "period": "$period",
+                },
+                "listing_count": {"$sum": 1},
+                "ppsf_values": {"$push": {"$cond": [{"$gt": ["$ppsf_num", 0]},
+                                                    "$ppsf_num", "$$REMOVE"]}},
+                "price_values": {"$push": {"$cond": [{"$gt": ["$price_num", 0]},
+                                                     "$price_num", "$$REMOVE"]}},
+                "avg_price_per_sqft": {"$avg": {"$cond": [{"$gt": ["$ppsf_num", 0]},
+                                                          "$ppsf_num", None]}},
+                "min_price": {"$min": {"$cond": [{"$gt": ["$price_num", 0]},
+                                                 "$price_num", None]}},
+                "max_price": {"$max": "$price_num"},
+                "avg_rent": {"$avg": "$rent_monthly"},
+                "avg_area_sqft": {"$avg": "$area_sqft"},
+            }},
+            {"$addFields": {
+                "median_price_per_sqft": _median_expr("$ppsf_values"),
+                "median_price": _median_expr("$price_values"),
+            }},
+            {"$project": {
+                "_id": 0,
+                "city": "$_id.city", "sector": "$_id.sector",
+                "micro_market": "$_id.micro_market",
+                "property_type": "$_id.property_type",
+                "listing_type": "$_id.listing_type", "period": "$_id.period",
+                "listing_count": 1, "median_price_per_sqft": 1, "avg_price_per_sqft": 1,
+                "median_price": 1, "min_price": 1, "max_price": 1,
+                "avg_rent": 1, "avg_area_sqft": 1,
+                "refreshed_at": {"$literal": utcnow()},
+            }},
+            {"$merge": {
+                "into": D.MV_LOCALITY_TRENDS,
+                "on": "_id",
+                "whenMatched": "replace",
+                "whenNotMatched": "insert",
+            }},
+        ]
+        # `on: _id` needs a deterministic key, so build one from the group keys.
+        pipeline[-2]["$project"]["_id"] = {
+            "$concat": [
+                {"$ifNull": ["$_id.city", ""]}, "|", {"$ifNull": ["$_id.sector", ""]}, "|",
+                {"$ifNull": ["$_id.micro_market", ""]}, "|",
+                {"$ifNull": ["$_id.property_type", ""]}, "|",
+                {"$ifNull": ["$_id.listing_type", ""]}, "|",
+                {"$dateToString": {"date": "$_id.period", "format": "%Y-%m",
+                                   "onNull": "none"}},
+            ]
+        }
+        await self._run_merge(D.PROPERTIES, pipeline, D.MV_LOCALITY_TRENDS)
+
+    async def _refresh_rental_yield(self) -> None:
+        """Median annual rent ÷ median sale price, per (city, sector, bedrooms).
+
+        Only emitted where both sides have ≥3 samples — a yield computed from
+        one rental and one sale is noise presented as a number.
+        """
+        pipeline: list[dict[str, Any]] = [
+            {"$match": {"is_active": True, "bedrooms": {"$ne": None}}},
+            {"$group": {
+                "_id": {"city": "$city", "sector": "$sector", "bedrooms": "$bedrooms"},
+                "sale_prices": {"$push": {"$cond": [
+                    {"$and": [
+                        {"$in": ["$listing_type", ["sale", "resale", "new_launch"]]},
+                        {"$gt": [{"$toDouble": {"$ifNull": ["$price", 0]}}, 0]},
+                    ]},
+                    {"$toDouble": "$price"}, "$$REMOVE",
+                ]}},
+                "rents": {"$push": {"$cond": [
+                    {"$and": [
+                        {"$eq": ["$listing_type", "rent"]},
+                        {"$gt": [{"$toDouble": {"$ifNull": ["$rent_monthly", 0]}}, 0]},
+                    ]},
+                    {"$toDouble": "$rent_monthly"}, "$$REMOVE",
+                ]}},
+            }},
+            {"$addFields": {
+                "sale_sample": {"$size": "$sale_prices"},
+                "rent_sample": {"$size": "$rents"},
+            }},
+            {"$match": {"sale_sample": {"$gte": 3}, "rent_sample": {"$gte": 3}}},
+            {"$addFields": {
+                "median_price": _median_expr("$sale_prices"),
+                "median_rent": _median_expr("$rents"),
+            }},
+            {"$project": {
+                "_id": {"$concat": [
+                    {"$ifNull": ["$_id.city", ""]}, "|", {"$ifNull": ["$_id.sector", ""]},
+                    "|", {"$toString": "$_id.bedrooms"},
+                ]},
+                "city": "$_id.city", "sector": "$_id.sector", "bedrooms": "$_id.bedrooms",
+                "median_price": 1, "median_rent": 1,
+                "sale_sample": 1, "rent_sample": 1,
+                "rental_yield_pct": {"$round": [
+                    {"$multiply": [
+                        {"$divide": [{"$multiply": ["$median_rent", 12]},
+                                     {"$cond": [{"$gt": ["$median_price", 0]},
+                                                "$median_price", 1]}]},
+                        100,
+                    ]}, 3,
+                ]},
+                "refreshed_at": {"$literal": utcnow()},
+            }},
+            {"$merge": {"into": D.MV_RENTAL_YIELD, "on": "_id",
+                        "whenMatched": "replace", "whenNotMatched": "insert"}},
+        ]
+        await self._run_merge(D.PROPERTIES, pipeline, D.MV_RENTAL_YIELD)
+
+    async def _refresh_builder_scorecard(self) -> None:
+        pipeline: list[dict[str, Any]] = [
+            {"$lookup": {
+                "from": D.PROJECTS, "localField": "_id",
+                "foreignField": "builder_id", "as": "projects",
+            }},
+            {"$lookup": {
+                "from": D.PROPERTIES, "localField": "_id",
+                "foreignField": "builder_id",
+                "pipeline": [{"$match": {"is_active": True}},
+                             {"$project": {"price_per_sqft": 1}}],
+                "as": "listings",
+            }},
+            {"$lookup": {
+                "from": D.REDDIT_POSTS, "localField": "name",
+                "foreignField": "detected_builders",
+                "pipeline": [{"$project": {"sentiment": 1, "sentiment_score": 1, "topics": 1}}],
+                "as": "chatter",
+            }},
+            {"$project": {
+                "_id": 1,
+                "builder_id": "$_id",
+                "name": 1,
+                "normalized_name": 1,
+                "project_count": {"$size": "$projects"},
+                "completed_count": {"$size": {"$filter": {
+                    "input": "$projects", "as": "p",
+                    "cond": {"$eq": ["$$p.status", "completed"]}}}},
+                "ongoing_count": {"$size": {"$filter": {
+                    "input": "$projects", "as": "p",
+                    "cond": {"$eq": ["$$p.status", "under_construction"]}}}},
+                "listing_count": {"$size": "$listings"},
+                "avg_price_per_sqft": {"$avg": {
+                    "$map": {"input": "$listings", "as": "l",
+                             "in": {"$toDouble": {"$ifNull": ["$$l.price_per_sqft", 0]}}}}},
+                "reddit_mentions": {"$size": "$chatter"},
+                "reddit_positive": {"$size": {"$filter": {
+                    "input": "$chatter", "as": "c",
+                    "cond": {"$eq": ["$$c.sentiment", "positive"]}}}},
+                "reddit_negative": {"$size": {"$filter": {
+                    "input": "$chatter", "as": "c",
+                    "cond": {"$eq": ["$$c.sentiment", "negative"]}}}},
+                "reddit_avg_sentiment": {"$avg": "$chatter.sentiment_score"},
+                "delay_mentions": {"$size": {"$filter": {
+                    "input": "$chatter", "as": "c",
+                    "cond": {"$or": [
+                        {"$in": ["construction_delay", {"$ifNull": ["$$c.topics", []]}]},
+                        {"$in": ["possession_issue", {"$ifNull": ["$$c.topics", []]}]},
+                    ]}}}},
+                "fraud_mentions": {"$size": {"$filter": {
+                    "input": "$chatter", "as": "c",
+                    "cond": {"$in": ["builder_fraud", {"$ifNull": ["$$c.topics", []]}]}}}},
+                "refreshed_at": {"$literal": utcnow()},
+            }},
+            {"$merge": {"into": D.MV_BUILDER_SCORECARD, "on": "_id",
+                        "whenMatched": "replace", "whenNotMatched": "insert"}},
+        ]
+        await self._run_merge(D.BUILDERS, pipeline, D.MV_BUILDER_SCORECARD)
+
+    async def _refresh_supply_demand(self) -> None:
+        from datetime import timedelta
+
+        now = utcnow()
+        d30, d90 = now - timedelta(days=30), now - timedelta(days=90)
+        pipeline: list[dict[str, Any]] = [
+            {"$match": {"canonical_id": None}},
+            {"$group": {
+                "_id": {"city": "$city", "sector": "$sector"},
+                "new_last_30d": {"$sum": {"$cond": [{"$gt": ["$first_seen_at", d30]}, 1, 0]}},
+                "new_last_90d": {"$sum": {"$cond": [{"$gt": ["$first_seen_at", d90]}, 1, 0]}},
+                "delisted_last_90d": {"$sum": {"$cond": [
+                    {"$and": [{"$eq": ["$is_active", False]},
+                              {"$gt": [{"$ifNull": ["$delisted_at", d90]}, d90]}]}, 1, 0]}},
+                "active_supply": {"$sum": {"$cond": ["$is_active", 1, 0]}},
+                "new_launches": {"$sum": {"$cond": [
+                    {"$and": ["$is_active",
+                              {"$eq": ["$possession_status", "new_launch"]}]}, 1, 0]}},
+                "days_on_market": {"$push": {"$cond": [
+                    {"$eq": ["$is_active", False]},
+                    {"$divide": [
+                        {"$subtract": [{"$ifNull": ["$delisted_at", now]}, "$first_seen_at"]},
+                        86_400_000,
+                    ]},
+                    "$$REMOVE",
+                ]}},
+            }},
+            {"$project": {
+                "_id": {"$concat": [{"$ifNull": ["$_id.city", ""]}, "|",
+                                    {"$ifNull": ["$_id.sector", ""]}]},
+                "city": "$_id.city", "sector": "$_id.sector",
+                "new_last_30d": 1, "new_last_90d": 1, "delisted_last_90d": 1,
+                "active_supply": 1, "new_launches": 1,
+                "avg_days_on_market": {"$avg": "$days_on_market"},
+                "refreshed_at": {"$literal": now},
+            }},
+            {"$merge": {"into": D.MV_SUPPLY_DEMAND, "on": "_id",
+                        "whenMatched": "replace", "whenNotMatched": "insert"}},
+        ]
+        await self._run_merge(D.PROPERTIES, pipeline, D.MV_SUPPLY_DEMAND)
+
+    async def _run_merge(self, source: str, pipeline: list[dict[str, Any]], target: str) -> None:
+        try:
+            # allowDiskUse: the $push-then-median pattern can exceed the 100 MB
+            # in-memory group limit once a sector has thousands of listings.
+            await self.db[source].aggregate(pipeline, allowDiskUse=True).to_list(length=1)
+        except PyMongoError as exc:
+            log.error("repo.rollup_failed", target=target, error=str(exc)[:300])
+            raise
 
 
-def utcnow() -> datetime:
-    return datetime.now(UTC)
+def _median_expr(array_field: str) -> dict[str, Any]:
+    """Exact median of a numeric array, without requiring `$percentile`.
+
+    `$percentile` needs MongoDB 7.0; sorting the array works from 5.2 and is
+    exact rather than approximate, which matters because these medians feed the
+    risk and investment scores.
+    """
+    sorted_array = {"$sortArray": {"input": array_field, "sortBy": 1}}
+    size = {"$size": array_field}
+    return {
+        "$cond": [
+            {"$eq": [size, 0]},
+            None,
+            {"$cond": [
+                {"$eq": [{"$mod": [size, 2]}, 1]},
+                # odd count → middle element
+                {"$arrayElemAt": [sorted_array, {"$floor": {"$divide": [size, 2]}}]},
+                # even count → mean of the two middle elements
+                {"$avg": [
+                    {"$arrayElemAt": [sorted_array, {"$subtract": [{"$divide": [size, 2]}, 1]}]},
+                    {"$arrayElemAt": [sorted_array, {"$divide": [size, 2]}]},
+                ]},
+            ]},
+        ]
+    }
+
+
+def _as_datetime(value: Any) -> datetime | None:
+    if value is None or isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return None
+    return None
+
+
+__all__ = ["Repository", "infer_builder_from_project", "utcnow"]
+
+# Re-exported for callers that used to sort with SQLAlchemy constants.
+SORT_ASC, SORT_DESC = ASCENDING, DESCENDING

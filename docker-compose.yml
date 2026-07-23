@@ -1,47 +1,25 @@
 name: homz
 
+# The datastore is MongoDB Atlas — there is no database service here. Set
+# HOMZ_MONGODB_URI in .env to your cluster's connection string.
+#
+# For offline work, `docker compose --profile local up -d mongo` starts a local
+# replica-set node. Note that Atlas Search is unavailable there, so the API
+# falls back to $text: weighted but with no fuzzy/typo tolerance. Develop
+# against a free Atlas M0 cluster if search behaviour matters.
+
 x-app: &app
   build:
     context: .
     dockerfile: docker/Dockerfile
   env_file: [.env]
   environment:
-    HOMZ_DATABASE_URL: postgresql+asyncpg://homz:homz@postgres:5432/homz
     HOMZ_LOG_JSON: "true"
   volumes:
     - ./data:/app/data          # raw HTML archive survives container rebuilds
-  depends_on:
-    postgres:
-      condition: service_healthy
   restart: unless-stopped
 
 services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: homz
-      POSTGRES_PASSWORD: homz
-      POSTGRES_DB: homz
-    ports: ["5432:5432"]
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      # Files in this directory run in name order on first boot only.
-      - ./sql:/docker-entrypoint-initdb.d:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U homz -d homz"]
-      interval: 5s
-      timeout: 5s
-      retries: 12
-    restart: unless-stopped
-    command:
-      - postgres
-      - -c
-      - shared_buffers=256MB
-      - -c
-      - work_mem=32MB
-      - -c
-      - maintenance_work_mem=256MB   # keeps matview refresh fast as data grows
-
   api:
     <<: *app
     command: uvicorn homz.search.api:app --host 0.0.0.0 --port 8000
@@ -60,6 +38,7 @@ services:
     shm_size: 1gb
 
   # One-off CLI runs:
+  #   docker compose run --rm scraper-cli db init
   #   docker compose run --rm scraper-cli scrape source magicbricks --max-items 20 --dry-run
   scraper-cli:
     <<: *app
@@ -69,5 +48,24 @@ services:
     restart: "no"
     shm_size: 1gb
 
+  # Optional offline datastore. Single-node replica set so change streams and
+  # transactions work; Atlas Search still does not exist here.
+  mongo:
+    image: mongo:7
+    profiles: ["local"]
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports: ["27017:27017"]
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: >
+        mongosh --quiet --eval
+        "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }"
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 20s
+    restart: unless-stopped
+
 volumes:
-  pgdata:
+  mongodata:
