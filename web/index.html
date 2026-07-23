@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Homz Realtor — Property Search</title>
+<meta name="description" content="Search Delhi NCR property listings with investment, risk and location scoring.">
+<style>
+  :root {
+    --page-bg: #ffffff;
+    --page-text: #16181d;
+    --page-muted: #6b7280;
+    --page-border: #e3e6ec;
+    --page-accent: #b4531f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page-bg: #14161a;
+      --page-text: #e9ebef;
+      --page-muted: #9aa1ad;
+      --page-border: #2c313a;
+      --page-accent: #e8875a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--page-text);
+    background: var(--page-bg);
+  }
+  header {
+    border-bottom: 1px solid var(--page-border);
+    padding: 18px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+    position: sticky; top: 0; background: var(--page-bg); z-index: 40;
+  }
+  .brand { font-weight: 700; font-size: 18px; letter-spacing: -.01em; }
+  .brand span { color: var(--page-accent); }
+  .status { font-size: 13px; color: var(--page-muted); display: flex; gap: 10px; align-items: center; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--page-muted); }
+  .dot.ok { background: #17795e; } .dot.bad { background: #b3261e; }
+  main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+  .note {
+    border: 1px solid var(--page-border); border-left: 3px solid var(--page-accent);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 20px;
+    font-size: 14px; color: var(--page-muted);
+  }
+  .note code { color: var(--page-text); font-size: 13px; }
+  footer { padding: 24px; color: var(--page-muted); font-size: 13px; text-align: center; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">Homz<span>.</span>Realtor</div>
+  <div class="status">
+    <span class="dot" id="dot"></span>
+    <span id="status">checking API…</span>
+  </div>
+</header>
+
+<main>
+  <div class="note">
+    Demo harness for <code>&lt;homz-search&gt;</code>. It reads the API at
+    <code id="api-url"></code>. Filters sync to the address bar, so any search is
+    a shareable link. Selecting a card fires a <code>homz:select</code> event —
+    on the real site, route that to your property detail page.
+  </div>
+
+  <homz-search id="search" sync-url city="gurgaon" listing-type="sale" page-size="24"></homz-search>
+</main>
+
+<footer>
+  Data collected from public sources under the constraints in COMPLIANCE.md.
+  Scores are derived estimates, not financial advice.
+</footer>
+
+<script type="module">
+  import { HomzClient } from './homz-sdk.js';
+  import './homz-widget.js';
+
+  // Same-origin when served by the API (`/web/`), overridable with ?api=…
+  const params = new URLSearchParams(location.search);
+  const apiBase = params.get('api') || '';
+  const widget = document.getElementById('search');
+  widget.setAttribute('api', apiBase);
+  document.getElementById('api-url').textContent = apiBase || location.origin;
+
+  // Health indicator — makes a misconfigured API obvious immediately rather
+  // than looking like "no results".
+  const client = new HomzClient({ baseUrl: apiBase });
+  const dot = document.getElementById('dot');
+  const status = document.getElementById('status');
+  try {
+    const [health, stats] = await Promise.all([
+      client.health(),
+      client.stats().catch(() => null),
+    ]);
+    const live = health.status === 'ok';
+    dot.className = `dot ${live ? 'ok' : 'bad'}`;
+    const n = stats?.counts?.properties_active;
+    status.textContent = live
+      ? `API live${n != null ? ` · ${n.toLocaleString('en-IN')} active listings` : ''}`
+      : 'API degraded — database unreachable';
+  } catch (err) {
+    dot.className = 'dot bad';
+    status.textContent = `API unreachable (${err.message})`;
+  }
+
+  // Wire the widget's events to whatever the host page needs.
+  widget.addEventListener('homz:select', (e) => {
+    const row = e.detail;
+    // Replace with your own routing, e.g. location.href = `/property/${row.id}`
+    window.open(row.listing_url, '_blank', 'noopener');
+  });
+
+  widget.addEventListener('homz:error', (e) => {
+    console.error('[homz]', e.detail);
+  });
+</script>
+
+</body>
+</html>
