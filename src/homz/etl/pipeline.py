@@ -238,7 +238,23 @@ async def run_all_sources(
     """
     from homz.scrapers import SCRAPERS
 
+    explicit = sources is not None
     sources = sources or list(SCRAPERS)
+
+    # Skip sources that are blocked, unless the caller named them explicitly.
+    if not explicit:
+        active = []
+        for name in sources:
+            scraper_cls = SCRAPERS[name]
+            if getattr(scraper_cls, "enabled", True):
+                active.append(name)
+            else:
+                log.warning(
+                    "etl.source_disabled", source=name,
+                    reason=getattr(scraper_cls, "disabled_reason", ""),
+                )
+        sources = active
+
     results: list[PipelineResult] = []
 
     if sequential:

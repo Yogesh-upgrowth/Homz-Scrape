@@ -122,6 +122,11 @@ class BaseScraper(ABC):
     needs_browser: bool = False
     #: Per-source politeness override (requests/second).
     host_rps: float | None = None
+    #: Set False when a source is actively refusing us. `scrape all` skips
+    #: disabled sources; running one explicitly still works so the block can
+    #: be re-tested. See `disabled_reason`.
+    enabled: bool = True
+    disabled_reason: str = ""
     #: Jobs this scraper knows how to run when none are supplied explicitly.
     default_jobs: tuple[ScrapeJob, ...] = ()
 
@@ -290,6 +295,26 @@ class BaseScraper(ABC):
                 report.status = JobStatus.PARTIAL
             elif report.errors and not report.parsed:
                 report.status = JobStatus.FAILED
+            elif report.discovered == 0:
+                # Discovering nothing is a failure, not a clean run. A wrong
+                # search URL 404s, yields no candidates, and would otherwise
+                # report `success` with parsed=0 — a total outage showing
+                # green in `ops status`. This is how the MagicBricks URL bug
+                # stayed invisible.
+                report.status = JobStatus.FAILED
+                report.error_samples.append(
+                    "discovered 0 candidate URLs — check the search URL pattern "
+                    "and sitemap discovery for this source"
+                )
+            elif report.parsed == 0 and report.skipped_known == 0:
+                # Candidates were found and fetched, but nothing parsed: the
+                # detail-page selectors are broken for this source.
+                report.status = JobStatus.FAILED
+                report.error_samples.append(
+                    f"discovered {report.discovered} URLs but parsed 0 records — "
+                    "the detail parser is likely broken; replay a stored page "
+                    "with `homz ops raw <key>`"
+                )
             else:
                 report.status = JobStatus.SUCCESS
 

@@ -21,6 +21,20 @@ class HousingScraper(BaseScraper):
     source = Source.HOUSING
     base_url = parser.BASE_URL
     needs_browser = True
+    # Verified 2026-07-23: housing.com returns HTTP 406 with a "Security
+    # Alert" interstitial for every request — including /robots.txt — from a
+    # plain datacentre IP, regardless of headers. That is a hard block, not a
+    # rate limit, so slowing down does not help and working around it is out
+    # of scope by policy (COMPLIANCE.md §2).
+    #
+    # Re-enable by setting enabled = True once you have either a commercial
+    # data agreement with Housing, or confirmation the block no longer
+    # applies. Test with:  homz scrape source housing --max-items 2 --dry-run
+    enabled = False
+    disabled_reason = (
+        "housing.com returns 406 'Security Alert' to all requests incl. robots.txt; "
+        "escalate via a licensed feed rather than evasion (COMPLIANCE.md §2)"
+    )
     host_rps = 0.4
 
     default_jobs = (
