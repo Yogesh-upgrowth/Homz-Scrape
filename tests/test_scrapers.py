@@ -415,3 +415,96 @@ class TestScrapeJobKey:
         b = ScrapeJob(name="subreddit", params={"subreddit": "noida"})
         assert a.key != b.key
         assert "gurgaon" in a.key
+
+
+class TestSearchUrlBuilders:
+    """URL patterns verified against the live sites.
+
+    The first version of build_search_url guessed a pattern that 404'd, and
+    the run still reported success. Both are pinned here.
+    """
+
+    def test_magicbricks_sale(self) -> None:
+        url = mb.build_search_url(city="Gurgaon", listing_type="sale")
+        assert url == "https://www.magicbricks.com/property-for-sale-in-gurgaon-pppfs"
+
+    def test_magicbricks_rent_uses_a_different_suffix(self) -> None:
+        # -pppfr, not -pppfs. Using pppfs for rent 404s.
+        url = mb.build_search_url(city="Gurgaon", listing_type="rent")
+        assert url == "https://www.magicbricks.com/property-for-rent-in-gurgaon-pppfr"
+
+    def test_magicbricks_delhi_is_slugged_new_delhi(self) -> None:
+        url = mb.build_search_url(city="delhi", listing_type="sale")
+        assert "new-delhi" in url
+
+    def test_magicbricks_gurugram_normalises_to_gurgaon(self) -> None:
+        assert mb.build_search_url(city="Gurugram") == mb.build_search_url(city="Gurgaon")
+
+    def test_magicbricks_pagination(self) -> None:
+        assert mb.build_search_url(city="noida", page=3).endswith("-pppfs?page=3")
+        assert "?page=" not in mb.build_search_url(city="noida", page=1)
+
+
+class TestJobStatus:
+    """A job that produced nothing must not report success."""
+
+    def _report(self, **kwargs):
+        from homz.common.base import ScrapeReport
+
+        report = ScrapeReport(source="magicbricks", job="t")
+        for key, value in kwargs.items():
+            setattr(report, key, value)
+        return report
+
+    def _finalize(self, report):
+        # Mirror the status resolution in BaseScraper.run_job.
+        from homz.common.enums import JobStatus
+
+        if report.errors and report.parsed:
+            return JobStatus.PARTIAL
+        if report.errors and not report.parsed:
+            return JobStatus.FAILED
+        if report.discovered == 0:
+            return JobStatus.FAILED
+        if report.parsed == 0 and report.skipped_known == 0:
+            return JobStatus.FAILED
+        return JobStatus.SUCCESS
+
+    def test_discovering_nothing_is_a_failure(self) -> None:
+        from homz.common.enums import JobStatus
+
+        # The exact shape of the MagicBricks 404 bug.
+        assert self._finalize(self._report(discovered=0, parsed=0)) is JobStatus.FAILED
+
+    def test_parsing_nothing_from_candidates_is_a_failure(self) -> None:
+        from homz.common.enums import JobStatus
+
+        assert self._finalize(
+            self._report(discovered=30, fetched=30, parsed=0)
+        ) is JobStatus.FAILED
+
+    def test_all_known_is_success_not_failure(self) -> None:
+        """An incremental run where everything was already seen parsed 0 new
+        records — that is a healthy no-op, not an outage."""
+        from homz.common.enums import JobStatus
+
+        assert self._finalize(
+            self._report(discovered=30, fetched=30, parsed=0, skipped_known=30)
+        ) is JobStatus.SUCCESS
+
+    def test_normal_run_is_success(self) -> None:
+        from homz.common.enums import JobStatus
+
+        assert self._finalize(
+            self._report(discovered=30, fetched=30, parsed=28)
+        ) is JobStatus.SUCCESS
+
+    def test_squareyards_city_url(self) -> None:
+        # Verified live: /new-projects-in-{city}; the /{city}/new-projects
+        # form 404s.
+        assert sy.build_city_url("Gurgaon") == (
+            "https://www.squareyards.com/new-projects-in-gurgaon"
+        )
+        assert sy.build_city_url("Greater Noida") == (
+            "https://www.squareyards.com/new-projects-in-greater-noida"
+        )

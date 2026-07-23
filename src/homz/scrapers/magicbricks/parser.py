@@ -513,6 +513,15 @@ def _parse_unit_table(soup: BeautifulSoup) -> list[UnitConfiguration]:
     return configs
 
 
+#: MagicBricks slugs a few cities differently from their common name.
+_CITY_SLUGS = {
+    "delhi": "new-delhi",
+    "new delhi": "new-delhi",
+    "gurugram": "gurgaon",
+    "greater noida": "greater-noida",
+}
+
+
 def build_search_url(
     *,
     city: str,
@@ -520,11 +529,26 @@ def build_search_url(
     property_type: str | None = None,
     page: int = 1,
 ) -> str:
-    """Public search URLs. Kept in the parser module so the scraper stays
-    free of URL trivia and this is unit-testable."""
-    city_slug = city.strip().lower().replace(" ", "-")
-    verb = "for-rent" if listing_type == "rent" else "for-sale"
-    ptype = (property_type or "residential-real-estate").strip("-")
-    path = f"/{ptype}-{verb}-in-{city_slug}-pppfs"
+    """Public search URL.
+
+    Verified live: sale and rent use *different* suffixes — `-pppfs` for sale,
+    `-pppfr` for rent. Using pppfs for rent 404s, which is how the first
+    version of this failed.
+
+        sale  https://www.magicbricks.com/property-for-sale-in-gurgaon-pppfs
+        rent  https://www.magicbricks.com/property-for-rent-in-gurgaon-pppfr
+        page  …-pppfs?page=2
+
+    Kept in the parser module so the scraper stays free of URL trivia and this
+    stays unit-testable.
+    """
+    slug = city.strip().lower()
+    slug = _CITY_SLUGS.get(slug, slug).replace(" ", "-")
+
+    if listing_type == "rent":
+        path = f"/property-for-rent-in-{slug}-pppfr"
+    else:
+        path = f"/property-for-sale-in-{slug}-pppfs"
+
     query = f"?page={page}" if page > 1 else ""
     return f"{BASE_URL}{path}{query}"

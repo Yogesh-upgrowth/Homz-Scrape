@@ -453,9 +453,16 @@ def _builder_from_breadcrumb(soup: BeautifulSoup) -> str | None:
 
 
 def build_city_url(city: str, *, listing_type: str = "sale") -> str:
+    """City listing URL.
+
+    Verified live: the pattern is `/new-projects-in-{city}`, not
+    `/{city}/new-projects` — the latter 404s. Confirmed against Gurgaon,
+    where the working URL yields 36 project cards.
+    """
     city_slug = city.strip().lower().replace(" ", "-")
-    section = "rent" if listing_type == "rent" else "new-projects"
-    return f"{BASE_URL}/{city_slug}/{section}"
+    if listing_type == "rent":
+        return f"{BASE_URL}/{city_slug}/property-for-rent"
+    return f"{BASE_URL}/new-projects-in-{city_slug}"
 
 
 def is_price_on_request_page(html: str) -> bool:
