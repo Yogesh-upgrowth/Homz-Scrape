@@ -4,9 +4,17 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Annotated
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+
+#: List settings are given as plain comma-separated strings in .env
+#: (HOMZ_PROXIES=a,b), not JSON. Without NoDecode, pydantic-settings tries to
+#: json.loads() the raw value at the *source* level — before any field
+#: validator runs — so `HOMZ_PROXIES=` (empty) raises SettingsError instead of
+#: reaching `_split_csv`. NoDecode hands the raw string to the validator.
+CsvList = Annotated[list[str], NoDecode]
 
 
 class Settings(BaseSettings):
@@ -71,7 +79,7 @@ class Settings(BaseSettings):
     raw_html_retention_days: int = 14
 
     # ---- proxies ----------------------------------------------------------
-    proxies: list[str] = Field(default_factory=list)
+    proxies: CsvList = Field(default_factory=list)
     proxy_strategy: str = "round_robin"
     proxy_cooldown_seconds: int = 300
 
@@ -85,7 +93,7 @@ class Settings(BaseSettings):
     reddit_client_id: str = ""
     reddit_client_secret: str = ""
     reddit_user_agent: str = "python:com.homzrealtor.intel:v1.0.0 (by /u/homz_bot)"
-    reddit_subreddits: list[str] = Field(
+    reddit_subreddits: CsvList = Field(
         default_factory=lambda: ["gurgaon", "noida", "delhi", "india_real_estate"]
     )
     reddit_comment_limit: int = 50
@@ -107,7 +115,7 @@ class Settings(BaseSettings):
     #: Browser origins allowed to call the API. The widget on homzrealtor.com is
     #: cross-origin, so it needs an explicit entry. Every endpoint is public and
     #: read-only, so this list is about correctness, not access control.
-    api_cors_origins: list[str] = Field(
+    api_cors_origins: CsvList = Field(
         default_factory=lambda: [
             "https://www.homzrealtor.com",
             "https://homzrealtor.com",
@@ -123,13 +131,26 @@ class Settings(BaseSettings):
     @field_validator("proxies", "reddit_subreddits", "api_cors_origins", mode="before")
     @classmethod
     def _split_csv(cls, v: object) -> object:
-        """Accept both a JSON list and a plain comma-separated env string."""
+        """Accept a JSON list or a plain comma-separated env string.
+
+        These fields are `NoDecode`, so pydantic-settings hands over the raw
+        string and this validator owns the parsing entirely — including the
+        JSON form, which is no longer decoded for us.
+        """
         if isinstance(v, str):
             v = v.strip()
             if not v:
                 return []
             if v.startswith("["):
-                return v
+                import json
+
+                try:
+                    return json.loads(v)
+                except json.JSONDecodeError:
+                    # Fall through to CSV rather than failing: a malformed
+                    # JSON list is far more likely to be a stray bracket than
+                    # a real intent to pass JSON.
+                    pass
             return [item.strip() for item in v.split(",") if item.strip()]
         return v
 
