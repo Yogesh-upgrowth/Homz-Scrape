@@ -1,0 +1,73 @@
+name: homz
+
+x-app: &app
+  build:
+    context: .
+    dockerfile: docker/Dockerfile
+  env_file: [.env]
+  environment:
+    HOMZ_DATABASE_URL: postgresql+asyncpg://homz:homz@postgres:5432/homz
+    HOMZ_LOG_JSON: "true"
+  volumes:
+    - ./data:/app/data          # raw HTML archive survives container rebuilds
+  depends_on:
+    postgres:
+      condition: service_healthy
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: homz
+      POSTGRES_PASSWORD: homz
+      POSTGRES_DB: homz
+    ports: ["5432:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Files in this directory run in name order on first boot only.
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U homz -d homz"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+    command:
+      - postgres
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - work_mem=32MB
+      - -c
+      - maintenance_work_mem=256MB   # keeps matview refresh fast as data grows
+
+  api:
+    <<: *app
+    command: uvicorn homz.search.api:app --host 0.0.0.0 --port 8000
+    ports: ["8000:8000"]
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health').status==200 else 1)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  scheduler:
+    <<: *app
+    command: python -m homz.scheduler.jobs
+    # Browser jobs need more shared memory than Docker's 64MB default.
+    shm_size: 1gb
+
+  # One-off CLI runs:
+  #   docker compose run --rm scraper-cli scrape source magicbricks --max-items 20 --dry-run
+  scraper-cli:
+    <<: *app
+    entrypoint: ["homz"]
+    command: ["--help"]
+    profiles: ["cli"]
+    restart: "no"
+    shm_size: 1gb
+
+volumes:
+  pgdata:
