@@ -1,0 +1,42 @@
+# ===========================================================================
+# Homz Realtor — cron schedule (alternative to the APScheduler container).
+#
+#   crontab deploy/crontab
+#
+# Times are Asia/Kolkata. Adjust HOMZ_HOME and the venv path for your host.
+# Every job appends to its own log so a failure is attributable.
+# ===========================================================================
+
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+CRON_TZ=Asia/Kolkata
+HOMZ_HOME=/opt/homz
+HOMZ_BIN=/opt/homz/.venv/bin/homz
+LOGS=/var/log/homz
+
+# --- scraping --------------------------------------------------------------
+# Sale listings, off-peak so we never compete with the portals' own traffic.
+30 2 * * *   cd $HOMZ_HOME && $HOMZ_BIN scrape source magicbricks --json-logs >> $LOGS/mb-sale.log 2>&1
+45 2 * * *   cd $HOMZ_HOME && $HOMZ_BIN scrape source housing     --json-logs >> $LOGS/housing-sale.log 2>&1
+
+# Rentals churn fastest — twice daily.
+0 6,18 * * * cd $HOMZ_HOME && $HOMZ_BIN scrape source magicbricks --listing-type rent --city gurgaon --json-logs >> $LOGS/mb-rent.log 2>&1
+20 6,18 * * * cd $HOMZ_HOME && $HOMZ_BIN scrape source housing    --listing-type rent --city gurgaon --json-logs >> $LOGS/housing-rent.log 2>&1
+
+# SquareYards is browser-driven and expensive — every other day.
+0 4 */2 * *  cd $HOMZ_HOME && $HOMZ_BIN scrape source squareyards --json-logs >> $LOGS/squareyards.log 2>&1
+
+# Reddit posts are short-lived on /new — every 6 hours.
+15 */6 * * * cd $HOMZ_HOME && $HOMZ_BIN scrape source reddit --json-logs >> $LOGS/reddit.log 2>&1
+
+# --- downstream ------------------------------------------------------------
+0 8 * * *    cd $HOMZ_HOME && $HOMZ_BIN etl run --json-logs      >> $LOGS/etl.log 2>&1
+15 8 * * *   cd $HOMZ_HOME && $HOMZ_BIN etl insights --json-logs >> $LOGS/insights.log 2>&1
+30 9 * * *   cd $HOMZ_HOME && $HOMZ_BIN enrich run --json-logs   >> $LOGS/enrich.log 2>&1
+
+# Deterministic rescoring is free, so run it often.
+0 */4 * * *  cd $HOMZ_HOME && $HOMZ_BIN enrich scores --json-logs >> $LOGS/scores.log 2>&1
+
+# --- housekeeping ----------------------------------------------------------
+0 3 * * 0    cd $HOMZ_HOME && $HOMZ_BIN ops raw --prune >> $LOGS/prune.log 2>&1
+0 5 * * 0    find $LOGS -name '*.log' -mtime +30 -delete

@@ -19,11 +19,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from homz.common.parsing import normalize_name
 from homz.common.schema import (
     BuilderRecord,
-    Location as LocationSchema,
     MarketInsightRecord,
     ProjectRecord,
     PropertyRecord,
     RedditPostRecord,
+)
+from homz.common.schema import (
+    Location as LocationSchema,
 )
 from homz.db import models as m
 from homz.logging_setup import get_logger
