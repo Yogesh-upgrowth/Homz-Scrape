@@ -23,8 +23,9 @@ LOGS=/var/log/homz
 0 6,18 * * * cd $HOMZ_HOME && $HOMZ_BIN scrape source magicbricks --listing-type rent --city gurgaon --json-logs >> $LOGS/mb-rent.log 2>&1
 20 6,18 * * * cd $HOMZ_HOME && $HOMZ_BIN scrape source housing    --listing-type rent --city gurgaon --json-logs >> $LOGS/housing-rent.log 2>&1
 
-# SquareYards is browser-driven and expensive — every other day.
-0 4 */2 * *  cd $HOMZ_HOME && $HOMZ_BIN scrape source squareyards --json-logs >> $LOGS/squareyards.log 2>&1
+# SquareYards is a plain HTTP crawl now (no browser), so it is cheap enough to
+# run daily. It is also the source the website's catalogue is built from.
+0 4 * * *    cd $HOMZ_HOME && $HOMZ_BIN scrape source squareyards --json-logs >> $LOGS/squareyards.log 2>&1
 
 # Reddit posts are short-lived on /new — every 6 hours.
 15 */6 * * * cd $HOMZ_HOME && $HOMZ_BIN scrape source reddit --json-logs >> $LOGS/reddit.log 2>&1
@@ -36,6 +37,13 @@ LOGS=/var/log/homz
 
 # Deterministic rescoring is free, so run it often.
 0 */4 * * *  cd $HOMZ_HOME && $HOMZ_BIN enrich scores --json-logs >> $LOGS/scores.log 2>&1
+
+# --- publish ---------------------------------------------------------------
+# Renders the website's /api/data payloads from the warehouse. Runs after
+# enrichment so `aboutProject` and builder copy are populated. Whatever serves
+# the catalogue must pick $HOMZ_HOME/data/feed up from here — without this step
+# the scrapers fill MongoDB and the site never changes.
+0 10 * * *   cd $HOMZ_HOME && $HOMZ_BIN export feed --out $HOMZ_HOME/data/feed >> $LOGS/export.log 2>&1
 
 # --- housekeeping ----------------------------------------------------------
 0 3 * * 0    cd $HOMZ_HOME && $HOMZ_BIN ops raw --prune >> $LOGS/prune.log 2>&1

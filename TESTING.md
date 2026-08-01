@@ -35,9 +35,10 @@ make install          # one time; creates .venv and installs deps
 make test
 ```
 
-Expect **170 passed** in well under a second. This covers price/area parsing,
-dedupe, the scoring formulas, all four parsers, query fingerprinting and
-ingest auth. If this fails, nothing else is worth trying.
+Expect **217 passed** in well under a second. This covers price/area parsing,
+dedupe, the scoring formulas, all four parsers, query fingerprinting, ingest
+auth and the catalogue feed contract. If this fails, nothing else is worth
+trying.
 
 ---
 
@@ -100,7 +101,36 @@ Then create the schema:
 Reddit needs credentials in `.env` (`HOMZ_REDDIT_CLIENT_ID` / `_SECRET` from
 <https://www.reddit.com/prefs/apps>, "script" app).
 
-SquareYards and Housing need a browser once: `make install-browsers`.
+**Housing** needs a browser once: `make install-browsers`. **SquareYards no
+longer does** — it is a plain HTTP crawl. If you point Playwright at
+SquareYards you will get HTTP 403: their WAF fingerprints headless Chromium,
+while an ordinary request returns 200. Adding a browser there makes it worse,
+not better.
+
+### Verifying the SquareYards path specifically
+
+```bash
+.venv/bin/homz scrape list
+#    → squareyards must show browser = "no"
+
+.venv/bin/homz scrape source squareyards --city gurgaon --max-items 8 --dry-run
+```
+
+Success looks like `status=success`, `blocked=0`, `errors=0` and **parsed=8**,
+in a few seconds. Read the log line, not just the table:
+
+| What you see | What it means |
+|---|---|
+| `found=36` then `parsed=N` | working — 36 is the listing page's JSON-LD count |
+| `discover.cards … found=0` | the response body was unreadable — see the brotli note below |
+| `blocked … forbidden (HTTP 403)` | something reintroduced the browser path |
+| `Executable doesn't exist at …chrome-headless-shell` | stale Playwright cache; `make install-browsers` |
+
+> **The 0-records trap.** `common/useragent.py` advertises `Accept-Encoding:
+> gzip, deflate, br`. Without the `brotli` package httpx hands back raw
+> compressed bytes as `.text` — HTTP 200, nothing blocked, and *every* HTML
+> source silently parses to zero records. `requirements.txt` pins
+> `httpx[http2,brotli]`, so re-run `make install` if you see this.
 
 **Selectors for MagicBricks and Housing were written from their documented
 structure, not a live crawl.** Run the `--dry-run` first and check you get
@@ -125,6 +155,48 @@ curl -s -X POST http://localhost:8000/ingest/page \
 .venv/bin/homz enrich scores    # investment/risk/location scores — free, no LLM
 .venv/bin/homz ops status       # what ran, what failed
 ```
+
+---
+
+## 4b. Publish to the website
+
+Scraping fills MongoDB. **MongoDB is not what the website reads** — the site
+fetches `…/api/data?city={segment}`, so without this step the scrapers can run
+perfectly and the site will never change. This is the step that was missing
+entirely, and it is the first thing to check when "scraping works but the site
+looks the same".
+
+```bash
+.venv/bin/homz export feed --out ./data/feed --indent
+```
+
+You get one file per city segment, in exactly the envelope the front end
+already consumes:
+
+```
+ggnResidentialProjects.json   ggnCommercialProjects.json
+noidaResidentialProjects.json …and so on, 10 files
+```
+
+Expected output is a table of segment counts plus, usually, a line like
+`Withheld 4 stub project(s)…`. That is not an error: SquareYards publishes
+registered-but-unannounced projects with no price, configurations or
+amenities, and publishing them would put blank cards on the site. They stay in
+the warehouse and appear automatically once the builder announces details.
+
+Sanity-check a file before shipping it:
+
+```bash
+jq '{total, first: .results[0] | {projectTitle, location, price, BHKType, updatedAt}}' \
+   data/feed/ggnResidentialProjects.json
+```
+
+Every record should have a real `location` ("Sector 80, Gurgaon" — *not* a
+sentence starting "Explore…"), and `updatedAt` should be the scrape time. If
+`total` is 0, the warehouse is empty: scrape first, then re-export.
+
+**Then someone must serve those files at the URL the site fetches.** That hop
+is deployment-specific and is the one remaining manual link in the chain.
 
 ---
 
