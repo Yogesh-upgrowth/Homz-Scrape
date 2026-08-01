@@ -19,6 +19,7 @@ Each has a generic fallback so a class rename degrades rather than breaks.
 
 from __future__ import annotations
 
+import json
 import re
 from decimal import Decimal
 
@@ -75,14 +76,66 @@ def extract_project_id(url: str) -> str | None:
 # ---------------------------------------------------------------------------
 
 
-def parse_project_cards(html: str, *, base_url: str = BASE_URL) -> list[str]:
-    """Project detail URLs from a listing/hot-selling page."""
-    from homz.common.parsing import absolute_url, canonical_url
+def _iter_jsonld(html: str):
+    """Yield every JSON-LD object embedded in the page, flattening @graph/lists."""
+    for block in re.findall(
+        r'<script[^>]+type=["\']application/ld\+json["\'][^>]*>(.*?)</script>',
+        html,
+        re.S | re.I,
+    ):
+        try:
+            data = json.loads(block.strip())
+        except (ValueError, TypeError):
+            continue
+        stack = [data]
+        while stack:
+            node = stack.pop()
+            if isinstance(node, list):
+                stack.extend(node)
+            elif isinstance(node, dict):
+                yield node
+                if isinstance(node.get("@graph"), list):
+                    stack.extend(node["@graph"])
 
-    soup = BeautifulSoup(html, "lxml")
+
+def parse_jsonld_project_urls(html: str) -> list[str]:
+    """Project URLs from the page's schema.org `Product` blocks.
+
+    Listing pages render their card anchors client-side, but every card is also
+    published as JSON-LD for search engines — server-side, in the initial HTML.
+    Reading that is both cheaper and sturdier than driving a browser to
+    materialise anchors the page already describes.
+    """
+    from homz.common.parsing import canonical_url
+
     urls: list[str] = []
     seen: set[str] = set()
+    for node in _iter_jsonld(html):
+        if node.get("@type") != "Product":
+            continue
+        url = node.get("url") or (node.get("offers") or {}).get("url")
+        if not isinstance(url, str) or "squareyards.com" not in url:
+            continue
+        key = canonical_url(url)
+        if key in seen:
+            continue
+        seen.add(key)
+        urls.append(key)
+    return urls
 
+
+def parse_project_cards(html: str, *, base_url: str = BASE_URL) -> list[str]:
+    """Project detail URLs from a listing/hot-selling page.
+
+    JSON-LD first (present in the server-rendered HTML), then card anchors —
+    which only exist once the page's JS has run.
+    """
+    from homz.common.parsing import absolute_url, canonical_url
+
+    urls = parse_jsonld_project_urls(html)
+    seen: set[str] = set(urls)
+
+    soup = BeautifulSoup(html, "lxml")
     for anchor in domx.select_all(
         soup,
         ".project-card .heading-body a.projectDetailUrl",

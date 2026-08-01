@@ -22,7 +22,11 @@ typer>=0.15.0
 rich>=13.9.4
 
 # ---- scraping -----------------------------------------------------------
-httpx[http2]>=0.28.0
+# `brotli` is not optional: common/useragent.py advertises "Accept-Encoding:
+# gzip, deflate, br" to stay consistent with the browser UA it claims, and
+# without a decoder httpx hands back raw compressed bytes as `.text` — a
+# silent 200-OK that parses to zero records.
+httpx[http2,brotli]>=0.28.0
 beautifulsoup4>=4.12.3
 lxml>=5.3.0
 playwright>=1.49.0

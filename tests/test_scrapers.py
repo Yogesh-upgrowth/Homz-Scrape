@@ -508,3 +508,103 @@ class TestJobStatus:
         assert sy.build_city_url("Greater Noida") == (
             "https://www.squareyards.com/new-projects-in-greater-noida"
         )
+
+
+SY_LISTING_JSONLD_HTML = """
+<html><body>
+  <div class="project-card"><span>anchors are added by JS, not present here</span></div>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[]}
+  </script>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"Product","name":"Eldeco Terra And Sol",
+   "url":"https://www.squareyards.com/eldeco-terra-and-sol-sector-80-gurgaon-npd-344020",
+   "offers":{"@type":"Offer","price":28500000,"priceCurrency":"INR"}}
+  </script>
+  <script type="application/ld+json">
+  [{"@context":"https://schema.org","@type":"Product","name":"Conscient Parq",
+    "url":"https://www.squareyards.com/gurgaon-residential-property/conscient-parq/247842/project"},
+   {"@context":"https://schema.org","@type":"Product","name":"Dup",
+    "url":"https://www.squareyards.com/eldeco-terra-and-sol-sector-80-gurgaon-npd-344020"}]
+  </script>
+  <script type="application/ld+json">{ this is not valid json </script>
+</body></html>
+"""
+
+
+class TestSquareYardsListingDiscovery:
+    """Listing pages render card anchors client-side but publish every project
+    as schema.org JSON-LD server-side — that is what discovery reads, so the
+    source needs no browser."""
+
+    def test_extracts_product_urls_without_anchors(self) -> None:
+        urls = sy.parse_jsonld_project_urls(SY_LISTING_JSONLD_HTML)
+        assert urls == [
+            "https://www.squareyards.com/eldeco-terra-and-sol-sector-80-gurgaon-npd-344020",
+            "https://www.squareyards.com/gurgaon-residential-property/conscient-parq/247842/project",
+        ]
+
+    def test_malformed_block_does_not_break_the_page(self) -> None:
+        # One unparseable <script> must not cost us the valid ones.
+        assert len(sy.parse_jsonld_project_urls(SY_LISTING_JSONLD_HTML)) == 2
+
+    def test_ignores_non_product_types(self) -> None:
+        html = """<script type="application/ld+json">
+        {"@type":"BreadcrumbList","url":"https://www.squareyards.com/nope"}
+        </script>"""
+        assert sy.parse_jsonld_project_urls(html) == []
+
+    def test_card_parser_falls_back_to_jsonld(self) -> None:
+        # parse_project_cards is what the scraper calls; it must find the
+        # projects even when no anchor has been rendered.
+        assert len(sy.parse_project_cards(SY_LISTING_JSONLD_HTML)) == 2
+
+    def test_scraper_declares_no_browser(self) -> None:
+        from homz.scrapers.squareyards.scraper import SquareYardsScraper
+
+        assert SquareYardsScraper.needs_browser is False
+
+
+class TestSquareYardsCityMatcher:
+    """Sitemap URLs are filtered by city slug; "noida" must not swallow
+    "greater-noida", which would silently merge two markets."""
+
+    def test_noida_excludes_greater_noida(self) -> None:
+        from homz.scrapers.squareyards.scraper import _city_matcher
+
+        noida = _city_matcher("noida")
+        assert noida("https://www.squareyards.com/ace-divino-sector-1-noida-npd-1234")
+        assert not noida(
+            "https://www.squareyards.com/svg-golf-avenue-upsidc-site-c-greater-noida-npd-344429"
+        )
+
+    def test_greater_noida_matches_only_itself(self) -> None:
+        from homz.scrapers.squareyards.scraper import _city_matcher
+
+        gnoida = _city_matcher("greater-noida")
+        assert gnoida(
+            "https://www.squareyards.com/svg-golf-avenue-upsidc-site-c-greater-noida-npd-344429"
+        )
+        assert not gnoida("https://www.squareyards.com/ace-divino-sector-1-noida-npd-1234")
+
+    def test_matches_both_pdp_url_shapes(self) -> None:
+        from homz.scrapers.squareyards.scraper import _city_matcher
+
+        gurgaon = _city_matcher("Gurgaon")
+        # `-{city}-npd-{id}` suffix form
+        assert gurgaon(
+            "https://www.squareyards.com/m3m-capital-financial-center-sector-113-gurgaon-npd-344591"
+        )
+        # `/{city}-residential-property/...` path form
+        assert gurgaon(
+            "https://www.squareyards.com/gurgaon-residential-property/conscient-parq/247842/project"
+        )
+        assert not gurgaon("https://www.squareyards.com/ace-divino-sector-1-noida-npd-1234")
+
+    def test_does_not_match_substring_of_another_word(self) -> None:
+        from homz.scrapers.squareyards.scraper import _city_matcher
+
+        # "delhi" should not fire on a project merely named "...delhikar..."
+        assert not _city_matcher("delhi")(
+            "https://www.squareyards.com/delhikar-heights-pune-npd-9999"
+        )
