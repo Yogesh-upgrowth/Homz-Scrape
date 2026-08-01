@@ -35,12 +35,14 @@ etl_app = typer.Typer(help="ETL and aggregation jobs.", no_args_is_help=True)
 enrich_app = typer.Typer(help="AI enrichment pipeline.", no_args_is_help=True)
 db_app = typer.Typer(help="Database maintenance.", no_args_is_help=True)
 ops_app = typer.Typer(help="Operational inspection.", no_args_is_help=True)
+export_app = typer.Typer(help="Publish the warehouse to downstream consumers.", no_args_is_help=True)
 
 app.add_typer(scrape_app, name="scrape")
 app.add_typer(etl_app, name="etl")
 app.add_typer(enrich_app, name="enrich")
 app.add_typer(db_app, name="db")
 app.add_typer(ops_app, name="ops")
+app.add_typer(export_app, name="export")
 
 console = Console()
 log = get_logger(__name__)
@@ -668,6 +670,59 @@ def _render_pipeline_results(results: list[Any]) -> None:
                 )
                 for sample in report.get("error_samples", [])[:3]:
                     console.print(f"  [dim]{sample}[/dim]")
+
+
+@export_app.command("feed")
+def export_feed(
+    out: str = typer.Option("./data/feed", "--out", help="Directory to write segment JSON into"),
+    limit: int = typer.Option(500, "--limit", help="Records per page, matching the API default"),
+    indent: bool = typer.Option(False, "--indent", help="Pretty-print (larger files)"),
+) -> None:
+    """Write the website's `/api/data` payloads from the warehouse.
+
+    Produces one file per city segment (`ggnResidentialProjects.json`, …) in
+    exactly the envelope the front end already consumes, so publishing them
+    refreshes the site without a front-end change.
+    """
+    from pathlib import Path
+
+    from homz.db.mongo import get_database
+    from homz.services import feed as feed_service
+
+    async def _run() -> tuple[dict[str, list], int]:
+        db = get_database()
+        projects = await feed_service.load_projects(db)
+        return feed_service.partition(projects)
+
+    buckets, withheld = asyncio.run(_run())
+    target = Path(out)
+    target.mkdir(parents=True, exist_ok=True)
+
+    table = Table("segment", "projects", "file")
+    total = 0
+    for segment, records in buckets.items():
+        payload = feed_service.build_response(segment, records, limit=limit)
+        path = target / f"{segment}.json"
+        path.write_text(
+            json.dumps(payload, default=feed_service._default, indent=2 if indent else None),
+            encoding="utf-8",
+        )
+        total += len(records)
+        table.add_row(segment, str(len(records)), str(path))
+
+    console.print(table)
+    if withheld:
+        console.print(
+            f"[dim]Withheld {withheld} stub project(s) with no price, configurations "
+            f"or amenities — they stay in the warehouse and publish once details appear.[/dim]"
+        )
+    if total == 0:
+        console.print(
+            "[yellow]No projects in the warehouse — run `homz scrape source squareyards` "
+            "first, then re-export.[/yellow]"
+        )
+    else:
+        console.print(f"[green]Exported {total} projects across {len(buckets)} segments.[/green]")
 
 
 if __name__ == "__main__":
