@@ -93,6 +93,12 @@ def to_listing_feed_record(record: PropertyRecord) -> dict[str, Any]:
     """One warehouse property in the shape a category+city feed file serves."""
     gallery, interior, master_plan = _split_images(record)
     is_rent = record.listing_type is ListingType.RENT
+    # investment_score/risk_score/location_score are written straight onto the
+    # Mongo document by the enrichment pipeline (homz enrich scores) — they
+    # aren't part of PropertyRecord's schema, so load_properties() stashes
+    # them here rather than threading a second parameter through every
+    # function in this module just to carry three optional numbers.
+    scores = record.raw.get("_scores", {})
     return {
         "title": record.title or record.project_name or "",
         "location": _location(record),
@@ -119,6 +125,11 @@ def to_listing_feed_record(record: PropertyRecord) -> dict[str, Any]:
         "landmarks": _landmarks(record),
         "listingUrl": record.listing_url,
         "updatedAt": _iso(record.scraped_at),
+        # Free, deterministic scores (0-100) from `homz enrich scores` — no
+        # LLM involved. None until enrichment has run for this record.
+        "investmentScore": scores.get("investment_score"),
+        "riskScore": scores.get("risk_score"),
+        "locationScore": scores.get("location_score"),
     }
 
 
@@ -210,5 +221,14 @@ async def load_properties(db: Any) -> list[PropertyRecord]:
             async for doc in cursor:
                 record = record_from_doc(doc)
                 if record is not None:
+                    # See the comment in to_listing_feed_record() — these
+                    # three fields live on the Mongo document, not the
+                    # PropertyRecord schema, so record_from_doc() already
+                    # dropped them by the time we get here.
+                    record.raw["_scores"] = {
+                        "investment_score": doc.get("investment_score"),
+                        "risk_score": doc.get("risk_score"),
+                        "location_score": doc.get("location_score"),
+                    }
                     out.append(record)
     return out

@@ -63,9 +63,30 @@ class TestFeedContract:
             "configuration", "bedrooms", "propertyType", "listingType", "isCommercial",
             "reraId", "projectStatus", "possession", "builderDescription", "aboutProject",
             "amenities", "specifications", "images", "interiorImages", "masterPlan",
-            "landmarks", "listingUrl", "updatedAt",
+            "landmarks", "listingUrl", "updatedAt", "investmentScore", "riskScore",
+            "locationScore",
         ):
             assert key in record, f"missing {key}"
+
+    def test_scores_default_to_none_before_enrichment(self) -> None:
+        record = listings_feed.to_listing_feed_record(make_property())
+        assert record["investmentScore"] is None
+        assert record["riskScore"] is None
+        assert record["locationScore"] is None
+
+    def test_scores_surface_once_enrichment_has_run(self) -> None:
+        # investment_score/risk_score/location_score live on the Mongo doc,
+        # not the PropertyRecord schema — load_properties() stashes them in
+        # record.raw["_scores"] since record_from_doc() would otherwise drop
+        # them; this pins that hand-off.
+        enriched = make_property()
+        enriched.raw["_scores"] = {
+            "investment_score": 72.5, "risk_score": 18.0, "location_score": 65.0,
+        }
+        record = listings_feed.to_listing_feed_record(enriched)
+        assert record["investmentScore"] == 72.5
+        assert record["riskScore"] == 18.0
+        assert record["locationScore"] == 65.0
 
     def test_emits_freshness(self) -> None:
         record = listings_feed.to_listing_feed_record(make_property())
