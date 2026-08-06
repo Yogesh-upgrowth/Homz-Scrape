@@ -220,6 +220,15 @@ def parse_property_detail(
     floor_number, total_floors = parse_floor(spec("floor"))
 
     property_type = parse_property_type(spec("property type"), title, url)
+    # `parse_listing_type()` has no commercial branch — it only ever returns
+    # PG/RENT/NEW_LAUNCH/RESALE/SALE/PROJECT/UNKNOWN, so an office-for-rent
+    # listing would otherwise land under residential Rent. Commercial is its
+    # own top-level category (by design, not by is_commercial flag alone —
+    # see docs/listings-feed-contract.md), so it must win over everything
+    # except PG, which is never commercial in practice.
+    commercial = is_commercial(property_type, title, url)
+    if commercial and listing_type is not ListingType.PG:
+        listing_type = ListingType.COMMERCIAL
     possession_raw = spec("possession", "status", "availability")
     possession_status = parse_possession_status(possession_raw or "")
     if possession_status is PossessionStatus.UNKNOWN and listing_type is ListingType.RENT:
@@ -318,7 +327,7 @@ def parse_property_detail(
         listing_type=listing_type,
         property_type=property_type,
         property_type_raw=spec("property type"),
-        is_commercial=is_commercial(property_type, title, url),
+        is_commercial=commercial,
         configuration=normalize_configuration(config_text),
         bedrooms=bedrooms,
         bathrooms=parse_int(spec("bathroom")),

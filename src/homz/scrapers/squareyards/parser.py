@@ -269,8 +269,15 @@ def project_to_property(record: ProjectRecord) -> PropertyRecord:
     """Project pages also belong in `properties` so they show up in unified
     search alongside individual listings."""
     property_type = parse_property_type(record.name, record.project_url)
+    commercial = is_commercial(property_type, record.name)
+    # Commercial is its own top-level category by design (see
+    # docs/listings-feed-contract.md in the export layer) — a commercial
+    # project must win over the new-launch/project split, or it silently
+    # lands under Sale instead, same bug as MagicBricks had.
     listing_type = (
-        ListingType.NEW_LAUNCH
+        ListingType.COMMERCIAL
+        if commercial
+        else ListingType.NEW_LAUNCH
         if record.status in {PossessionStatus.NEW_LAUNCH, PossessionStatus.UPCOMING}
         else ListingType.PROJECT
     )
@@ -289,7 +296,7 @@ def project_to_property(record: ProjectRecord) -> PropertyRecord:
         developer_name=record.builder_name,
         listing_type=listing_type,
         property_type=property_type,
-        is_commercial=is_commercial(property_type, record.name),
+        is_commercial=commercial,
         configuration=smallest.configuration if smallest else None,
         bedrooms=smallest.bedrooms if smallest else None,
         price=record.price_min,

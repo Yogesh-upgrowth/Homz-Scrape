@@ -74,6 +74,20 @@ MB_DETAIL_HTML = """
 </body></html>
 """
 
+MB_COMMERCIAL_RENT_HTML = """
+<html><head>
+  <meta property="og:title" content="Office Space for Rent in DLF Cyber City, Gurgaon"/>
+</head><body>
+  <h1 class="mb-ldp__dtls__title">Office Space for Rent in DLF Cyber City</h1>
+  <div class="mb-ldp__dtls__price">₹ 1,50,000</div>
+  <ul class="mb-ldp__dtls__body__list">
+    <li class="mb-ldp__dtls__body__list--item">
+      <div class="mb-ldp__dtls__body__list--label">Property Type</div>
+      <div class="mb-ldp__dtls__body__list--value">Office Space</div></li>
+  </ul>
+</body></html>
+"""
+
 MB_SEARCH_HTML = """
 <html><body><div class="mb-srp__list">
   <div class="mb-srp__card">
@@ -206,6 +220,22 @@ class TestMagicBricksParser:
         assert "for-rent-in-gurgaon" in url
         assert url.endswith("page=3")
 
+    def test_commercial_listing_wins_over_rent(self) -> None:
+        """`parse_listing_type()` alone has no commercial branch — an office
+        for rent must still land under Commercial, not residential Rent, or
+        the Commercial category feed segment stays permanently empty."""
+        record = mb.parse_property_detail(MB_COMMERCIAL_RENT_HTML, "https://x/pdpid-2")
+        assert record is not None
+        assert record.listing_type is ListingType.COMMERCIAL
+        assert record.is_commercial is True
+
+    def test_residential_rent_is_unaffected(self) -> None:
+        record = mb.parse_property_detail(
+            MB_DETAIL_HTML, "https://www.magicbricks.com/propertyDetails/x-FOR-Rent-pdpid-3"
+        )
+        assert record.listing_type is ListingType.RENT
+        assert record.is_commercial is False
+
 
 # ---------------------------------------------------------------------------
 # SquareYards
@@ -258,6 +288,18 @@ class TestSquareYardsParser:
         assert prop.area_sqft == 2100.0
         assert prop.price == Decimal("31000000")
         assert prop.content_hash
+
+    def test_commercial_project_wins_over_new_launch(self) -> None:
+        """Same gap as MagicBricks: the new_launch/project split alone has no
+        commercial branch, so a commercial project would otherwise land under
+        Sale and the Commercial feed segment stays permanently empty."""
+        commercial_html = SY_PDP_HTML.replace(
+            "Godrej Aristocrat\nSector 49, Gurgaon", "M3M Cornerwalk Office Space\nSector 74, Gurgaon"
+        )
+        project = sy.parse_project_detail(commercial_html, "https://x/p-999999")
+        prop = sy.project_to_property(project)
+        assert prop.listing_type == ListingType.COMMERCIAL
+        assert prop.is_commercial is True
 
 
 # ---------------------------------------------------------------------------
