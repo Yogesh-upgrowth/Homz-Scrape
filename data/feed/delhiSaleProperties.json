@@ -6,6 +6,7 @@
   "total": 147,
   "results": [
     {
+      "id": "magicbricks:4d423735343436353033",
       "title": "1 BHK 50 Sqyrd Flat For Sale in Chander Vihar, New Delhi",
       "location": "Chander Vihar, Delhi",
       "price": "13 L",
@@ -82,9 +83,11 @@
       "updatedAt": "2026-07-30T15:44:58.107000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423733343637323739",
       "title": "2 BHK 450 Sqft Flat For Sale in Najafgarh, New Delhi",
       "location": "Najafgarh, Delhi",
       "price": "15.5 L",
@@ -143,9 +146,11 @@
       "updatedAt": "2026-07-30T15:44:07.941000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423634323933323731",
       "title": "2 BHK 420 Sqft Flat For Sale in Uttam Nagar, New Delhi",
       "location": "Uttam Nagar, Delhi",
       "price": "17 L",
@@ -245,9 +250,11 @@
       "updatedAt": "2026-07-30T15:47:15.958000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831303437323735",
       "title": "2 BHK 450 Sqft Flat For Sale in Dwarka Mor, New Delhi",
       "location": "Delhi",
       "price": "20 L",
@@ -307,9 +314,11 @@
       "updatedAt": "2026-07-30T15:47:10.454000+00:00",
       "investmentScore": 38.36,
       "riskScore": 32.0,
-      "locationScore": 43.2
+      "locationScore": 43.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373531313237",
       "title": "1 BHK 446 Sqft Flat For Sale in Uttam Nagar West, New Delhi",
       "location": "Uttam Nagar West, Delhi",
       "price": "23 L",
@@ -392,9 +401,11 @@
       "updatedAt": "2026-07-30T15:42:04.673000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423232383635373535",
       "title": "1 BHK 450 Sqft Flat For Sale in LIG DDA Flat, Jain Colony, New Delhi",
       "location": "LIG DDA, Delhi",
       "price": "25 L",
@@ -564,9 +575,11 @@
       "updatedAt": "2026-07-30T15:48:33.003000+00:00",
       "investmentScore": 36.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333538313633",
       "title": "2 BHK 700 Sqft Flat For Sale in Gadaipur, New Delhi",
       "location": "Gadaipur, Delhi",
       "price": "30 L",
@@ -666,9 +679,11 @@
       "updatedAt": "2026-07-30T15:42:56.455000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833393730343131",
       "title": "2 BHK 85 Sqyrd Flat For Sale in Vipin Garden Extension North Block, New Delhi",
       "location": "Delhi",
       "price": "36.5 L",
@@ -760,9 +775,11 @@
       "updatedAt": "2026-07-30T15:45:09.059000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423733373432383339",
       "title": "3 BHK 78 Sqyrd Flat For Sale in Mohan Garden, Dwarka, New Delhi",
       "location": "Mohan Garden, Delhi",
       "price": "37 L",
@@ -852,9 +869,11 @@
       "updatedAt": "2026-07-30T15:46:51.607000+00:00",
       "investmentScore": 38.36,
       "riskScore": 32.0,
-      "locationScore": 43.2
+      "locationScore": 43.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423636313732313439",
       "title": "3 BHK 1200 Sqft Flat For Sale in Dallupura, New Delhi",
       "location": "Dallupura, Delhi",
       "price": "38 L",
@@ -942,9 +961,11 @@
       "updatedAt": "2026-07-30T15:46:22.034000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423439353235393534",
       "title": "2 BHK 750 Sqft Flat For Sale in Mahendra Park, New Delhi",
       "location": "Mahendra Park, Delhi",
       "price": "42 L",
@@ -1040,9 +1061,11 @@
       "updatedAt": "2026-07-30T15:42:43.687000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363732313735",
       "title": "1 BHK 40 Sqyrd Flat For Sale in Sector 20 Rohini, New Delhi",
       "location": "Sector 20, Delhi",
       "price": "43 L",
@@ -1129,9 +1152,11 @@
       "updatedAt": "2026-07-30T15:48:23.255000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423638313036313137",
       "title": "2 BHK 720 Sqft Flat For Sale in Shahdara, New Delhi",
       "location": "Shahdara, Delhi",
       "price": "45 L",
@@ -1211,9 +1236,11 @@
       "updatedAt": "2026-07-30T15:46:19.218000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423732383730313339",
       "title": "1 BHK 450 Sqft Flat For Sale in Jangpura B, Jangpura, New Delhi",
       "location": "Jangpura B, Delhi",
       "price": "45 L",
@@ -1294,9 +1321,11 @@
       "updatedAt": "2026-07-30T15:48:09.152000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303432303137",
       "title": "3 BHK 750 Sqft Flat For Sale in Jain Colony Matiala, New Delhi",
       "location": "Jain Colony Matiala, Delhi",
       "price": "48 L",
@@ -1388,9 +1417,11 @@
       "updatedAt": "2026-07-30T15:43:32.309000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833353337303439",
       "title": "3 BHK 100 Sqft Flat For Sale in Tri Nagar, New Delhi",
       "location": "Tri Nagar, Delhi",
       "price": "48 L",
@@ -1473,9 +1504,11 @@
       "updatedAt": "2026-07-30T15:48:28.399000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333235313431",
       "title": "2 BHK 650 Sqft Flat For Sale in Dilshad Colony, New Delhi",
       "location": "Dilshad Colony, Delhi",
       "price": "50 L",
@@ -1559,9 +1592,11 @@
       "updatedAt": "2026-07-30T15:44:04.240000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423435323333353439",
       "title": "3 BHK 100 Sqyrd Flat For Sale in DDA Sunrise Apartment, Sector 1 Dwarka, New Delhi",
       "location": "Sector 1, Delhi",
       "price": "50 L",
@@ -1703,9 +1738,11 @@
       "updatedAt": "2026-07-30T15:46:16.310000+00:00",
       "investmentScore": 40.11,
       "riskScore": 29.5,
-      "locationScore": 43.2
+      "locationScore": 43.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423736303231323231",
       "title": "3 BHK 850 Sqft Flat For Sale in Nawada Housing Complex, Nawada, New Delhi",
       "location": "Nawada Housing Complex, Delhi",
       "price": "50 L",
@@ -1814,9 +1851,11 @@
       "updatedAt": "2026-07-30T15:46:23.984000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423632383535323333",
       "title": "3 BHK 1000 Sqft Flat For Sale in Pochanpur Colony, New Delhi",
       "location": "Pochanpur Colony, Delhi",
       "price": "50 L",
@@ -1920,9 +1959,11 @@
       "updatedAt": "2026-07-30T15:48:04.438000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373636343031",
       "title": "2 BHK 550 Sqft Flat For Sale in Laxmi Nagar, New Delhi",
       "location": "Laxmi Nagar, Delhi",
       "price": "55 L",
@@ -2000,9 +2041,11 @@
       "updatedAt": "2026-07-30T15:41:50.928000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423738393539303031",
       "title": "2 BHK 668 Sqft Flat For Sale in Asha Park, New Delhi",
       "location": "Asha Park, Delhi",
       "price": "55 L",
@@ -2080,9 +2123,11 @@
       "updatedAt": "2026-07-30T15:45:04.602000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423637363638393131",
       "title": "2 BHK 900 Sqft Flat For Sale in Guru Angad Nagar East, New Delhi",
       "location": "Guru Angad Nagar East, Delhi",
       "price": "55 L",
@@ -2158,9 +2203,11 @@
       "updatedAt": "2026-07-30T15:48:00.094000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333139363437",
       "title": "3 BHK 950 Sqft Flat For Sale in Dwarka Mor, New Delhi",
       "location": "Delhi",
       "price": "58 L",
@@ -2268,9 +2315,11 @@
       "updatedAt": "2026-07-30T15:44:02.753000+00:00",
       "investmentScore": 39.36,
       "riskScore": 32.0,
-      "locationScore": 43.2
+      "locationScore": 43.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835303239393339",
       "title": "3 BHK 1700 Sqft Flat For Sale in Jawahar Park Khanpur, New Delhi",
       "location": "Jawahar Park Khanpur, Delhi",
       "price": "60 L",
@@ -2366,9 +2415,11 @@
       "updatedAt": "2026-07-30T15:45:25.585000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383433383831",
       "title": "3 BHK 1100 Sqft Flat For Sale in Sector 28 Rohini, New Delhi",
       "location": "Sector 28, Delhi",
       "price": "62 L",
@@ -2477,9 +2528,11 @@
       "updatedAt": "2026-07-30T15:42:51.374000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363532353531",
       "title": "3 BHK 810 Sqft Flat For Sale in Kakrola, New Delhi",
       "location": "Kakrola, Delhi",
       "price": "62 L",
@@ -2583,9 +2636,11 @@
       "updatedAt": "2026-07-30T15:43:13.583000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323433343437",
       "title": "3 BHK 1300 Sqft Flat For Sale in Mandi, New Delhi",
       "location": "Mandi, Delhi",
       "price": "65 L",
@@ -2693,9 +2748,11 @@
       "updatedAt": "2026-07-30T15:44:29.899000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373333373333",
       "title": "3 BHK 900 Sqft Flat For Sale in Narela, New Delhi",
       "location": "Narela, Delhi",
       "price": "66 L",
@@ -2773,9 +2830,11 @@
       "updatedAt": "2026-07-30T15:46:04.924000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423530333836353532",
       "title": "3 BHK 900 Sqft Flat For Sale in Guru Angad Nagar West, New Delhi",
       "location": "Guru Angad Nagar West, Delhi",
       "price": "70 L",
@@ -2854,9 +2913,11 @@
       "updatedAt": "2026-07-30T15:43:46.942000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373737333331",
       "title": "3 BHK 90 Sqyrd Flat For Sale in Ram Garh Colony, New Delhi",
       "location": "Ram Garh Colony, Delhi",
       "price": "73 L",
@@ -2920,9 +2981,11 @@
       "updatedAt": "2026-07-30T15:41:57.648000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833373734313137",
       "title": "2 BHK 80 Sqyrd Flat For Sale in Nangal Raya, New Delhi",
       "location": "Nangal Raya, Delhi",
       "price": "75 L",
@@ -3022,9 +3085,11 @@
       "updatedAt": "2026-07-30T15:46:50.200000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833393134313733",
       "title": "2 BHK 900 Sqft Flat For Sale in Shakarpur, New Delhi",
       "location": "Shakarpur, Delhi",
       "price": "79 L",
@@ -3113,9 +3178,11 @@
       "updatedAt": "2026-07-30T15:42:49.506000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323333383337",
       "title": "3 BHK 1300 Sqft Flat For Sale in Devli, New Delhi",
       "location": "Devli, Delhi",
       "price": "81 L",
@@ -3196,9 +3263,11 @@
       "updatedAt": "2026-07-30T15:42:41.670000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373338393531",
       "title": "2 BHK 840 Sqft Flat For Sale in Sector 23 Rohini, New Delhi",
       "location": "Sector 23, Delhi",
       "price": "81 L",
@@ -3289,9 +3358,11 @@
       "updatedAt": "2026-07-30T15:44:32.037000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423330313638373039",
       "title": "3 BHK 159 Sqyrd Flat For Sale in Balbir Nagar, New Delhi",
       "location": "Balbir Nagar, Delhi",
       "price": "82 L",
@@ -3374,9 +3445,11 @@
       "updatedAt": "2026-07-30T15:47:53.702000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373734363533",
       "title": "3 BHK 150 Sqyrd Flat For Sale in Chhattarpur, New Delhi",
       "location": "Chhattarpur, Delhi",
       "price": "85 L",
@@ -3461,9 +3534,11 @@
       "updatedAt": "2026-07-30T15:45:52.200000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343235313331",
       "title": "1 BHK 800 Sqft Flat For Sale in Kangra Niketan, Vikaspuri, New Delhi",
       "location": "Kangra Niketan, Delhi",
       "price": "85 L",
@@ -3591,9 +3666,11 @@
       "updatedAt": "2026-07-30T15:48:25.814000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423733393831343837",
       "title": "2 BHK 63 Sqm Flat For Sale in Dwarka, New Delhi",
       "location": "Delhi",
       "price": "88 L",
@@ -3664,9 +3741,11 @@
       "updatedAt": "2026-07-30T15:43:44.890000+00:00",
       "investmentScore": 39.36,
       "riskScore": 32.0,
-      "locationScore": 43.2
+      "locationScore": 43.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373237313833",
       "title": "3 BHK 120 Sqyrd Flat For Sale in Shyam Vihar 2, New Delhi",
       "location": "Shyam Vihar 2, Delhi",
       "price": "90 L",
@@ -3753,9 +3832,11 @@
       "updatedAt": "2026-07-30T15:46:06.746000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373238383739",
       "title": "2 BHK 800 Sqft Flat For Sale in DDA Punjabi Bagh Enclave, Punjabi Bagh Enclave, New Delhi",
       "location": "DDA Punjabi Bagh Enclave, Delhi",
       "price": "92 L",
@@ -3882,9 +3963,11 @@
       "updatedAt": "2026-07-30T15:46:08.656000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373531373237",
       "title": "4 BHK 900 Sqft Flat For Sale in Radhey Puri East, Krishna Nagar, New Delhi",
       "location": "Radhey Puri East, Delhi",
       "price": "95 L",
@@ -3952,9 +4035,11 @@
       "updatedAt": "2026-07-30T15:42:05.900000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373436303931",
       "title": "3 BHK 1080 Sqft Flat For Sale in Tri Nagar, New Delhi",
       "location": "Tri Nagar, Delhi",
       "price": "95 L",
@@ -4035,9 +4120,11 @@
       "updatedAt": "2026-07-30T15:42:16.502000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333336313733",
       "title": "1 BHK 400 Sqft Flat For Sale in DDA Flats Sector 23, Sector 23 Dwarka, New Delhi",
       "location": "Sector 23, Delhi",
       "price": "98 L",
@@ -4224,9 +4311,11 @@
       "updatedAt": "2026-07-30T15:44:25.673000+00:00",
       "investmentScore": 40.11,
       "riskScore": 29.5,
-      "locationScore": 43.2
+      "locationScore": 43.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833363339393037",
       "title": "3 BHK 990 Sqft Flat For Sale in Khirki Extension, New Delhi",
       "location": "Khirki Extension, Delhi",
       "price": "1 Cr",
@@ -4296,9 +4385,11 @@
       "updatedAt": "2026-07-30T15:45:50.143000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833363934323733",
       "title": "3 BHK 950 Sqft Flat For Sale in Yamuna Vihar, New Delhi",
       "location": "Yamuna Vihar, Delhi",
       "price": "1.05 Cr",
@@ -4378,9 +4469,11 @@
       "updatedAt": "2026-07-30T15:45:30.292000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373538313237",
       "title": "3 BHK 100 Sqyrd Flat For Sale in New Mahavir Nagar, New Delhi",
       "location": "New Mahavir Nagar, Delhi",
       "price": "1.2 Cr",
@@ -4459,9 +4552,11 @@
       "updatedAt": "2026-07-30T15:42:02.882000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830343038383033",
       "title": "3 BHK 80 Sqm Flat For Sale in Sector 23 Rohini, New Delhi",
       "location": "Sector 23, Delhi",
       "price": "1.2 Cr",
@@ -4557,9 +4652,11 @@
       "updatedAt": "2026-07-30T15:47:27.491000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423434333035303735",
       "title": "3 BHK 1200 Sqft Flat For Sale in Manas Apartments, Mayur Vihar 1, New Delhi",
       "location": "Manas Apartments, Delhi",
       "price": "1.25 Cr",
@@ -4712,9 +4809,11 @@
       "updatedAt": "2026-07-30T15:46:14.972000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383435353933",
       "title": "2 BHK 115 Sqyrd Flat For Sale in Shiv Nagar, New Delhi",
       "location": "Shiv Nagar, Delhi",
       "price": "1.27 Cr",
@@ -4814,9 +4913,11 @@
       "updatedAt": "2026-07-30T15:43:35.403000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833373131303731",
       "title": "2 BHK 1800 Sqft Flat For Sale in Raja Puri, New Delhi",
       "location": "Raja Puri, Delhi",
       "price": "1.28 Cr",
@@ -4924,9 +5025,11 @@
       "updatedAt": "2026-07-30T15:43:16.237000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423732363237343139",
       "title": "2 BHK 200 Sqyrd Flat For Sale in Inderpuri, New Delhi",
       "location": "Inderpuri, Delhi",
       "price": "1.38 Cr",
@@ -4990,9 +5093,11 @@
       "updatedAt": "2026-07-30T15:47:42.401000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373632393035",
       "title": "3 BHK 125 Sqyrd Flat For Sale in Geeta Colony, New Delhi",
       "location": "Geeta Colony, Delhi",
       "price": "1.39 Cr",
@@ -5072,9 +5177,11 @@
       "updatedAt": "2026-07-30T15:41:48.349000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737373033313035",
       "title": "4 BHK 250 Sqyrd Flat For Sale in Mahendru Enclave, Gujranwala Town, New Delhi",
       "location": "Mahendru Enclave, Delhi",
       "price": "1.5 Cr",
@@ -5175,9 +5282,11 @@
       "updatedAt": "2026-07-30T15:43:50.179000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373431383337",
       "title": "2 BHK 1400 Sqft Flat For Sale in East Of Kailash, New Delhi",
       "location": "East Of Kailash, Delhi",
       "price": "1.55 Cr",
@@ -5253,9 +5362,11 @@
       "updatedAt": "2026-07-30T15:42:13.118000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373630393539",
       "title": "2 BHK 850 Sqft Flat For Sale in Malviya Nagar, New Delhi",
       "location": "Malviya Nagar, Delhi",
       "price": "1.65 Cr",
@@ -5363,9 +5474,11 @@
       "updatedAt": "2026-07-30T15:44:54.458000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383832343335",
       "title": "4 BHK 1000 Sqft Flat For Sale in Subhash Nagar, New Delhi",
       "location": "Subhash Nagar, Delhi",
       "price": "1.7 Cr",
@@ -5473,9 +5586,11 @@
       "updatedAt": "2026-07-30T15:43:57.689000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313439373931",
       "title": "3 BHK 1640 Sqft Flat For Sale in Block C Dilshad Garden, New Delhi",
       "location": "Block C Dilshad Garden, Delhi",
       "price": "1.75 Cr",
@@ -5575,9 +5690,11 @@
       "updatedAt": "2026-07-30T15:43:41.886000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423537313431343331",
       "title": "3 BHK 950 Sqft Flat For Sale in Kohinoor Apartment, Kalkaji, New Delhi",
       "location": "Kohinoor, Delhi",
       "price": "1.75 Cr",
@@ -5678,9 +5795,11 @@
       "updatedAt": "2026-07-30T15:44:19.733000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737393039333533",
       "title": "2 BHK 1000 Sqft Flat For Sale in DDA Shakti Apartment, Sector 9 Rohini, New Delhi",
       "location": "Sector 9, Delhi",
       "price": "1.75 Cr",
@@ -5817,9 +5936,11 @@
       "updatedAt": "2026-07-30T15:47:00.619000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833353034393539",
       "title": "3 BHK 1300 Sqft Flat For Sale in Vikaspuri, New Delhi",
       "location": "Vikaspuri, Delhi",
       "price": "1.85 Cr",
@@ -5923,9 +6044,11 @@
       "updatedAt": "2026-07-30T15:42:28.244000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833383433323537",
       "title": "3 BHK 1000 Sqft Flat For Sale in Priyadarshini Vihar, New Delhi",
       "location": "Priyadarshini Vihar, Delhi",
       "price": "1.95 Cr",
@@ -6010,9 +6133,11 @@
       "updatedAt": "2026-07-30T15:46:36.660000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373533373535",
       "title": "4 BHK 1750 Sqft Flat For Sale in Dilshad Colony, New Delhi",
       "location": "Dilshad Colony, Delhi",
       "price": "2 Cr",
@@ -6120,9 +6245,11 @@
       "updatedAt": "2026-07-30T15:42:35.044000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333636353237",
       "title": "2 BHK 980 Sqft Flat For Sale in Sector 3 Dwarka, New Delhi",
       "location": "Sector 3, Delhi",
       "price": "2 Cr",
@@ -6226,9 +6353,11 @@
       "updatedAt": "2026-07-30T15:43:08.901000+00:00",
       "investmentScore": 37.36,
       "riskScore": 32.0,
-      "locationScore": 43.2
+      "locationScore": 43.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423636303636393639",
       "title": "3 BHK 1100 Sqft Flat For Sale in Bhera Enclave, New Delhi",
       "location": "Bhera Enclave, Delhi",
       "price": "2.1 Cr",
@@ -6336,9 +6465,11 @@
       "updatedAt": "2026-07-30T15:46:29.948000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313832393839",
       "title": "2 BHK 1000 Sqft Flat For Sale in DDA Kallol Apartments, IP Extension, New Delhi",
       "location": "DDA Kallol Apartments, Delhi",
       "price": "2.11 Cr",
@@ -6517,9 +6648,11 @@
       "updatedAt": "2026-07-30T15:42:32.411000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833393735393733",
       "title": "3 BHK 900 Sqft Flat For Sale in Old Rajendra Nagar, New Delhi",
       "location": "Old Rajendra Nagar, Delhi",
       "price": "2.15 Cr",
@@ -6624,9 +6757,11 @@
       "updatedAt": "2026-07-30T15:43:27.399000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323834393631",
       "title": "4 BHK 1450 Sqft Flat For Sale in DDA Flats Pocket 6, Mayur Vihar Phase 3, New Delhi",
       "location": "DDA Flats Pocket 6, Delhi",
       "price": "2.15 Cr",
@@ -6768,9 +6903,11 @@
       "updatedAt": "2026-07-30T15:46:44.958000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830393131323635",
       "title": "4 BHK 2000 Sqft Flat For Sale in Jyoti Nagar West, New Delhi",
       "location": "Jyoti Nagar West, Delhi",
       "price": "2.25 Cr",
@@ -6874,9 +7011,11 @@
       "updatedAt": "2026-07-30T15:42:22.900000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423736393130393935",
       "title": "2 BHK 1000 Sqft Flat For Sale in RWA POCKET 1 JASOLA, Jasola Vihar, New Delhi",
       "location": "RWA POCKET 1 JASOLA, Delhi",
       "price": "2.25 Cr",
@@ -6976,9 +7115,11 @@
       "updatedAt": "2026-07-30T15:47:31.081000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303830393535",
       "title": "3 BHK 1400 Sqft Flat For Sale in DDA Navniti Apartment, IP Extension, New Delhi",
       "location": "DDA Navniti, Delhi",
       "price": "2.25 Cr",
@@ -7125,9 +7266,11 @@
       "updatedAt": "2026-07-30T15:48:20.973000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313730333131",
       "title": "2 BHK 900 Sqft Flat For Sale in Dayanand Colony, New Delhi",
       "location": "Dayanand Colony, Delhi",
       "price": "2.4 Cr",
@@ -7227,9 +7370,11 @@
       "updatedAt": "2026-07-30T15:44:06.011000+00:00",
       "investmentScore": 28.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373439343335",
       "title": "4 BHK 1700 Sqft Flat For Sale in Mahabubabad, New Delhi",
       "location": "Mahabubabad, Delhi",
       "price": "2.5 Cr",
@@ -7320,9 +7465,11 @@
       "updatedAt": "2026-07-30T15:42:08.920000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423639303031393433",
       "title": "3 BHK 1800 Sqft Flat For Sale in DDA Block KD, Ashok Vihar Phase 1, New Delhi",
       "location": "DDA Block KD, Delhi",
       "price": "2.5 Cr",
@@ -7481,9 +7628,11 @@
       "updatedAt": "2026-07-30T15:45:21.941000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835303532353139",
       "title": "4 BHK 1900 Sqft Flat For Sale in Skylark Apartment, DDA Flats Anand Vihar, New Delhi",
       "location": "Skylark, Delhi",
       "price": "2.5 Cr",
@@ -7591,9 +7740,11 @@
       "updatedAt": "2026-07-30T15:47:40.312000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363932313933",
       "title": "3 BHK 1100 Sqft Flat For Sale in Navkunj Apartment, IP Extension, New Delhi",
       "location": "Navkunj, Delhi",
       "price": "2.6 Cr",
@@ -7767,9 +7918,11 @@
       "updatedAt": "2026-07-30T15:44:15.854000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423735373432303133",
       "title": "3 BHK 1300 Sqft Flat For Sale in DDA Tower Apartments, Pitampura, New Delhi",
       "location": "DDA Tower Apartments, Delhi",
       "price": "2.68 Cr",
@@ -7921,9 +8074,11 @@
       "updatedAt": "2026-07-30T15:46:39.334000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373635353235",
       "title": "3 BHK 1440 Sqyrd Flat For Sale East of Kailash Block D, New Delhi",
       "location": "Delhi",
       "price": "2.75 Cr",
@@ -8014,9 +8169,11 @@
       "updatedAt": "2026-07-30T15:44:36.738000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833353431363739",
       "title": "3 BHK 1600 Sqft Flat For Sale in South Extension 1, New Delhi",
       "location": "South Extension 1, Delhi",
       "price": "2.75 Cr",
@@ -8124,9 +8281,11 @@
       "updatedAt": "2026-07-30T15:45:12.136000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373730353533",
       "title": "4 BHK 2200 Sqft Flat For Sale Sector 18 Dwarka, New Delhi",
       "location": "Sector 18, Delhi",
       "price": "2.84 Cr",
@@ -8247,9 +8406,11 @@
       "updatedAt": "2026-07-30T15:44:39.830000+00:00",
       "investmentScore": 38.11,
       "riskScore": 29.5,
-      "locationScore": 43.2
+      "locationScore": 43.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831393736333433",
       "title": "4 BHK 1655 Sqft Flat For Sale in East End Apartments, Mayur Vihar Phase 1 Extension, New Delhi",
       "location": "East End Apartments, Delhi",
       "price": "3 Cr",
@@ -8417,9 +8578,11 @@
       "updatedAt": "2026-07-30T15:45:13.992000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423639393639303439",
       "title": "3 BHK 1250 Sqft Flat For Sale in DLF Capital Greens 1 and 2, Moti Nagar, New Delhi",
       "location": "Delhi",
       "price": "3.1 Cr",
@@ -8579,9 +8742,11 @@
       "updatedAt": "2026-07-30T15:47:24.332000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373638363833",
       "title": "3 BHK 1750 Sqft Flat For Sale in Paschim Vihar, New Delhi",
       "location": "Paschim Vihar, Delhi",
       "price": "3.2 Cr",
@@ -8665,9 +8830,11 @@
       "updatedAt": "2026-07-30T15:45:43.024000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373731363537",
       "title": "3 BHK 1000 Sqft Flat For Sale Moti Nagar, New Delhi",
       "location": "Delhi",
       "price": "3.25 Cr",
@@ -8824,9 +8991,11 @@
       "updatedAt": "2026-07-30T15:44:44.824000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833313837353439",
       "title": "3 BHK 1200 Sqft Flat For Sale in Chittaranjan Park Block B, New Delhi",
       "location": "Chittaranjan Park Block B, Delhi",
       "price": "3.5 Cr",
@@ -8934,9 +9103,11 @@
       "updatedAt": "2026-07-30T15:47:57.559000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423631393538363237",
       "title": "4 BHK 1800 Sqft Flat For Sale in DDA SFS Flats, Jasola Vihar, New Delhi",
       "location": "DDA SFS Flats, Delhi",
       "price": "3.65 Cr",
@@ -9063,9 +9234,11 @@
       "updatedAt": "2026-07-30T15:43:24.831000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833343038313835",
       "title": "3 BHK 1800 Sqft Flat For Sale in Bhera Enclave, New Delhi",
       "location": "Bhera Enclave, Delhi",
       "price": "4.45 Cr",
@@ -9146,9 +9319,11 @@
       "updatedAt": "2026-07-30T15:42:36.992000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423734333832393639",
       "title": "3 BHK 2538 Sqft Flat For Sale in Block E bindapur, New Delhi",
       "location": "Block E bindapur, Delhi",
       "price": "4.5 Cr",
@@ -9238,9 +9413,11 @@
       "updatedAt": "2026-07-30T15:44:49.289000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313939393033",
       "title": "5 BHK 2000 Sqft Flat For Sale in Godavari Apartment New Delhi, Alaknanda, New Delhi",
       "location": "Alaknanda, Delhi",
       "price": "4.75 Cr",
@@ -9376,9 +9553,11 @@
       "updatedAt": "2026-07-30T15:48:30.393000+00:00",
       "investmentScore": 33.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373637333335",
       "title": "3 BHK 1864 Sqft Flat For Sale in SI Greater Kailash Luxury Homes, GK I, New Delhi",
       "location": "GK I, Delhi",
       "price": "5 Cr",
@@ -9489,9 +9668,11 @@
       "updatedAt": "2026-07-30T15:44:46.798000+00:00",
       "investmentScore": 33.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323932313935",
       "title": "3 BHK 200 Sqyrd Flat For Sale in Block C Sarvodaya Enclave, New Delhi",
       "location": "Block C Sarvodaya Enclave, Delhi",
       "price": "6.5 Cr",
@@ -9600,9 +9781,11 @@
       "updatedAt": "2026-07-30T15:42:25.535000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383536313131",
       "title": "5 BHK 2400 Sqft Flat For Sale in Green Park, New Delhi",
       "location": "Green Park, Delhi",
       "price": "6.5 Cr",
@@ -9706,9 +9889,11 @@
       "updatedAt": "2026-07-30T15:42:54.247000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333038353533",
       "title": "3 BHK 2000 Sqft Flat For Sale in Hauz Khas, New Delhi",
       "location": "Delhi",
       "price": "7.75 Cr",
@@ -9780,9 +9965,11 @@
       "updatedAt": "2026-07-30T15:47:35.559000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833363430363039",
       "title": "4 BHK 2050 Sqft Flat For Sale in Vasant Vihar, New Delhi",
       "location": "Delhi",
       "price": "14 Cr",
@@ -9890,9 +10077,11 @@
       "updatedAt": "2026-07-30T15:47:49.623000+00:00",
       "investmentScore": 30.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333333373233",
       "title": "4 BHK 800 Sqyrd Flat For Sale in Vasant Vihar, New Delhi",
       "location": "Delhi",
       "price": "42 Cr",
@@ -9996,9 +10185,11 @@
       "updatedAt": "2026-07-30T15:48:06.855000+00:00",
       "investmentScore": 30.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373731363939",
       "title": "2 BHK 750 Sqft Flat For Sale in Private Builders Independent Floor, Badarpur, New Delhi, New Delhi",
       "location": "Private Builders Independent Floor, Delhi",
       "price": "34 L",
@@ -10071,9 +10262,11 @@
       "updatedAt": "2026-07-30T15:41:55.370000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739343635343431",
       "title": "3 BHK 990 Sqft Flat For Sale in Private Builders Independent Floor, Nirankari Colony, New Delhi",
       "location": "Private Builders Independent Floor, Delhi",
       "price": "65 L",
@@ -10160,9 +10353,11 @@
       "updatedAt": "2026-07-30T15:46:48.288000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423736303536313039",
       "title": "3 BHK 2400 Sqft Flat For Sale in Private Builders Independent Floor, Nirankari Colony, New Delhi",
       "location": "Private Builders Independent Floor, Delhi",
       "price": "7 Cr",
@@ -10270,9 +10465,11 @@
       "updatedAt": "2026-07-30T15:46:34.844000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739343436383231",
       "title": "2 BHK 250 Sqft House For Sale Karala Road, New Delhi",
       "location": "Delhi",
       "price": "18 L",
@@ -10335,9 +10532,11 @@
       "updatedAt": "2026-07-30T15:46:46.416000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830363736393733",
       "title": "4 BHK 800 Sqft House For Sale Kharak, New Delhi",
       "location": "Delhi",
       "price": "25 L",
@@ -10407,9 +10606,11 @@
       "updatedAt": "2026-07-30T15:43:19.225000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423639363239383839",
       "title": "1 BHK 25 Sqft House For Sale Phase 2 Vijay Vihar, New Delhi",
       "location": "Delhi",
       "price": "28 L",
@@ -10469,9 +10670,11 @@
       "updatedAt": "2026-07-30T15:47:47.157000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423639393636383231",
       "title": "3 BHK 50 Sqft House For Sale Uttam Nagar East, New Delhi",
       "location": "Delhi",
       "price": "85 L",
@@ -10533,9 +10736,11 @@
       "updatedAt": "2026-07-30T15:48:10.601000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737353935373533",
       "title": "4 BHK 82 Sqyrd House",
       "location": "Delhi",
       "price": "1.15 Cr",
@@ -10633,9 +10838,11 @@
       "updatedAt": "2026-07-30T15:48:12.976000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833363533323235",
       "title": "9 BHK 200 Sqft House For Sale Anup Nagar, New Delhi",
       "location": "Delhi",
       "price": "1.4 Cr",
@@ -10698,9 +10905,11 @@
       "updatedAt": "2026-07-30T15:47:43.383000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373434303831",
       "title": "4 BHK 1116 Sqft House For Sale Amanpuri, New Delhi",
       "location": "Delhi",
       "price": "1.5 Cr",
@@ -10761,9 +10970,11 @@
       "updatedAt": "2026-07-30T15:42:17.904000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423738393335353039",
       "title": "8 BHK 2400 Sqft House For Sale Subhash Nagar, New Delhi",
       "location": "Delhi",
       "price": "2 Cr",
@@ -10836,9 +11047,11 @@
       "updatedAt": "2026-07-30T15:45:05.772000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423735343331333833",
       "title": "5 BHK 1800 Sqft House For Sale Maujpur, New Delhi",
       "location": "Delhi",
       "price": "3.25 Cr",
@@ -10913,9 +11126,11 @@
       "updatedAt": "2026-07-30T15:47:37.679000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423637373732363433",
       "title": "4 BHK 1000 Sqft House For Sale in Dhirpur Village, New Delhi",
       "location": "Dhirpur Village, Delhi",
       "price": "3.6 Cr",
@@ -10972,9 +11187,11 @@
       "updatedAt": "2026-07-30T15:44:35.150000+00:00",
       "investmentScore": 28.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423430363639323133",
       "title": "6 BHK 240 Sqyrd House For Sale Bijwasan, New Delhi",
       "location": "Delhi",
       "price": "3.75 Cr",
@@ -11053,9 +11270,11 @@
       "updatedAt": "2026-07-30T15:46:54.340000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423735393037353639",
       "title": "4 BHK 70 Sqm House For Sale Prashant Vihar, New Delhi",
       "location": "Delhi",
       "price": "4.3 Cr",
@@ -11142,9 +11361,11 @@
       "updatedAt": "2026-07-30T15:46:40.727000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834343536393535",
       "title": "2 BHK 100 Sqyrd House For Sale Ashok Nagar, New Delhi",
       "location": "Delhi",
       "price": "4.3 Cr",
@@ -11227,9 +11448,11 @@
       "updatedAt": "2026-07-30T15:46:57.454000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831323635333133",
       "title": "4 BHK 1600 Sqft House",
       "location": "Delhi",
       "price": "5.25 Cr",
@@ -11317,9 +11540,11 @@
       "updatedAt": "2026-07-30T15:46:26.917000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830373837383333",
       "title": "4 BHK 270 Sqyrd House For Sale Block B Rajouri Garden, New Delhi",
       "location": "Delhi",
       "price": "15 Cr",
@@ -11403,9 +11628,11 @@
       "updatedAt": "2026-07-30T15:47:22.273000+00:00",
       "investmentScore": 30.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373232313133",
       "title": "50 Sqyrd Plot For Sale in Narela, New Delhi",
       "location": "Narela, Delhi",
       "price": "10 L",
@@ -11466,9 +11693,11 @@
       "updatedAt": "2026-07-30T15:46:09.551000+00:00",
       "investmentScore": 29.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363237363137",
       "title": "60 Sqyrd Plot For Sale in Sainik Nagar-Nawada, New Delhi",
       "location": "Sainik Nagar-Nawada, Delhi",
       "price": "80 L",
@@ -11529,9 +11758,11 @@
       "updatedAt": "2026-07-30T15:43:54.680000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833373538303533",
       "title": "130 Sqyrd Plot For Sale in Jharoda Majra Burari, New Delhi",
       "location": "Jharoda Majra Burari, Delhi",
       "price": "85 L",
@@ -11580,9 +11811,11 @@
       "updatedAt": "2026-07-30T15:47:05.317000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833383037343833",
       "title": "250 Sqyrd Plot For Sale in Sabhapur Extension, New Delhi",
       "location": "Sabhapur Extension, Delhi",
       "price": "2.25 Cr",
@@ -11643,9 +11876,11 @@
       "updatedAt": "2026-07-30T15:44:56.256000+00:00",
       "investmentScore": 28.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835303434323637",
       "title": "1400 Sqyrd Plot For Sale in Jonapur, New Delhi",
       "location": "Jonapur, Delhi",
       "price": "8.5 Cr",
@@ -11712,9 +11947,11 @@
       "updatedAt": "2026-07-30T15:44:09.677000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423539333735393335",
       "title": "3 BHK 60 Sqyrd Villa For Sale in Burari, New Delhi",
       "location": "Burari, Delhi",
       "price": "60 L",
@@ -11778,9 +12015,11 @@
       "updatedAt": "2026-07-30T15:44:21.443000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373735343439",
       "title": "1 BHK 40 Sqyrd Flat For Sale in Dwarka Mor, New Delhi",
       "location": "Delhi",
       "price": "22 L",
@@ -11863,9 +12102,11 @@
       "updatedAt": "2026-07-30T15:45:57.357000+00:00",
       "investmentScore": 38.36,
       "riskScore": 32.0,
-      "locationScore": 43.2
+      "locationScore": 43.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832303933383839",
       "title": "2 BHK 600 Sqft Flat For Sale in Mahavir Enclave Part 2, New Delhi",
       "location": "Mahavir Enclave Part 2, Delhi",
       "price": "34 L",
@@ -11969,9 +12210,11 @@
       "updatedAt": "2026-07-30T15:42:47.143000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373732353335",
       "title": "2 BHK 70 Sqyrd Flat For Sale in Mehrauli, New Delhi",
       "location": "Mehrauli, Delhi",
       "price": "36 L",
@@ -12050,9 +12293,11 @@
       "updatedAt": "2026-07-30T15:45:48.795000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373239383637",
       "title": "2 BHK 510 Sqft Flat For Sale in Paschim Vihar, New Delhi",
       "location": "Paschim Vihar, Delhi",
       "price": "50 L",
@@ -12133,9 +12378,11 @@
       "updatedAt": "2026-07-30T15:46:11.495000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373635343133",
       "title": "2 BHK 850 Sqft Flat For Sale in Tyagi Mohalla, New Delhi",
       "location": "Tyagi Mohalla, Delhi",
       "price": "65 L",
@@ -12223,9 +12470,11 @@
       "updatedAt": "2026-07-30T15:45:36.923000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363636303931",
       "title": "2 BHK 1100 Sqft Flat For Sale in Block 56 Ashok Nagar, New Delhi",
       "location": "Block 56 Ashok Nagar, Delhi",
       "price": "1.19 Cr",
@@ -12333,9 +12582,11 @@
       "updatedAt": "2026-07-30T15:43:29.960000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333635313031",
       "title": "3 BHK 856 Sqft Flat For Sale in Tilak Nagar, New Delhi",
       "location": "Tilak Nagar, Delhi",
       "price": "1.35 Cr",
@@ -12443,9 +12694,11 @@
       "updatedAt": "2026-07-30T15:43:04.431000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383039353433",
       "title": "3 BHK 900 Sqft Flat For Sale in Virender Nagar, New Delhi",
       "location": "Virender Nagar, Delhi",
       "price": "1.35 Cr",
@@ -12549,9 +12802,11 @@
       "updatedAt": "2026-07-30T15:44:13.179000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373437383937",
       "title": "3 BHK 935 Sqft Flat For Sale in Bhogal, New Delhi",
       "location": "Bhogal, Delhi",
       "price": "1.35 Cr",
@@ -12631,9 +12886,11 @@
       "updatedAt": "2026-07-30T15:44:17.572000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373631343739",
       "title": "2 BHK 750 Sqft Flat For Sale in New Govindpura, New Delhi",
       "location": "New Govindpura, Delhi",
       "price": "1.6 Cr",
@@ -12723,9 +12980,11 @@
       "updatedAt": "2026-07-30T15:41:59.421000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333335313733",
       "title": "3 BHK 1500 Sqft Flat For Sale in Sector 5 Rohini, New Delhi",
       "location": "Sector 5, Delhi",
       "price": "1.6 Cr",
@@ -12830,9 +13089,11 @@
       "updatedAt": "2026-07-30T15:43:38.563000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832373233313737",
       "title": "4 BHK 16,000 Sqft Flat For Sale in Jyoti Nagar East, New Delhi",
       "location": "Jyoti Nagar East, Delhi",
       "price": "1.97 Cr",
@@ -12940,9 +13201,11 @@
       "updatedAt": "2026-07-30T15:47:20.064000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373731343533",
       "title": "2 BHK 900 Sqft Flat For Sale in Kaveri aapt DDA flats Vasant Kunj, New Delhi",
       "location": "Delhi",
       "price": "2.1 Cr",
@@ -13029,9 +13292,11 @@
       "updatedAt": "2026-07-30T15:45:46.513000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832363033313739",
       "title": "2 BHK 900 Sqft Flat For Sale in Kalkaji, New Delhi",
       "location": "Kalkaji, Delhi",
       "price": "3 Cr",
@@ -13139,9 +13404,11 @@
       "updatedAt": "2026-07-30T15:42:59.684000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373638313037",
       "title": "3 BHK 170 Sqyrd Flat For Sale in Ashoka Niketan, New Delhi",
       "location": "Ashoka Niketan, Delhi",
       "price": "3.15 Cr",
@@ -13218,9 +13485,11 @@
       "updatedAt": "2026-07-30T15:45:35.208000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833323736323137",
       "title": "3 BHK 1683 Sqft Flat For Sale in Preet Vihar, New Delhi",
       "location": "Preet Vihar, Delhi",
       "price": "3.5 Cr",
@@ -13324,9 +13593,11 @@
       "updatedAt": "2026-07-30T15:43:06.575000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343033313535",
       "title": "3 BHK 1900 Sqft Flat For Sale in Pushpanjali, New Delhi",
       "location": "Pushpanjali, Delhi",
       "price": "4.6 Cr",
@@ -13432,9 +13703,11 @@
       "updatedAt": "2026-07-30T15:43:18.143000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423733373831333735",
       "title": "3 BHK 1800 Sqft Flat For Sale in TARC Tripundra, Bijwasan, New Delhi",
       "location": "TARC Tripundra, Delhi",
       "price": "5.5 Cr",
@@ -13604,9 +13877,11 @@
       "updatedAt": "2026-07-30T15:48:18.250000+00:00",
       "investmentScore": 33.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303037383433",
       "title": "4 BHK Flat For Sale in DDA Flats Sector C Pocket 8, Vasant Kunj, New Delhi",
       "location": "Delhi",
       "price": "6.01 Cr",
@@ -13706,9 +13981,11 @@
       "updatedAt": "2026-07-30T15:45:03.355000+00:00",
       "investmentScore": 27.55,
       "riskScore": 44.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373636393137",
       "title": "4 BHK 300 Sqyrd Flat For Sale in Janakpuri, New Delhi",
       "location": "Janakpuri, Delhi",
       "price": "7.65 Cr",
@@ -13790,9 +14067,11 @@
       "updatedAt": "2026-07-30T15:45:32.107000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373737323839",
       "title": "4 BHK 2100 Sqft Flat For Sale in GK II, New Delhi",
       "location": "GK II, Delhi",
       "price": "8.5 Cr",
@@ -13877,9 +14156,11 @@
       "updatedAt": "2026-07-30T15:46:00.243000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373635393831",
       "title": "4 BHK 2300 Sqft Flat For Sale in South Extension 2, New Delhi",
       "location": "South Extension 2, Delhi",
       "price": "16.75 Cr",
@@ -13969,9 +14250,11 @@
       "updatedAt": "2026-07-30T15:45:38.708000+00:00",
       "investmentScore": 30.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831383836393633",
       "title": "6 BHK 125 Sqyrd House For Sale in Sagarpur West, New Delhi",
       "location": "Sagarpur West, Delhi",
       "price": "2.1 Cr",
@@ -14045,9 +14328,11 @@
       "updatedAt": "2026-07-30T15:45:27.710000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834313038383433",
       "title": "3 BHK 1300 Sqft House For Sale Sector 24 Rohini, New Delhi",
       "location": "Sector 24, Delhi",
       "price": "4.5 Cr",
@@ -14135,9 +14420,11 @@
       "updatedAt": "2026-07-30T15:47:09.425000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832373737313239",
       "title": "50 Sqyrd Plot For Sale in New Karala Road, New Delhi",
       "location": "New Karala Road, Delhi",
       "price": "17.5 L",
@@ -14198,9 +14485,11 @@
       "updatedAt": "2026-07-30T15:47:13.432000+00:00",
       "investmentScore": 29.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833323432393537",
       "title": "1800 Sqft Plot For Sale in Prem Nagar Najafgarh, New Delhi",
       "location": "Prem Nagar Najafgarh, Delhi",
       "price": "1.1 Cr",
@@ -14261,9 +14550,11 @@
       "updatedAt": "2026-07-30T15:48:14.425000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373439323733",
       "title": "Studio Apartment For Sale in Sector 9 Rohini, New Delhi",
       "location": "Sector 9, Delhi",
       "price": "2.5 Cr",
@@ -14330,9 +14621,11 @@
       "updatedAt": "2026-07-30T15:42:10.354000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423633303135383739",
       "title": "3 BHK 5000 Sqft Villa For Sale in Chhattarpur, New Delhi",
       "location": "Chhattarpur, Delhi",
       "price": "7.5 Cr",
@@ -14417,7 +14710,8 @@
       "updatedAt": "2026-07-30T15:47:51.583000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     }
   ]
 }

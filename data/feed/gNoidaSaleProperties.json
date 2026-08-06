@@ -6,6 +6,7 @@
   "total": 1,
   "results": [
     {
+      "id": "magicbricks:4d423738363430393333",
       "title": "2 BHK 860 Sqft Flat For Sale in 1ST AVENUE PLOT NO. GCIN TOWNSHIP GAURCITY PLOT NO. GH-01 SEC-4 GREATER NOIDA, Noida",
       "location": "Sector 4, Greater Noida",
       "price": "80 L",
@@ -79,7 +80,8 @@
       "updatedAt": "2026-07-30T15:32:54.300000+00:00",
       "investmentScore": 37.56,
       "riskScore": 32.0,
-      "locationScore": 37.2
+      "locationScore": 37.2,
+      "aiSummary": null
     }
   ]
 }

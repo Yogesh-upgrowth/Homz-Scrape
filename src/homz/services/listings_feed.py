@@ -93,13 +93,18 @@ def to_listing_feed_record(record: PropertyRecord) -> dict[str, Any]:
     """One warehouse property in the shape a category+city feed file serves."""
     gallery, interior, master_plan = _split_images(record)
     is_rent = record.listing_type is ListingType.RENT
-    # investment_score/risk_score/location_score are written straight onto the
-    # Mongo document by the enrichment pipeline (homz enrich scores) — they
-    # aren't part of PropertyRecord's schema, so load_properties() stashes
-    # them here rather than threading a second parameter through every
-    # function in this module just to carry three optional numbers.
-    scores = record.raw.get("_scores", {})
+    # investment_score/risk_score/location_score/ai_summary are written
+    # straight onto the Mongo document by the enrichment pipeline (homz
+    # enrich scores / homz enrich property-summaries) — none of them are
+    # part of PropertyRecord's schema, so load_properties() stashes them
+    # here rather than threading a second parameter through every function
+    # in this module just to carry four optional values.
+    enrichment = record.raw.get("_enrichment", {})
     return {
+        # Individual listings don't have unique titles the way projects do
+        # (many units share "3 BHK Flat for Sale in Sector 60") — the
+        # frontend needs this for stable detail-page routing/slugs.
+        "id": record.natural_key,
         "title": record.title or record.project_name or "",
         "location": _location(record),
         "price": _price_display(record),
@@ -127,9 +132,12 @@ def to_listing_feed_record(record: PropertyRecord) -> dict[str, Any]:
         "updatedAt": _iso(record.scraped_at),
         # Free, deterministic scores (0-100) from `homz enrich scores` — no
         # LLM involved. None until enrichment has run for this record.
-        "investmentScore": scores.get("investment_score"),
-        "riskScore": scores.get("risk_score"),
-        "locationScore": scores.get("location_score"),
+        "investmentScore": enrichment.get("investment_score"),
+        "riskScore": enrichment.get("risk_score"),
+        "locationScore": enrichment.get("location_score"),
+        # One-time LLM-generated summary from `homz enrich property-summaries`
+        # — generated once at enrichment time, not a live per-page-load call.
+        "aiSummary": enrichment.get("ai_summary"),
     }
 
 
@@ -222,13 +230,14 @@ async def load_properties(db: Any) -> list[PropertyRecord]:
                 record = record_from_doc(doc)
                 if record is not None:
                     # See the comment in to_listing_feed_record() — these
-                    # three fields live on the Mongo document, not the
+                    # fields live on the Mongo document, not the
                     # PropertyRecord schema, so record_from_doc() already
                     # dropped them by the time we get here.
-                    record.raw["_scores"] = {
+                    record.raw["_enrichment"] = {
                         "investment_score": doc.get("investment_score"),
                         "risk_score": doc.get("risk_score"),
                         "location_score": doc.get("location_score"),
+                        "ai_summary": doc.get("ai_summary"),
                     }
                     out.append(record)
     return out

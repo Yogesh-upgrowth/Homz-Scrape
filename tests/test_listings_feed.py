@@ -59,34 +59,41 @@ class TestFeedContract:
     def test_record_carries_every_field_the_site_needs(self) -> None:
         record = listings_feed.to_listing_feed_record(make_property())
         for key in (
-            "title", "location", "price", "priceValue", "rentMonthly", "size", "areaValue",
-            "configuration", "bedrooms", "propertyType", "listingType", "isCommercial",
-            "reraId", "projectStatus", "possession", "builderDescription", "aboutProject",
-            "amenities", "specifications", "images", "interiorImages", "masterPlan",
-            "landmarks", "listingUrl", "updatedAt", "investmentScore", "riskScore",
-            "locationScore",
+            "id", "title", "location", "price", "priceValue", "rentMonthly", "size",
+            "areaValue", "configuration", "bedrooms", "propertyType", "listingType",
+            "isCommercial", "reraId", "projectStatus", "possession", "builderDescription",
+            "aboutProject", "amenities", "specifications", "images", "interiorImages",
+            "masterPlan", "landmarks", "listingUrl", "updatedAt", "investmentScore",
+            "riskScore", "locationScore", "aiSummary",
         ):
             assert key in record, f"missing {key}"
+
+    def test_id_is_the_natural_key(self) -> None:
+        record = listings_feed.to_listing_feed_record(make_property())
+        assert record["id"] == "magicbricks:4d423835383138393537"
 
     def test_scores_default_to_none_before_enrichment(self) -> None:
         record = listings_feed.to_listing_feed_record(make_property())
         assert record["investmentScore"] is None
         assert record["riskScore"] is None
         assert record["locationScore"] is None
+        assert record["aiSummary"] is None
 
     def test_scores_surface_once_enrichment_has_run(self) -> None:
-        # investment_score/risk_score/location_score live on the Mongo doc,
-        # not the PropertyRecord schema — load_properties() stashes them in
-        # record.raw["_scores"] since record_from_doc() would otherwise drop
-        # them; this pins that hand-off.
+        # investment_score/risk_score/location_score/ai_summary live on the
+        # Mongo doc, not the PropertyRecord schema — load_properties() stashes
+        # them in record.raw["_enrichment"] since record_from_doc() would
+        # otherwise drop them; this pins that hand-off.
         enriched = make_property()
-        enriched.raw["_scores"] = {
+        enriched.raw["_enrichment"] = {
             "investment_score": 72.5, "risk_score": 18.0, "location_score": 65.0,
+            "ai_summary": "A well-connected 3 BHK resale unit in IREO Skyon.",
         }
         record = listings_feed.to_listing_feed_record(enriched)
         assert record["investmentScore"] == 72.5
         assert record["riskScore"] == 18.0
         assert record["locationScore"] == 65.0
+        assert record["aiSummary"] == "A well-connected 3 BHK resale unit in IREO Skyon."
 
     def test_emits_freshness(self) -> None:
         record = listings_feed.to_listing_feed_record(make_property())

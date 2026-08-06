@@ -6,6 +6,7 @@
   "total": 83,
   "results": [
     {
+      "id": "magicbricks:4d423835373635393435",
       "title": "2 BHK 1000 Sqft Flat For Sale in Amolik Aster Woods, Sector 98, Faridabad",
       "location": "Sector 98, Faridabad",
       "price": "12 L",
@@ -75,9 +76,11 @@
       "updatedAt": "2026-07-30T15:49:03.830000+00:00",
       "investmentScore": 36.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423735343035383433",
       "title": "3 BHK 645 Sqft Flat For Sale in Adore Happy Homes Pride, Sector 75, Faridabad",
       "location": "Sector 75, Faridabad",
       "price": "42.5 L",
@@ -177,9 +180,11 @@
       "updatedAt": "2026-07-30T15:49:52.925000+00:00",
       "investmentScore": 36.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423337373030333733",
       "title": "2 BHK 680 Sqft Flat For Sale in GPM Blossom Greens, Sector 63, Faridabad",
       "location": "Sector 63, Faridabad",
       "price": "45 L",
@@ -346,9 +351,11 @@
       "updatedAt": "2026-07-30T15:52:38.021000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423635353034323733",
       "title": "3 BHK 140 Sqyrd Flat For Sale in Sector 5, Faridabad",
       "location": "Sector 5, Faridabad",
       "price": "47 L",
@@ -440,9 +447,11 @@
       "updatedAt": "2026-07-30T15:51:53.150000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373730333039",
       "title": "1 BHK 700 Sqft Flat For Sale in Ashoka Enclave Part 2, Faridabad",
       "location": "Ashoka Enclave Part 2, Faridabad",
       "price": "50 L",
@@ -516,9 +525,11 @@
       "updatedAt": "2026-07-30T15:49:12.328000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373537393231",
       "title": "2 BHK 745 Sqft Flat For Sale Sector 45, Faridabad",
       "location": "Sector 45, Faridabad",
       "price": "56 L",
@@ -638,9 +649,11 @@
       "updatedAt": "2026-07-30T15:50:24.193000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313839373437",
       "title": "2 BHK 1050 Sqft Flat For Sale in Rass Palm Residency, Sector 75, Faridabad",
       "location": "Sector 75, Faridabad",
       "price": "74 L",
@@ -798,9 +811,11 @@
       "updatedAt": "2026-07-30T15:48:46.041000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423333383138303633",
       "title": "3 BHK 160 Sqyrd Flat For Sale in Sector 22, Faridabad",
       "location": "Sector 22, Faridabad",
       "price": "80 L",
@@ -876,9 +891,11 @@
       "updatedAt": "2026-07-30T15:49:09.025000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423738303335323633",
       "title": "4 BHK 1030 Sqft Flat For Sale in adore legend 3 sec 104 faridabad, Faridabad",
       "location": "Sector 104, Faridabad",
       "price": "80 L",
@@ -950,9 +967,11 @@
       "updatedAt": "2026-07-30T15:51:09.801000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323038343935",
       "title": "2 BHK 1171 Sqft Flat For Sale in BPTP Pride, Neharpar, Faridabad",
       "location": "BPTP Pride, Faridabad",
       "price": "80 L",
@@ -1119,9 +1138,11 @@
       "updatedAt": "2026-07-30T15:52:11.549000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833343135363239",
       "title": "3 BHK 1437 Sqft Flat For Sale in SRS Pearl Floor, Sector 87, Faridabad",
       "location": "Sector 87, Faridabad",
       "price": "82 L",
@@ -1285,9 +1306,11 @@
       "updatedAt": "2026-07-30T15:48:58.338000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423637363836313833",
       "title": "3 BHK 1600 Sqft Flat For Sale in Ashoka Enclave Part 3, Faridabad",
       "location": "Ashoka Enclave Part 3, Faridabad",
       "price": "85 L",
@@ -1364,9 +1387,11 @@
       "updatedAt": "2026-07-30T15:49:30.961000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303931303233",
       "title": "2 BHK 1168 Sqft Flat For Sale in Piyush Heights, Piyush Heights, Faridabad",
       "location": "Piyush Heights, Faridabad",
       "price": "85 L",
@@ -1533,9 +1558,11 @@
       "updatedAt": "2026-07-30T15:49:59.297000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373633323833",
       "title": "3 BHK 1150 Sqft Flat For Sale in Sector 88, Faridabad",
       "location": "Sector 88, Faridabad",
       "price": "90 L",
@@ -1619,9 +1646,11 @@
       "updatedAt": "2026-07-30T15:48:40.048000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373339393833",
       "title": "3 BHK 1250 Sqft Flat For Sale Sector 70, Faridabad",
       "location": "Sector 70, Faridabad",
       "price": "90 L",
@@ -1777,9 +1806,11 @@
       "updatedAt": "2026-07-30T15:50:48.108000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832373930353333",
       "title": "3 BHK 1103 Sqft Flat For Sale in BPTP Pride, Sector 77, Faridabad",
       "location": "Sector 77, Faridabad",
       "price": "97 L",
@@ -1942,9 +1973,11 @@
       "updatedAt": "2026-07-30T15:51:33.613000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383931343839",
       "title": "2 BHK 1304 Sqft Flat For Sale in SRS Residency Sector 88 Faridabad, Faridabad",
       "location": "Sector 88, Faridabad",
       "price": "1.07 Cr",
@@ -2033,9 +2066,11 @@
       "updatedAt": "2026-07-30T15:52:16.050000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373637333931",
       "title": "2 BHK 985 Sqft Flat For Sale Sector 86, Faridabad",
       "location": "Sector 86, Faridabad",
       "price": "1.1 Cr",
@@ -2194,9 +2229,11 @@
       "updatedAt": "2026-07-30T15:49:07.500000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423330303739373333",
       "title": "3 BHK 1280 Sqft Flat For Sale in California Country, Sector 80, Faridabad",
       "location": "Sector 80, Faridabad",
       "price": "1.2 Cr",
@@ -2342,9 +2379,11 @@
       "updatedAt": "2026-07-30T15:52:35.127000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333235353333",
       "title": "3 BHK 1632 Sqft Flat For Sale in Utsarg CGHS, Sector 65, Faridabad",
       "location": "Sector 65, Faridabad",
       "price": "1.45 Cr",
@@ -2482,9 +2521,11 @@
       "updatedAt": "2026-07-30T15:50:06.064000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833383330373733",
       "title": "4 BHK 1510 Sqft Flat For Sale in Mahabubabad, Faridabad",
       "location": "Mahabubabad, Faridabad",
       "price": "1.45 Cr",
@@ -2559,9 +2600,11 @@
       "updatedAt": "2026-07-30T15:51:04.747000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423636353234353233",
       "title": "3 BHK 330 Sqyrd Flat For Sale in Sector 7, Faridabad",
       "location": "Sector 7, Faridabad",
       "price": "1.5 Cr",
@@ -2635,9 +2678,11 @@
       "updatedAt": "2026-07-30T15:49:39.669000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423637383334353633",
       "title": "3 BHK 1500 Sqft Flat For Sale in Komman Peoples Welfare Society, Sector 49, Faridabad",
       "location": "Sector 49, Faridabad",
       "price": "1.5 Cr",
@@ -2775,9 +2820,11 @@
       "updatedAt": "2026-07-30T15:51:57.794000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737393533333233",
       "title": "3 BHK 1620 Sqft Flat For Sale in Honour Homes, Sector 89, Faridabad",
       "location": "Sector 89, Faridabad",
       "price": "1.54 Cr",
@@ -2946,9 +2993,11 @@
       "updatedAt": "2026-07-30T15:51:38.673000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423738343730373639",
       "title": "3 BHK 1200 Sqft Flat For Sale in Aravali Vihar, Faridabad",
       "location": "Aravali Vihar, Faridabad",
       "price": "1.65 Cr",
@@ -3052,9 +3101,11 @@
       "updatedAt": "2026-07-30T15:50:03.739000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333530303039",
       "title": "3 BHK 1207 Sqft Flat For Sale in Greenfield Colony, Faridabad",
       "location": "Greenfield Colony, Faridabad",
       "price": "1.65 Cr",
@@ -3150,9 +3201,11 @@
       "updatedAt": "2026-07-30T15:52:26.519000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423637333632363233",
       "title": "3 BHK 215 Sqyrd Flat For Sale in Sector 19, Faridabad",
       "location": "Sector 19, Faridabad",
       "price": "1.69 Cr",
@@ -3246,9 +3299,11 @@
       "updatedAt": "2026-07-30T15:49:33.050000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373330353939",
       "title": "3 BHK 2257 Sqft Flat For Sale in Puri Pranayam, Bhataula Village, Faridabad",
       "location": "Puri Pranayam, Faridabad",
       "price": "1.7 Cr",
@@ -3428,9 +3483,11 @@
       "updatedAt": "2026-07-30T15:51:47.455000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835363538333835",
       "title": "3 BHK 160 Sqyrd Flat For Sale in BPTP District 2, Sector 86, Faridabad",
       "location": "Sector 86, Faridabad",
       "price": "1.75 Cr",
@@ -3538,9 +3595,11 @@
       "updatedAt": "2026-07-30T15:50:38.530000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835363934323835",
       "title": "4 BHK 2000 Sqft Flat For Sale in Dew Drops Society, Sector 2, Faridabad",
       "location": "Sector 2, Faridabad",
       "price": "1.85 Cr",
@@ -3690,9 +3749,11 @@
       "updatedAt": "2026-07-30T15:50:41.061000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832363038303539",
       "title": "5 BHK 2550 Sqft Flat For Sale in SanIK COLONY, Faridabad",
       "location": "SanIK COLONY, Faridabad",
       "price": "1.9 Cr",
@@ -3765,9 +3826,11 @@
       "updatedAt": "2026-07-30T15:49:54.154000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834313832343933",
       "title": "5 BHK 2100 Sqft Flat For Sale in Gokul Apartments, Sector 45, Faridabad",
       "location": "Sector 45, Faridabad",
       "price": "2 Cr",
@@ -3909,9 +3972,11 @@
       "updatedAt": "2026-07-30T15:51:19.040000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832333237333337",
       "title": "4 BHK 2000 Sqft Flat For Sale in Greenfield Colony, Faridabad",
       "location": "Greenfield Colony, Faridabad",
       "price": "2.4 Cr",
@@ -4019,9 +4084,11 @@
       "updatedAt": "2026-07-30T15:50:09.203000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834393033333739",
       "title": "3 BHK 1400 Sqft Flat For Sale in Sector 79, Faridabad",
       "location": "Sector 79, Faridabad",
       "price": "2.6 Cr",
@@ -4122,9 +4189,11 @@
       "updatedAt": "2026-07-30T15:52:03.319000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834393833313339",
       "title": "3 BHK 2300 Sqft Flat For Sale in Rise Sky Bunglows, Surajkund, Faridabad",
       "location": "Rise Sky Bunglows, Faridabad",
       "price": "2.81 Cr",
@@ -4276,9 +4345,11 @@
       "updatedAt": "2026-07-30T15:49:01.416000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830393639383539",
       "title": "4 BHK 2695 Sqft Flat For Sale in Sector 39, Faridabad",
       "location": "Sector 39, Faridabad",
       "price": "3 Cr",
@@ -4353,9 +4424,11 @@
       "updatedAt": "2026-07-30T15:51:27.731000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423635383531303633",
       "title": "5 BHK 3700 Sqft Flat For Sale in RPS Savana, Sector 88, Faridabad",
       "location": "Sector 88, Faridabad",
       "price": "3.2 Cr",
@@ -4529,9 +4602,11 @@
       "updatedAt": "2026-07-30T15:50:56.411000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830353137343739",
       "title": "3 BHK 2500 Sqft Flat For Sale in Sector 21A, Faridabad",
       "location": "Sector 21A, Faridabad",
       "price": "3.5 Cr",
@@ -4639,9 +4714,11 @@
       "updatedAt": "2026-07-30T15:52:19.132000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423639323236343333",
       "title": "5 BHK 418 Sqm Flat For Sale in Sector 17, Faridabad",
       "location": "Sector 17, Faridabad",
       "price": "3.75 Cr",
@@ -4749,9 +4826,11 @@
       "updatedAt": "2026-07-30T15:52:06.575000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833373430313939",
       "title": "4 BHK 403 Sqyrd Flat For Sale in Sector 85, Faridabad",
       "location": "Sector 85, Faridabad",
       "price": "3.9 Cr",
@@ -4859,9 +4938,11 @@
       "updatedAt": "2026-07-30T15:52:41.420000+00:00",
       "investmentScore": 28.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373335313939",
       "title": "4 BHK 3500 Sqft Flat For Sale in Eros Charmwood Plaza, Charmwood Village, Faridabad",
       "location": "Eros Charmwood Plaza, Faridabad",
       "price": "4 Cr",
@@ -4954,9 +5035,11 @@
       "updatedAt": "2026-07-30T15:48:43.709000+00:00",
       "investmentScore": 33.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343730313631",
       "title": "4 BHK 4500 Sqft Flat For Sale in Greenfield Colony, Faridabad",
       "location": "Greenfield Colony, Faridabad",
       "price": "4.25 Cr",
@@ -5044,9 +5127,11 @@
       "updatedAt": "2026-07-30T15:49:24.362000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303237363839",
       "title": "5 BHK 2800 Sqft Flat For Sale in Sector 21A, Faridabad",
       "location": "Sector 21A, Faridabad",
       "price": "5 Cr",
@@ -5142,9 +5227,11 @@
       "updatedAt": "2026-07-30T15:49:35.181000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373139363431",
       "title": "2 BHK 450 Sqft House For Sale in Sector 91, Faridabad, Faridabad",
       "location": "Sector 91, Faridabad",
       "price": "22 L",
@@ -5209,9 +5296,11 @@
       "updatedAt": "2026-07-30T15:50:29.409000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833373731323437",
       "title": "2 BHK 450 Sqft House For Sale in Bharat Colony, Faridabad",
       "location": "Bharat Colony, Faridabad",
       "price": "25 L",
@@ -5272,9 +5361,11 @@
       "updatedAt": "2026-07-30T15:49:50.099000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423636313437363939",
       "title": "2 BHK 585 Sqft House For Sale Badarpur, Faridabad",
       "location": "Faridabad",
       "price": "35 L",
@@ -5337,9 +5428,11 @@
       "updatedAt": "2026-07-30T15:51:08.433000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313532313139",
       "title": "3 BHK 43 Sqyrd House For Sale in Hanuman Nagar, Faridabad",
       "location": "Hanuman Nagar, Faridabad",
       "price": "40 L",
@@ -5411,9 +5504,11 @@
       "updatedAt": "2026-07-30T15:51:03.035000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323039393639",
       "title": "2 BHK 380 Sqft House For Sale Sector 91, Faridabad",
       "location": "Sector 91, Faridabad",
       "price": "40 L",
@@ -5480,9 +5575,11 @@
       "updatedAt": "2026-07-30T15:52:07.972000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423434363638333739",
       "title": "4 BHK 140 Sqft House For Sale Sector 1 Ballabhgarh, Faridabad",
       "location": "Sector 1, Faridabad",
       "price": "90 L",
@@ -5553,9 +5650,11 @@
       "updatedAt": "2026-07-30T15:49:18.075000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835303734333131",
       "title": "6 BHK 1500 Sqft House For Sale Ballabhgarh, Faridabad",
       "location": "Faridabad",
       "price": "1.1 Cr",
@@ -5628,9 +5727,11 @@
       "updatedAt": "2026-07-30T15:48:49.088000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739323838313233",
       "title": "3 BHK 1158 Sqft House For Sale Chawla Colony, Faridabad",
       "location": "Faridabad",
       "price": "1.3 Cr",
@@ -5715,9 +5816,11 @@
       "updatedAt": "2026-07-30T15:51:55.704000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373930313439",
       "title": "2 BHK 160 Sqft House For Sale Sector 8, Faridabad",
       "location": "Sector 8, Faridabad",
       "price": "2.9 Cr",
@@ -5800,9 +5903,11 @@
       "updatedAt": "2026-07-30T15:51:16.508000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373135363433",
       "title": "6 BHK 109 Sqyrd House",
       "location": "Sector 83, Faridabad",
       "price": "3 Cr",
@@ -5901,9 +6006,11 @@
       "updatedAt": "2026-07-30T15:50:27.866000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833313638343937",
       "title": "5 BHK 2100 Sqft House For Sale Sector 28, Faridabad",
       "location": "Sector 28, Faridabad",
       "price": "6.25 Cr",
@@ -5962,9 +6069,11 @@
       "updatedAt": "2026-07-30T15:52:31.258000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323137313033",
       "title": "5 BHK 360 Sqyrd House For Sale Sector 65, Faridabad",
       "location": "Sector 65, Faridabad",
       "price": "6.55 Cr",
@@ -6043,9 +6152,11 @@
       "updatedAt": "2026-07-30T15:52:01.876000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834393037333133",
       "title": "8 BHK 7500 Sqft House For Sale Sector 15, Faridabad",
       "location": "Sector 15, Faridabad",
       "price": "16 Cr",
@@ -6113,9 +6224,11 @@
       "updatedAt": "2026-07-30T15:52:30.087000+00:00",
       "investmentScore": 30.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333931313333",
       "title": "450 Sqft Plot For Sale in Dabua Colony, Faridabad",
       "location": "Dabua Colony, Faridabad",
       "price": "15 L",
@@ -6176,9 +6289,11 @@
       "updatedAt": "2026-07-30T15:51:10.617000+00:00",
       "investmentScore": 29.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834343536383339",
       "title": "50 Sqyrd Plot For Sale in Anangpur Village, Faridabad",
       "location": "Anangpur Village, Faridabad",
       "price": "15 L",
@@ -6249,9 +6364,11 @@
       "updatedAt": "2026-07-30T15:51:44.810000+00:00",
       "investmentScore": 29.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423531333937323336",
       "title": "900 Sqft Plot For Sale in Neemka Village, Faridabad",
       "location": "Neemka Village, Faridabad",
       "price": "35 L",
@@ -6319,9 +6436,11 @@
       "updatedAt": "2026-07-30T15:48:47.347000+00:00",
       "investmentScore": 29.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423632393936373939",
       "title": "990 Sqft Plot For Sale in Sector 63, Faridabad",
       "location": "Sector 63, Faridabad",
       "price": "50 L",
@@ -6378,9 +6497,11 @@
       "updatedAt": "2026-07-30T15:52:20.516000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423538333233393633",
       "title": "160 Sqyrd Plot For Sale in Sector 65'64'62, Faridabad",
       "location": "Sector 65, Faridabad",
       "price": "79 L",
@@ -6429,9 +6550,11 @@
       "updatedAt": "2026-07-30T15:51:14.258000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333833363139",
       "title": "150 Sqyrd Plot For Sale in Sector 60, Faridabad",
       "location": "Sector 60, Faridabad",
       "price": "1.25 Cr",
@@ -6494,9 +6617,11 @@
       "updatedAt": "2026-07-30T15:51:59.923000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373430353935",
       "title": "127 Sqyrd Plot For Sale in Sector 97, Faridabad",
       "location": "Sector 97, Faridabad",
       "price": "1.28 Cr",
@@ -6559,9 +6684,11 @@
       "updatedAt": "2026-07-30T15:50:51.725000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835363932343639",
       "title": "85 Sqm Plot For Sale in Sector 65, Faridabad",
       "location": "Sector 65, Faridabad",
       "price": "1.6 Cr",
@@ -6629,9 +6756,11 @@
       "updatedAt": "2026-07-30T15:50:45.380000+00:00",
       "investmentScore": 28.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423635383336333033",
       "title": "135 Sqm Plot For Sale in Sector 56, Faridabad",
       "location": "Sector 56, Faridabad",
       "price": "2 Cr",
@@ -6688,9 +6817,11 @@
       "updatedAt": "2026-07-30T15:51:00.362000+00:00",
       "investmentScore": 28.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373536373337",
       "title": "150 Sqyrd Plot For Sale in Amolik Aster Woods, Sector 98, Faridabad",
       "location": "Sector 98, Faridabad",
       "price": "2.25 Cr",
@@ -6755,9 +6886,11 @@
       "updatedAt": "2026-07-30T15:50:18.946000+00:00",
       "investmentScore": 28.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834323138343633",
       "title": "151 Sqyrd Plot For Sale in Godrej Retreat, Sector 83, Faridabad",
       "location": "Sector 83, Faridabad",
       "price": "3.05 Cr",
@@ -6863,9 +6996,11 @@
       "updatedAt": "2026-07-30T15:50:16.015000+00:00",
       "investmentScore": 29.55,
       "riskScore": 44.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423731363332353731",
       "title": "502 Sqyrd Plot For Sale in Sector 21D, Faridabad",
       "location": "Sector 21D, Faridabad",
       "price": "5.6 Cr",
@@ -6926,9 +7061,11 @@
       "updatedAt": "2026-07-30T15:49:44.973000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423738383934343133",
       "title": "500 Sqyrd Plot For Sale in Sector 88, Faridabad",
       "location": "Sector 88, Faridabad",
       "price": "7 Cr",
@@ -6983,9 +7120,11 @@
       "updatedAt": "2026-07-30T15:52:22.405000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313936363139",
       "title": "4 BHK 1600 Sqft Villa For Sale in RPS Green Valley, Sector 41, Faridabad",
       "location": "Sector 41, Faridabad",
       "price": "4.1 Cr",
@@ -7151,9 +7290,11 @@
       "updatedAt": "2026-07-30T15:48:55.133000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834343835383733",
       "title": "4 BHK 1485 Sqft Villa For Sale in RPS Green Valley, Faridabad",
       "location": "RPS Green Valley, Faridabad",
       "price": "4.1 Cr",
@@ -7235,9 +7376,11 @@
       "updatedAt": "2026-07-30T15:49:15.478000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830393234363333",
       "title": "8 BHK 322 Sqyrd Villa For Sale in Sector 28, Faridabad",
       "location": "Sector 28, Faridabad",
       "price": "6.5 Cr",
@@ -7312,9 +7455,11 @@
       "updatedAt": "2026-07-30T15:49:22.350000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834323932373637",
       "title": "4 BHK 3743 Sqft Villa For Sale in Sector 28, Faridabad",
       "location": "Sector 28, Faridabad",
       "price": "9.25 Cr",
@@ -7388,9 +7533,11 @@
       "updatedAt": "2026-07-30T15:49:37.577000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737373930313839",
       "title": "4 BHK 500 Sqyrd Villa For Sale in Sector 14, Faridabad",
       "location": "Sector 14, Faridabad",
       "price": "9.5 Cr",
@@ -7456,9 +7603,11 @@
       "updatedAt": "2026-07-30T15:51:35.093000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323137313131",
       "title": "5 BHK 400 Sqyrd Villa For Sale in Sector 16A, Faridabad",
       "location": "Sector 16A, Faridabad",
       "price": "10.5 Cr",
@@ -7531,9 +7680,11 @@
       "updatedAt": "2026-07-30T15:49:30.008000+00:00",
       "investmentScore": 30.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373032383939",
       "title": "4 BHK 1200 Sqft House For Sale New Industrial Township 1 Block A, Faridabad",
       "location": "Faridabad",
       "price": "1.7 Cr",
@@ -7615,9 +7766,11 @@
       "updatedAt": "2026-07-30T15:50:01.392000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739343831373639",
       "title": "2 BHK 1250 Sqft House For Sale New Industrial Township 1, Faridabad",
       "location": "Faridabad",
       "price": "1.75 Cr",
@@ -7689,9 +7842,11 @@
       "updatedAt": "2026-07-30T15:51:30.358000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323833393139",
       "title": "3 BHK 1300 Sqft Flat For Sale in Era Redwood Residency, Sector 78, Faridabad",
       "location": "Sector 78, Faridabad",
       "price": "85 L",
@@ -7850,9 +8005,11 @@
       "updatedAt": "2026-07-30T15:49:20.722000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373535353833",
       "title": "4 BHK 200 Sqyrd Flat For Sale in BPTP Parkland, Sector 76, Faridabad",
       "location": "Sector 76, Faridabad",
       "price": "2.35 Cr",
@@ -7982,9 +8139,11 @@
       "updatedAt": "2026-07-30T15:50:26.074000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333938353039",
       "title": "4 BHK 3700 Sqft Flat For Sale in Sector 45, Faridabad",
       "location": "Sector 45, Faridabad",
       "price": "4.25 Cr",
@@ -8092,9 +8251,11 @@
       "updatedAt": "2026-07-30T15:51:26.115000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834393137343039",
       "title": "2 BHK 540 Sqft House For Sale Sector 91, Faridabad",
       "location": "Sector 91, Faridabad",
       "price": "47 L",
@@ -8160,9 +8321,11 @@
       "updatedAt": "2026-07-30T15:52:45.083000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373531343033",
       "title": "1080 Sqft Plot For Sale in Mansha Orchid , Dayalpur, Faridabad",
       "location": "Mansha Orchid, Faridabad",
       "price": "1 Cr",
@@ -8260,9 +8423,11 @@
       "updatedAt": "2026-07-30T15:50:20.099000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832383135383235",
       "title": "2 BHK 1736 Sqft Villa For Sale in BPTP Parkland Villa, Sector 88, Faridabad",
       "location": "Sector 88, Faridabad",
       "price": "3.85 Cr",
@@ -8380,7 +8545,8 @@
       "updatedAt": "2026-07-30T15:49:26.994000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     }
   ]
 }

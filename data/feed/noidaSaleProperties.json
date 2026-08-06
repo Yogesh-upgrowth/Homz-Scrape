@@ -6,6 +6,7 @@
   "total": 125,
   "results": [
     {
+      "id": "magicbricks:4d423731303534353539",
       "title": "1 BHK 430 Sqft Flat For Sale in Jindal Homes, Sector 121, Noida",
       "location": "Sector 121, Noida",
       "price": "20 L",
@@ -133,9 +134,11 @@
       "updatedAt": "2026-07-30T15:32:00.136000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363337343239",
       "title": "1 BHK 600 Sqft Flat For Sale in Investors Aashiyana , Sector 70, Noida",
       "location": "Sector 70, Noida",
       "price": "25 L",
@@ -304,9 +307,11 @@
       "updatedAt": "2026-07-30T15:30:50.042000+00:00",
       "investmentScore": 36.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833303336373039",
       "title": "1 BHK 530 Sqft Flat For Sale in Chipiyana Buzurg, Noida",
       "location": "Chipiyana Buzurg, Noida",
       "price": "25 L",
@@ -414,9 +419,11 @@
       "updatedAt": "2026-07-30T15:34:01.819000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832363632323831",
       "title": "2 BHK 700 Sqft Flat For Sale in Sector 155, Noida",
       "location": "Sector 155, Noida",
       "price": "28.9 L",
@@ -504,9 +511,11 @@
       "updatedAt": "2026-07-30T15:29:34.109000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383036393135",
       "title": "2 BHK 825 Sqft Flat For Sale in RZone Homes, Sector 73, Noida",
       "location": "Sector 73, Noida",
       "price": "32 L",
@@ -637,9 +646,11 @@
       "updatedAt": "2026-07-30T15:36:09.938000+00:00",
       "investmentScore": 36.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383734393235",
       "title": "1 BHK 680 Sqft Flat For Sale in Jaypee Greens Sportsville, Noida Extension, Noida",
       "location": "Jaypee Greens Sportsville, Noida",
       "price": "37 L",
@@ -818,9 +829,11 @@
       "updatedAt": "2026-07-30T15:33:56.689000+00:00",
       "investmentScore": 36.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373136363039",
       "title": "2 BHK 900 Sqft Flat For Sale in Sarfabad, Noida",
       "location": "Sarfabad, Noida",
       "price": "45 L",
@@ -916,9 +929,11 @@
       "updatedAt": "2026-07-30T15:35:06.821000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423530363337373930",
       "title": "2 BHK 875 Sqft Flat For Sale in Amrapali Princely Estate, Sector 76, Noida",
       "location": "Sector 76, Noida",
       "price": "49 L",
@@ -1098,9 +1113,11 @@
       "updatedAt": "2026-07-30T15:34:11.907000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423639323333373433",
       "title": "2 BHK 925 Sqft Flat For Sale in Galaxy North Avenue 2, Noida Extension, Noida",
       "location": "Galaxy North Avenue 2, Noida",
       "price": "51 L",
@@ -1259,9 +1276,11 @@
       "updatedAt": "2026-07-30T15:32:44.287000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423632383438303439",
       "title": "2 BHK 1040 Sqft Flat For Sale in Bhagirathi Apartment, Sector 62, Noida",
       "location": "Sector 62, Noida",
       "price": "58 L",
@@ -1425,9 +1444,11 @@
       "updatedAt": "2026-07-30T15:30:41.251000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373734303931",
       "title": "2 BHK 965 Sqft Flat For Sale Sector 10 Noida Extension, Noida",
       "location": "Sector 10, Noida",
       "price": "70 L",
@@ -1599,9 +1620,11 @@
       "updatedAt": "2026-07-30T15:29:01.946000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373334353935",
       "title": "3 BHK 1450 Sqft Flat For Sale in Royal Residency, Noida Extension, Noida",
       "location": "Royal Residency, Noida",
       "price": "70 L",
@@ -1721,9 +1744,11 @@
       "updatedAt": "2026-07-30T15:29:58.127000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363530363335",
       "title": "2 BHK 805 Sqft Flat For Sale in Paras Tierea, Sector 137, Noida",
       "location": "Sector 137, Noida",
       "price": "73 L",
@@ -1894,9 +1919,11 @@
       "updatedAt": "2026-07-30T15:28:19.275000+00:00",
       "investmentScore": 41.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373731303533",
       "title": "2 BHK 742 Sqft Flat For Sale Sector 134, Noida",
       "location": "Sector 134, Noida",
       "price": "78 L",
@@ -2039,9 +2066,11 @@
       "updatedAt": "2026-07-30T15:28:58.102000+00:00",
       "investmentScore": 41.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373733363237",
       "title": "2 BHK 935 Sqft Flat For Sale Noida Extension, Noida",
       "location": "Noida",
       "price": "78 L",
@@ -2213,9 +2242,11 @@
       "updatedAt": "2026-07-30T15:29:04.010000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423534303737383439",
       "title": "2 BHK 1080 Sqft Flat For Sale in Amrapali Silicon City, Amarpali Silicon City, Noida",
       "location": "Amrapali Silicon City, Noida",
       "price": "80 L",
@@ -2386,9 +2417,11 @@
       "updatedAt": "2026-07-30T15:33:40.301000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373431303037",
       "title": "2 BHK 1000 Sqft Flat For Sale Sector 75, Noida",
       "location": "Sector 75, Noida",
       "price": "80 L",
@@ -2557,9 +2590,11 @@
       "updatedAt": "2026-07-30T15:35:31.917000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373736363933",
       "title": "1 BHK 615 Sqft Flat For Sale in Maxblis Grand Wellington, Sector 75, Noida",
       "location": "Sector 75, Noida",
       "price": "85 L",
@@ -2722,9 +2757,11 @@
       "updatedAt": "2026-07-30T15:27:53.330000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423438373830313939",
       "title": "3 BHK 1705 Sqft Flat For Sale in Exotica Dreamville, Noida Extension, Noida",
       "location": "Exotica Dreamville, Noida",
       "price": "85 L",
@@ -2881,9 +2918,11 @@
       "updatedAt": "2026-07-30T15:31:36.385000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383039313139",
       "title": "2 BHK 950 Sqft Flat For Sale in Amrapali Zodiac, Sector 120, Noida",
       "location": "Sector 120, Noida",
       "price": "90 L",
@@ -3051,9 +3090,11 @@
       "updatedAt": "2026-07-30T15:36:15.402000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833323633343031",
       "title": "2 BHK 900 Sqft Flat For Sale in Amrapali Leisure Valley, Noida Extension, Noida",
       "location": "Amrapali Leisure Valley, Noida",
       "price": "91 L",
@@ -3189,9 +3230,11 @@
       "updatedAt": "2026-07-30T15:31:20.462000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833343231363937",
       "title": "2 BHK 924 Sqft Flat For Sale in Sikka Karnam Greens, Sector 143 B, Noida",
       "location": "Sector 143B, Noida",
       "price": "95 L",
@@ -3360,9 +3403,11 @@
       "updatedAt": "2026-07-30T15:36:29.054000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423735333231393637",
       "title": "3 BHK 1325 Sqft Flat For Sale in Uniworld Gardens, Sector 117, Noida",
       "location": "Sector 117, Noida",
       "price": "1 Cr",
@@ -3462,9 +3507,11 @@
       "updatedAt": "2026-07-30T15:33:53.980000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373631333439",
       "title": "2 BHK 1050 Sqft Flat For Sale in NDA Kanchanjunga Apartments, Sector 53 Block E, Noida",
       "location": "Sector 53, Noida",
       "price": "1 Cr",
@@ -3611,9 +3658,11 @@
       "updatedAt": "2026-07-30T15:34:18.117000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423635383536393633",
       "title": "2 BHK 930 Sqft Flat For Sale in Supertech Capetown, Sector 74, Noida",
       "location": "Sector 74, Noida",
       "price": "1 Cr",
@@ -3767,9 +3816,11 @@
       "updatedAt": "2026-07-30T15:35:51.641000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835303938393937",
       "title": "2 BHK 1060 Sqft Flat For Sale in Antriksh Golf View 2, Sector 78, Noida",
       "location": "Sector 78, Noida",
       "price": "1.1 Cr",
@@ -3955,9 +4006,11 @@
       "updatedAt": "2026-07-30T15:32:30.025000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739313834353633",
       "title": "2 BHK 1160 Sqft Flat For Sale in Ace Aspire, Noida Extension, Noida",
       "location": "Ace Aspire, Noida",
       "price": "1.1 Cr",
@@ -4153,9 +4206,11 @@
       "updatedAt": "2026-07-30T15:33:42.825000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834343031393639",
       "title": "2 BHK 955 Sqft Flat For Sale in Prateek Wisteria, Sector 77, Noida",
       "location": "Sector 77, Noida",
       "price": "1.15 Cr",
@@ -4358,9 +4413,11 @@
       "updatedAt": "2026-07-30T15:30:36.289000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373132373535",
       "title": "4 BHK 1450 Sqft Flat For Sale in Jaypee Aman, Sector 151, Noida",
       "location": "Sector 151, Noida",
       "price": "1.15 Cr",
@@ -4531,9 +4588,11 @@
       "updatedAt": "2026-07-30T15:35:09.920000+00:00",
       "investmentScore": 41.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423735383337393439",
       "title": "3 BHK 119 Sqft Flat For Sale in Sector 1, Noida",
       "location": "Sector 1, Noida",
       "price": "1.15 Cr",
@@ -4642,9 +4701,11 @@
       "updatedAt": "2026-07-30T15:35:49.625000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423733333031333039",
       "title": "3 BHK 1430 Sqft Flat For Sale in Jaypee Aman, Sector 151, Noida",
       "location": "Sector 151, Noida",
       "price": "1.24 Cr",
@@ -4817,9 +4878,11 @@
       "updatedAt": "2026-07-30T15:30:38.664000+00:00",
       "investmentScore": 41.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832373937353333",
       "title": "2 BHK 1017 Sqft Flat For Sale in Jaypee Greens, Sector 128, Noida",
       "location": "Sector 128, Noida",
       "price": "1.25 Cr",
@@ -4975,9 +5038,11 @@
       "updatedAt": "2026-07-30T15:32:12.177000+00:00",
       "investmentScore": 41.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833343132343633",
       "title": "1 BHK 595 Sqft Flat For Sale in Supertech Supernova Spira, Sector 94, Noida",
       "location": "Sector 94, Noida",
       "price": "1.25 Cr",
@@ -5143,9 +5208,11 @@
       "updatedAt": "2026-07-30T15:36:08.133000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833353038353331",
       "title": "3 BHK 1290 Sqft Flat For Sale in Today Ridge Residency, Sector 135, Noida",
       "location": "Sector 135, Noida",
       "price": "1.28 Cr",
@@ -5312,9 +5379,11 @@
       "updatedAt": "2026-07-30T15:28:26.486000+00:00",
       "investmentScore": 41.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830353335373735",
       "title": "3 BHK 1340 Sqft Flat For Sale in Saya Zion, Noida Extension, Noida",
       "location": "Saya Zion, Noida",
       "price": "1.28 Cr",
@@ -5461,9 +5530,11 @@
       "updatedAt": "2026-07-30T15:33:07.532000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834353034373831",
       "title": "3 BHK 1225 Sqft Flat For Sale in ACE City, Noida Extension, Noida",
       "location": "ACE City, Noida",
       "price": "1.34 Cr",
@@ -5635,9 +5706,11 @@
       "updatedAt": "2026-07-30T15:30:16.498000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831363533383937",
       "title": "3 BHK 1273 Sqft Flat For Sale in Rajhans Residency, Noida Extension, Noida",
       "location": "Rajhans Residency, Noida",
       "price": "1.35 Cr",
@@ -5814,9 +5887,11 @@
       "updatedAt": "2026-07-30T15:34:16.365000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373436303731",
       "title": "2 BHK 930 Sqft Flat For Sale in Kendriya Vihar, Sector 51 Block B, Noida",
       "location": "Sector 51, Noida",
       "price": "1.4 Cr",
@@ -5973,9 +6048,11 @@
       "updatedAt": "2026-07-30T15:32:15.973000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831323635393539",
       "title": "2 BHK 1150 Sqft Flat For Sale in Skytech Matrott, Aditya Celebrity Homes, Noida",
       "location": "Skytech Matrott, Noida",
       "price": "1.5 Cr",
@@ -6140,9 +6217,11 @@
       "updatedAt": "2026-07-30T15:36:13.356000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373433393839",
       "title": "3 BHK 1225 Sqft Flat For Sale Noida Extension, Noida",
       "location": "Noida",
       "price": "1.51 Cr",
@@ -6327,9 +6406,11 @@
       "updatedAt": "2026-07-30T15:35:34.576000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834393030343539",
       "title": "2 BHK 1010 Sqft Flat For Sale in Sector 93, Noida",
       "location": "Sector 93, Noida",
       "price": "1.55 Cr",
@@ -6437,9 +6518,11 @@
       "updatedAt": "2026-07-30T15:28:41.033000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343536363735",
       "title": "3 BHK 1270 Sqft Flat For Sale in AGC Realty Homes 121, Sector 121, Noida",
       "location": "Sector 121, Noida",
       "price": "1.55 Cr",
@@ -6599,9 +6682,11 @@
       "updatedAt": "2026-07-30T15:31:17.694000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423436383431353037",
       "title": "3 BHK 1775 Sqft Flat For Sale in Amrapali Platinum, Sector 119, Noida",
       "location": "Sector 119, Noida",
       "price": "1.6 Cr",
@@ -6757,9 +6842,11 @@
       "updatedAt": "2026-07-30T15:31:49.982000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333339343033",
       "title": "3 BHK 1350 Sqft Flat For Sale in Kendriya Vihar, Sector 82, Noida",
       "location": "Sector 82, Noida",
       "price": "1.72 Cr",
@@ -6867,9 +6954,11 @@
       "updatedAt": "2026-07-30T15:33:16.738000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373434343831",
       "title": "3 BHK 990 Sqft Flat For Sale Sector 107, Noida",
       "location": "Sector 107, Noida",
       "price": "1.73 Cr",
@@ -7058,9 +7147,11 @@
       "updatedAt": "2026-07-30T15:35:40.776000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373731363335",
       "title": "3 BHK 1395 Sqft Flat For Sale Sector 74, Noida",
       "location": "Sector 74, Noida",
       "price": "1.75 Cr",
@@ -7256,9 +7347,11 @@
       "updatedAt": "2026-07-30T15:29:00.387000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737313938373933",
       "title": "2 BHK 1265 Sqft Flat For Sale in Godrej Palm Retreat, Sector 150, Noida",
       "location": "Sector 150, Noida",
       "price": "1.75 Cr",
@@ -7414,9 +7507,11 @@
       "updatedAt": "2026-07-30T15:29:30.639000+00:00",
       "investmentScore": 34.05,
       "riskScore": 44.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333138333135",
       "title": "3 BHK 1400 Sqft Flat For Sale in Jaypee Klassic, Sector 134, Noida",
       "location": "Sector 134, Noida",
       "price": "1.75 Cr",
@@ -7573,9 +7668,11 @@
       "updatedAt": "2026-07-30T15:32:34.900000+00:00",
       "investmentScore": 39.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423734303431323339",
       "title": "3 BHK 1180 Sqft Flat For Sale in Mahagun Mirabella, Sector 79, Noida",
       "location": "Sector 79, Noida",
       "price": "1.75 Cr",
@@ -7754,9 +7851,11 @@
       "updatedAt": "2026-07-30T15:36:24.273000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834323633303437",
       "title": "2 BHK 1399 Sqft Flat For Sale in The 3C Lotus Boulevard, Sector 100, Noida",
       "location": "Sector 100, Noida",
       "price": "1.9 Cr",
@@ -7925,9 +8024,11 @@
       "updatedAt": "2026-07-30T15:31:29.291000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343835333033",
       "title": "4 BHK 4545 Sqft Flat For Sale in VVIP Skywalk, Noida Extension, Noida",
       "location": "VVIP Skywalk, Noida",
       "price": "1.9 Cr",
@@ -8031,9 +8132,11 @@
       "updatedAt": "2026-07-30T15:36:04.709000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363438333531",
       "title": "4 BHK 2290 Sqft Flat For Sale in Galaxy Royale, Noida Extension, Noida",
       "location": "Galaxy Royale, Noida",
       "price": "2 Cr",
@@ -8232,9 +8335,11 @@
       "updatedAt": "2026-07-30T15:30:58.014000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833363130333639",
       "title": "3 BHK 1750 Sqft Flat For Sale in Aims Max Gardenia Golf City, Sector 75, Noida",
       "location": "Sector 75, Noida",
       "price": "2.01 Cr",
@@ -8422,9 +8527,11 @@
       "updatedAt": "2026-07-30T15:28:43.885000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373537353831",
       "title": "4 BHK 2425 Sqft Flat For Sale Sector 16B, Noida",
       "location": "Sector 16B, Noida",
       "price": "2.06 Cr",
@@ -8568,9 +8675,11 @@
       "updatedAt": "2026-07-30T15:34:34.092000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303232333635",
       "title": "2 BHK 1150 Sqft Flat For Sale in Eldeco Aamantran, Sector 119, Noida",
       "location": "Sector 119, Noida",
       "price": "2.15 Cr",
@@ -8742,9 +8851,11 @@
       "updatedAt": "2026-07-30T15:33:20.124000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834343835383133",
       "title": "3 BHK 1600 Sqft Flat For Sale in Sneh Kunj Apartments, Sector 62, Noida",
       "location": "Sector 62, Noida",
       "price": "2.2 Cr",
@@ -8900,9 +9011,11 @@
       "updatedAt": "2026-07-30T15:28:31.082000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383033333433",
       "title": "3 BHK 1340 Sqft Flat For Sale in Sector 143A, Noida",
       "location": "Sector 143A, Noida",
       "price": "2.25 Cr",
@@ -8988,9 +9101,11 @@
       "updatedAt": "2026-07-30T15:28:08.080000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333631393739",
       "title": "3 BHK 1471 Sqft Flat For Sale in Gulshan Vivante, Sector 137, Noida",
       "location": "Sector 137, Noida",
       "price": "2.25 Cr",
@@ -9169,9 +9284,11 @@
       "updatedAt": "2026-07-30T15:31:24.715000+00:00",
       "investmentScore": 39.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373730333435",
       "title": "4 BHK 2150 Sqft Flat For Sale Sector 50 Block F, Noida",
       "location": "Sector 50, Noida",
       "price": "2.35 Cr",
@@ -9336,9 +9453,11 @@
       "updatedAt": "2026-07-30T15:28:53.236000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373538303137",
       "title": "3 BHK 1600 Sqft Flat For Sale Sector 45, Noida",
       "location": "Sector 45, Noida",
       "price": "2.35 Cr",
@@ -9505,9 +9624,11 @@
       "updatedAt": "2026-07-30T15:34:47.195000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323539303535",
       "title": "4 BHK 1900 Sqft Flat For Sale in Jaypee Kosmos, Sector 134, Noida",
       "location": "Sector 134, Noida",
       "price": "2.4 Cr",
@@ -9656,9 +9777,11 @@
       "updatedAt": "2026-07-30T15:28:38.233000+00:00",
       "investmentScore": 39.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363536333835",
       "title": "4 BHK 1800 Sqft Flat For Sale in Sector 44 Block D, Noida",
       "location": "Sector 44, Noida",
       "price": "2.5 Cr",
@@ -9766,9 +9889,11 @@
       "updatedAt": "2026-07-30T15:28:10.753000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739333639313835",
       "title": "3 BHK 1900 Sqft Flat For Sale in SKA Orion, Sector 143 B, Noida",
       "location": "Sector 143B, Noida",
       "price": "2.5 Cr",
@@ -9931,9 +10056,11 @@
       "updatedAt": "2026-07-30T15:30:31.065000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373533303139",
       "title": "3 BHK 1650 Sqft Flat For Sale Sector 100, Noida",
       "location": "Sector 100, Noida",
       "price": "2.5 Cr",
@@ -10097,9 +10224,11 @@
       "updatedAt": "2026-07-30T15:34:27.134000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373139353431",
       "title": "3 BHK 1650 Sqft Flat For Sale in Antriksh Nature, Sector 52, Noida",
       "location": "Sector 52, Noida",
       "price": "2.5 Cr",
@@ -10248,9 +10377,11 @@
       "updatedAt": "2026-07-30T15:35:11.887000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832323433333033",
       "title": "Flat For Sale in Sector 61 Block E, Noida",
       "location": "Sector 61, Noida",
       "price": "2.64 Cr",
@@ -10336,9 +10467,11 @@
       "updatedAt": "2026-07-30T15:30:13.649000+00:00",
       "investmentScore": 28.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833313234393237",
       "title": "4 BHK 1800 Sqft Flat For Sale in ATS Le Grandiose, Sector 150, Noida",
       "location": "Sector 150, Noida",
       "price": "2.7 Cr",
@@ -10513,9 +10646,11 @@
       "updatedAt": "2026-07-30T15:31:31.614000+00:00",
       "investmentScore": 39.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831323433343633",
       "title": "3 BHK 1406 Sqft Flat For Sale in Sector 76, Noida",
       "location": "Sector 76, Noida",
       "price": "2.7 Cr",
@@ -10623,9 +10758,11 @@
       "updatedAt": "2026-07-30T15:36:31.878000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323139383731",
       "title": "4 BHK 2280 Sqft Flat For Sale in Sector 133, Noida",
       "location": "Sector 133, Noida",
       "price": "2.8 Cr",
@@ -10710,9 +10847,11 @@
       "updatedAt": "2026-07-30T15:33:09.740000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832323131303033",
       "title": "3 BHK 1800 Sqft Flat For Sale in Godrej Tropical Isle, Sector 146, Noida",
       "location": "Sector 146, Noida",
       "price": "3 Cr",
@@ -10886,9 +11025,11 @@
       "updatedAt": "2026-07-30T15:36:02.066000+00:00",
       "investmentScore": 29.55,
       "riskScore": 44.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373536333539",
       "title": "3 BHK 1470 Sqft Flat For Sale Sector 152, Noida",
       "location": "Sector 152, Noida",
       "price": "3.1 Cr",
@@ -11051,9 +11192,11 @@
       "updatedAt": "2026-07-30T15:34:29.706000+00:00",
       "investmentScore": 39.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835353136373739",
       "title": "3 BHK 1223 Sqft Flat For Sale in Godrej Nest, Sector 150, Noida",
       "location": "Sector 150, Noida",
       "price": "3.1 Cr",
@@ -11226,9 +11369,11 @@
       "updatedAt": "2026-07-30T15:35:26.525000+00:00",
       "investmentScore": 39.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423735353139323639",
       "title": "4 BHK 2328 Sqft Flat For Sale in Parsvnath Srishti, Sector 93, Noida",
       "location": "Sector 93, Noida",
       "price": "3.35 Cr",
@@ -11407,9 +11552,11 @@
       "updatedAt": "2026-07-30T15:32:38.956000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313439363237",
       "title": "5 BHK 3850 Sqft Flat For Sale in Amrapali Platinum, Sector 119, Noida",
       "location": "Sector 119, Noida",
       "price": "3.5 Cr",
@@ -11573,9 +11720,11 @@
       "updatedAt": "2026-07-30T15:32:07.545000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373439353437",
       "title": "4 BHK 1850 Sqft Flat For Sale Sector 78, Noida",
       "location": "Sector 78, Noida",
       "price": "3.5 Cr",
@@ -11768,9 +11917,11 @@
       "updatedAt": "2026-07-30T15:34:40.314000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373439343337",
       "title": "3 BHK 3555 Sqft Flat For Sale Sector 28, Noida",
       "location": "Sector 28, Noida",
       "price": "3.5 Cr",
@@ -11871,9 +12022,11 @@
       "updatedAt": "2026-07-30T15:34:42.362000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313339333639",
       "title": "3 BHK 2713 Sqft Flat For Sale in Express Zenith, Sector 77, Noida",
       "location": "Sector 77, Noida",
       "price": "3.5 Cr",
@@ -12028,9 +12181,11 @@
       "updatedAt": "2026-07-30T15:35:57.460000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373430343933",
       "title": "3 BHK 2034 Sqft Flat For Sale Sector 115, Noida",
       "location": "Sector 115, Noida",
       "price": "3.56 Cr",
@@ -12198,9 +12353,11 @@
       "updatedAt": "2026-07-30T15:35:30.282000+00:00",
       "investmentScore": 29.55,
       "riskScore": 44.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373530383131",
       "title": "3 BHK 2100 Sqft Flat For Sale Sector 50 Block F, Noida",
       "location": "Sector 50, Noida",
       "price": "3.65 Cr",
@@ -12361,9 +12518,11 @@
       "updatedAt": "2026-07-30T15:34:31.821000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363130303131",
       "title": "5 BHK 3200 Sqft Flat For Sale in ATS Pious Orchards, Sector 150, Noida",
       "location": "Sector 150, Noida",
       "price": "4.5 Cr",
@@ -12513,9 +12672,11 @@
       "updatedAt": "2026-07-30T15:29:35.972000+00:00",
       "investmentScore": 32.05,
       "riskScore": 44.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383931303835",
       "title": "3 BHK 1900 Sqft Flat For Sale in Mahagun Mezzaria, Sector 78, Noida",
       "location": "Sector 78, Noida",
       "price": "4.5 Cr",
@@ -12690,9 +12851,11 @@
       "updatedAt": "2026-07-30T15:32:52.241000+00:00",
       "investmentScore": 33.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423735343630393739",
       "title": "4 BHK 3200 Sqft Flat For Sale in ATS Picturesque Reprieves, Sector 152, Noida",
       "location": "Sector 152, Noida",
       "price": "4.7 Cr",
@@ -12849,9 +13012,11 @@
       "updatedAt": "2026-07-30T15:32:46.826000+00:00",
       "investmentScore": 32.05,
       "riskScore": 44.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423632363539343439",
       "title": "8 BHK 6050 Sqft Flat For Sale in Amrapali Platinum, Sector 119, Noida",
       "location": "Sector 119, Noida",
       "price": "5 Cr",
@@ -12999,9 +13164,11 @@
       "updatedAt": "2026-07-30T15:30:44.635000+00:00",
       "investmentScore": 33.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373139323431",
       "title": "4 BHK 3231 Sqft Flat For Sale in Ivory County, Sector 115, Noida",
       "location": "Sector 115, Noida",
       "price": "6.36 Cr",
@@ -13169,9 +13336,11 @@
       "updatedAt": "2026-07-30T15:35:19.813000+00:00",
       "investmentScore": 27.55,
       "riskScore": 44.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323638323833",
       "title": "4 BHK 3300 Sqft Flat For Sale in Prateek Edifice, Sector 107, Noida",
       "location": "Sector 107, Noida",
       "price": "6.75 Cr",
@@ -13373,9 +13542,11 @@
       "updatedAt": "2026-07-30T15:30:28.507000+00:00",
       "investmentScore": 33.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834343833313231",
       "title": "3 BHK 2700 Sqft Flat For Sale in Godrej Riverine, Sector 44, Noida",
       "location": "Sector 44, Noida",
       "price": "6.92 Cr",
@@ -13475,9 +13646,11 @@
       "updatedAt": "2026-07-30T15:30:06.310000+00:00",
       "investmentScore": 27.55,
       "riskScore": 44.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832363030323831",
       "title": "4 BHK 2538 Sqft Flat For Sale in Kalpataru Vista, Sector 128, Noida",
       "location": "Sector 128, Noida",
       "price": "8.2 Cr",
@@ -13665,9 +13838,11 @@
       "updatedAt": "2026-07-30T15:30:55.522000+00:00",
       "investmentScore": 37.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739393930393539",
       "title": "4 BHK 2784 Sqft Flat For Sale in Gulshan Dynasty, Sector 144, Noida",
       "location": "Sector 144, Noida",
       "price": "9.25 Cr",
@@ -13837,9 +14012,11 @@
       "updatedAt": "2026-07-30T15:29:41.031000+00:00",
       "investmentScore": 33.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423632373834343335",
       "title": "2 BHK 112 Sqm House For Sale Sector 15, Noida",
       "location": "Sector 15, Noida",
       "price": "1.7 Cr",
@@ -13912,9 +14089,11 @@
       "updatedAt": "2026-07-30T15:33:17.848000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423733383339323633",
       "title": "6 BHK 3300 Sqft House For Sale Sector 16B, Noida",
       "location": "Sector 16B, Noida",
       "price": "1.9 Cr",
@@ -13982,9 +14161,11 @@
       "updatedAt": "2026-07-30T15:32:27.019000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363931323935",
       "title": "4 BHK 5000 Sqft House For Sale Sector 31 Block B, Noida",
       "location": "Sector 31, Noida",
       "price": "8.5 Cr",
@@ -14088,9 +14269,11 @@
       "updatedAt": "2026-07-30T15:31:14.351000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835353138323331",
       "title": "10-plus BHK 276 Sqm House For Sale Sector 22 Block B, Noida",
       "location": "Sector 22, Noida",
       "price": "8.5 Cr",
@@ -14172,9 +14355,11 @@
       "updatedAt": "2026-07-30T15:35:24.545000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833353930333039",
       "title": "8 BHK 7500 Sqft House For Sale Sector 31 Block A, Noida",
       "location": "Sector 31, Noida",
       "price": "9.5 Cr",
@@ -14274,9 +14459,11 @@
       "updatedAt": "2026-07-30T15:32:57.136000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833393137303835",
       "title": "10-plus BHK 6000 Sqft House For Sale Sector 31 Block C, Noida",
       "location": "Sector 31, Noida",
       "price": "10.5 Cr",
@@ -14366,9 +14553,11 @@
       "updatedAt": "2026-07-30T15:29:43.663000+00:00",
       "investmentScore": 30.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373433303835",
       "title": "6 BHK 472 Sqm House For Sale Sector 30 Block A, Noida",
       "location": "Sector 30, Noida",
       "price": "22 Cr",
@@ -14444,9 +14633,11 @@
       "updatedAt": "2026-07-30T15:35:44.839000+00:00",
       "investmentScore": 30.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834323330373931",
       "title": "50 Sqyrd Plot For Sale in Noida Extension, Noida",
       "location": "Noida",
       "price": "14 L",
@@ -14501,9 +14692,11 @@
       "updatedAt": "2026-07-30T15:28:23.488000+00:00",
       "investmentScore": 29.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373635353331",
       "title": "100 Sqyrd Plot For Sale in Sector 123, Noida",
       "location": "Sector 123, Noida",
       "price": "35 L",
@@ -14562,9 +14755,11 @@
       "updatedAt": "2026-07-30T15:32:17.369000+00:00",
       "investmentScore": 29.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373636393133",
       "title": "153 Sqyrd Plot For Sale in Kensington Park Plot Phase I, Sector 133, Noida",
       "location": "Sector 133, Noida",
       "price": "4.13 Cr",
@@ -14694,9 +14889,11 @@
       "updatedAt": "2026-07-30T15:28:45.593000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373731383237",
       "title": "204 Sqm Plot For Sale in Sector 122 Block A, Noida",
       "location": "Sector 122, Noida",
       "price": "4.95 Cr",
@@ -14760,9 +14957,11 @@
       "updatedAt": "2026-07-30T15:29:48.155000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833383433343537",
       "title": "300 Sqm Plot For Sale in Sector 151, Noida",
       "location": "Sector 151, Noida",
       "price": "6.2 Cr",
@@ -14813,9 +15012,11 @@
       "updatedAt": "2026-07-30T15:30:18.800000+00:00",
       "investmentScore": 31.3,
       "riskScore": 47.0,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373639373931",
       "title": "200 Sqm Plot For Sale in Sector 108 Block C, Noida",
       "location": "Sector 108, Noida",
       "price": "6.25 Cr",
@@ -14878,9 +15079,11 @@
       "updatedAt": "2026-07-30T15:29:45.305000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373530383531",
       "title": "250 Sqm Plot For Sale in Sector 92, Noida",
       "location": "Sector 92, Noida",
       "price": "6.25 Cr",
@@ -14937,9 +15140,11 @@
       "updatedAt": "2026-07-30T15:34:52.586000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423738393833333735",
       "title": "300 Sqm Plot For Sale in Sector 92 Block B, Noida",
       "location": "Sector 92, Noida",
       "price": "7.25 Cr",
@@ -15000,9 +15205,11 @@
       "updatedAt": "2026-07-30T15:33:22.616000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373432333033",
       "title": "300 Sqm Plot For Sale in Habitat 44, Sector 44 Block H, Noida",
       "location": "Sector 44, Noida",
       "price": "7.5 Cr",
@@ -15063,9 +15270,11 @@
       "updatedAt": "2026-07-30T15:35:38.078000+00:00",
       "investmentScore": 26.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373531343531",
       "title": "300 Sqm Plot For Sale in Sector 93B, Noida",
       "location": "Sector 93B, Noida",
       "price": "10 Cr",
@@ -15130,9 +15339,11 @@
       "updatedAt": "2026-07-30T15:34:54.642000+00:00",
       "investmentScore": 24.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833303831353431",
       "title": "450 Sqm Plot For Sale in Sector 72, Noida",
       "location": "Sector 72, Noida",
       "price": "11.5 Cr",
@@ -15189,9 +15400,11 @@
       "updatedAt": "2026-07-30T15:33:58.858000+00:00",
       "investmentScore": 24.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423732313632373539",
       "title": "Studio Apartment For Sale in Wazidpur, Noida",
       "location": "Wazidpur, Noida",
       "price": "43.5 L",
@@ -15281,9 +15494,11 @@
       "updatedAt": "2026-07-30T15:33:48.797000+00:00",
       "investmentScore": 29.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343036363737",
       "title": "Studio Apartment For Sale in Orion One 32, Sector 132, Noida",
       "location": "Sector 132, Noida",
       "price": "1 Cr",
@@ -15392,9 +15607,11 @@
       "updatedAt": "2026-07-30T15:34:13.117000+00:00",
       "investmentScore": 36.05,
       "riskScore": 44.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737383736333133",
       "title": "3 BHK 120 Sqm Villa For Sale in Panchsheel Villas, Noida Extension, Noida",
       "location": "Panchsheel Villas, Noida",
       "price": "2.8 Cr",
@@ -15553,9 +15770,11 @@
       "updatedAt": "2026-07-30T15:32:24.343000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333530323533",
       "title": "4 BHK 1800 Sqft Villa For Sale in Sector 63A, Noida",
       "location": "Sector 63A, Noida",
       "price": "5.25 Cr",
@@ -15659,9 +15878,11 @@
       "updatedAt": "2026-07-30T15:28:21.413000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831363337303539",
       "title": "5 BHK 3000 Sqft Villa For Sale in Sector 29, Noida",
       "location": "Sector 29, Noida",
       "price": "6.75 Cr",
@@ -15765,9 +15986,11 @@
       "updatedAt": "2026-07-30T15:31:46.982000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832323932323433",
       "title": "4 BHK 2870 Sqft Villa For Sale in Arun Vihar, Noida",
       "location": "Arun Vihar, Noida",
       "price": "7 Cr",
@@ -15871,9 +16094,11 @@
       "updatedAt": "2026-07-30T15:31:43.861000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834343631373737",
       "title": "3 BHK 3000 Sqft Villa For Sale in Sector 55 Block A, Noida",
       "location": "Sector 55, Noida",
       "price": "7.95 Cr",
@@ -15971,9 +16196,11 @@
       "updatedAt": "2026-07-30T15:29:23.505000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373333363335",
       "title": "1 BHK 500 Sqft Flat For Sale in Sarfabad Village, Noida",
       "location": "Sarfabad Village, Noida",
       "price": "28 L",
@@ -16055,9 +16282,11 @@
       "updatedAt": "2026-07-30T15:30:02.874000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373735343831",
       "title": "2 BHK 700 Sqft Flat For Sale in Eldeco Live By The Greens, Sector 150, Noida",
       "location": "Sector 150, Noida",
       "price": "1.27 Cr",
@@ -16227,9 +16456,11 @@
       "updatedAt": "2026-07-30T15:31:58.699000+00:00",
       "investmentScore": 41.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831383131343233",
       "title": "2 BHK 1182 Sqft Flat For Sale Noida Extension, Noida",
       "location": "Noida",
       "price": "1.37 Cr",
@@ -16404,9 +16635,11 @@
       "updatedAt": "2026-07-30T15:35:04.544000+00:00",
       "investmentScore": 31.55,
       "riskScore": 44.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833373732333733",
       "title": "3 BHK 1495 Sqft Flat For Sale in Sector 143, Noida",
       "location": "Sector 143, Noida",
       "price": "2.15 Cr",
@@ -16502,9 +16735,11 @@
       "updatedAt": "2026-07-30T15:30:21.306000+00:00",
       "investmentScore": 38.8,
       "riskScore": 32.0,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423738313230393139",
       "title": "4 BHK 1800 Sqft Flat For Sale in Logix Blossom County, Sector 137, Noida",
       "location": "Sector 137, Noida",
       "price": "2.6 Cr",
@@ -16656,9 +16891,11 @@
       "updatedAt": "2026-07-30T15:31:55.897000+00:00",
       "investmentScore": 39.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423731353231303531",
       "title": "3 BHK 1850 Sqft Flat For Sale in Apex Athena, Sector 75, Noida",
       "location": "Sector 75, Noida",
       "price": "3.75 Cr",
@@ -16840,9 +17077,11 @@
       "updatedAt": "2026-07-30T15:29:18.510000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373130333735",
       "title": "3 BHK 1500 Sqft Flat For Sale in Bhutani Belfair, Sector 150, Noida",
       "location": "Sector 150, Noida",
       "price": "4.56 Cr",
@@ -16950,9 +17189,11 @@
       "updatedAt": "2026-07-30T15:35:14.545000+00:00",
       "investmentScore": 32.05,
       "riskScore": 44.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423734313338313139",
       "title": "3 BHK 2000 Sqft Flat For Sale in Godrej Jardinia, Sector 146, Noida",
       "location": "Sector 146, Noida",
       "price": "5.35 Cr",
@@ -17126,9 +17367,11 @@
       "updatedAt": "2026-07-30T15:35:54.332000+00:00",
       "investmentScore": 27.55,
       "riskScore": 44.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313638363135",
       "title": "4 BHK 2764 Sqft Flat For Sale in Kalpataru Vista, Sector 128, Noida",
       "location": "Sector 128, Noida",
       "price": "9.26 Cr",
@@ -17316,9 +17559,11 @@
       "updatedAt": "2026-07-30T15:31:38.972000+00:00",
       "investmentScore": 37.55,
       "riskScore": 29.5,
-      "locationScore": 48.0
+      "locationScore": 48.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373438343131",
       "title": "8 BHK 2800 Sqft House For Sale Sector 34 Pocket C, Noida",
       "location": "Sector 34, Noida",
       "price": "10 Cr",
@@ -17402,9 +17647,11 @@
       "updatedAt": "2026-07-30T15:35:46.804000+00:00",
       "investmentScore": 30.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373732323831",
       "title": "100 Sqyrd Plot For Sale in Sector 148, Noida",
       "location": "Sector 148, Noida",
       "price": "38 L",
@@ -17459,9 +17706,11 @@
       "updatedAt": "2026-07-30T15:29:49.198000+00:00",
       "investmentScore": 29.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737363237303433",
       "title": "Studio Apartment For Sale in Sector 140, Noida",
       "location": "Sector 140, Noida",
       "price": "54 L",
@@ -17555,7 +17804,8 @@
       "updatedAt": "2026-07-30T15:33:25.141000+00:00",
       "investmentScore": 30.8,
       "riskScore": 47.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     }
   ]
 }

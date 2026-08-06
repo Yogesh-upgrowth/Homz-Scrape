@@ -6,6 +6,7 @@
   "total": 158,
   "results": [
     {
+      "id": "magicbricks:4d423835373632333039",
       "title": "4 BHK 2600 Sq-ft Flat/Apartment For Rent in Sector 47, Gurgaon",
       "location": "Sector 47, Gurgaon",
       "price": "60,000/month",
@@ -66,9 +67,11 @@
       "updatedAt": "2026-07-30T15:19:58.366000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373631373735",
       "title": "3 BHK Flat 1760 Sq-ft For Rent in DLF Express Greens, IMT Manesar, Gurgaon",
       "location": "DLF Express Greens, Gurgaon",
       "price": "28,000/month",
@@ -186,9 +189,11 @@
       "updatedAt": "2026-07-30T15:20:01.180000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373534373739",
       "title": "3 BHK 2129 Sq-ft Flat/Apartment For Rent in Sector 85, Gurgaon",
       "location": "Sector 85, Gurgaon",
       "price": "65,000/month",
@@ -249,9 +254,11 @@
       "updatedAt": "2026-07-30T15:20:05.767000+00:00",
       "investmentScore": 39.0,
       "riskScore": 32.0,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373632313839",
       "title": "4 BHK Flat 2364 Sq-ft For Rent in DLF Garden City The Primus, Sector 82A, Gurgaon",
       "location": "Sector 82A, Gurgaon",
       "price": "79,500/month",
@@ -312,9 +319,11 @@
       "updatedAt": "2026-07-30T15:20:11.640000+00:00",
       "investmentScore": 37.75,
       "riskScore": 29.5,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373636333137",
       "title": "2 BHK Flat 657 Sq-ft For Rent in Signature synera 81, Gurgaon",
       "location": "Signature synera 81, Gurgaon",
       "price": "17,000/month",
@@ -383,9 +392,11 @@
       "updatedAt": "2026-07-30T15:20:13.149000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373730323235",
       "title": "2 BHK Flat 1422 Sq-ft For Rent in Tashee Capital Gateway, Sector 111, Gurgaon",
       "location": "Sector 111, Gurgaon",
       "price": "52,000/month",
@@ -517,9 +528,11 @@
       "updatedAt": "2026-07-30T15:20:16.152000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373733393239",
       "title": "2 BHK Flat 587 Sq-ft For Rent in Signature Global Solera 2, Sector 107, Gurgaon",
       "location": "Sector 107, Gurgaon",
       "price": "15,000/month",
@@ -636,9 +649,11 @@
       "updatedAt": "2026-07-30T15:20:23.385000+00:00",
       "investmentScore": 40.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373637393937",
       "title": "4 BHK Flat 2315 Sq-ft For Rent in JMD Gardens, Sector 33, Gurgaon",
       "location": "Sector 33, Gurgaon",
       "price": "70,000/month",
@@ -773,9 +788,11 @@
       "updatedAt": "2026-07-30T15:20:25.563000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373736383035",
       "title": "3 BHK Flat 2000 Sq-ft For Rent in Intelligentsia Apartment, Sector 56, Gurgaon",
       "location": "Sector 56, Gurgaon",
       "price": "53,000/month",
@@ -889,9 +906,11 @@
       "updatedAt": "2026-07-30T15:20:28.456000+00:00",
       "investmentScore": 42.27,
       "riskScore": 29.5,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373431343533",
       "title": "1 BHK Flat 1614 Sq-ft For Rent in DLF Ridgewood Estate, DLF Phase 4, Gurgaon",
       "location": "DLF Ridgewood Estate, Gurgaon",
       "price": "35,000/month",
@@ -1015,9 +1034,11 @@
       "updatedAt": "2026-07-30T15:20:33.244000+00:00",
       "investmentScore": 43.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373338373139",
       "title": "2 BHK Flat 1350 Sq-ft For Rent in Ambience Creacions, Sector 22, Gurgaon",
       "location": "Sector 22, Gurgaon",
       "price": "75,000/month",
@@ -1164,9 +1185,11 @@
       "updatedAt": "2026-07-30T15:20:40.785000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373432343231",
       "title": "3 BHK Flat 1615 Sq-ft For Rent in Mahindera Aura Apartmemts, Gurgaon",
       "location": "Mahindera Aura Apartmemts, Gurgaon",
       "price": "37,000/month",
@@ -1231,9 +1254,11 @@
       "updatedAt": "2026-07-30T15:20:45.689000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373432373037",
       "title": "4 BHK Flat 2639 Sq-ft For Rent in Satya The Hermitage, Sector 103, Gurgaon",
       "location": "Sector 103, Gurgaon",
       "price": "45,000/month",
@@ -1377,9 +1402,11 @@
       "updatedAt": "2026-07-30T15:20:48.586000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373336383331",
       "title": "2 BHK Flat 1180 Sq-ft For Rent in Supertech Hues, Sector 68, Gurgaon",
       "location": "Sector 68, Gurgaon",
       "price": "32,000/month",
@@ -1534,9 +1561,11 @@
       "updatedAt": "2026-07-30T15:20:53.358000+00:00",
       "investmentScore": 40.83,
       "riskScore": 29.5,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373438323035",
       "title": "2 BHK 583 Sq-ft Flat/Apartment For Rent in Sector 36 Sohna, Gurgaon",
       "location": "Sector 36, Gurgaon",
       "price": "15,000/month",
@@ -1600,9 +1629,11 @@
       "updatedAt": "2026-07-30T15:20:58.652000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834393033393837",
       "title": "2 BHK 1200 Sq-ft For Rent in DLF Phase 5, Gurgaon",
       "location": "Gurgaon",
       "price": "80,000/month",
@@ -1671,9 +1702,11 @@
       "updatedAt": "2026-07-30T15:21:11.072000+00:00",
       "investmentScore": 41.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423734383239313839",
       "title": "2 BHK Flat 683 Sq-ft For Rent in Signature The Serenas, Sector 36 Sohna, Gurgaon",
       "location": "Sector 36, Gurgaon",
       "price": "25,000/month",
@@ -1750,9 +1783,11 @@
       "updatedAt": "2026-07-30T15:21:16.257000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834393530313339",
       "title": "3 BHK Flat 3000 Sq-ft For Rent in Malibu Town, Sohna Road, Gurgaon",
       "location": "Malibu Town, Gurgaon",
       "price": "1.3 L/month",
@@ -1929,9 +1964,11 @@
       "updatedAt": "2026-07-30T15:21:19.406000+00:00",
       "investmentScore": 37.39,
       "riskScore": 29.5,
-      "locationScore": 40.8
+      "locationScore": 40.8,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343635313237",
       "title": "2 BHK 980 Sq-ft Flat/Apartment For Rent in Phase 2 New Palam Vihar, Gurgaon",
       "location": "Gurgaon",
       "price": "20,000/month",
@@ -2010,9 +2047,11 @@
       "updatedAt": "2026-07-30T15:21:46.682000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383730373031",
       "title": "3 BHK Flat 1800 Sq-ft For Rent in Sagavi Apartment, Sushant Lok 2, Gurgaon",
       "location": "Sagavi, Gurgaon",
       "price": "55,000/month",
@@ -2097,9 +2136,11 @@
       "updatedAt": "2026-07-30T15:21:56.195000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423638323537303535",
       "title": "2 BHK 600 Sq-ft Flat/Apartment For Rent in Sector 67A, Gurgaon",
       "location": "Sector 67A, Gurgaon",
       "price": "35,000/month",
@@ -2158,9 +2199,11 @@
       "updatedAt": "2026-07-30T15:22:01.743000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423639393838363433",
       "title": "2 BHK Flat 484 Sq-ft For Rent in Conscient Habitat, Sector 99A, Gurgaon",
       "location": "Sector 99A, Gurgaon",
       "price": "7,000/month",
@@ -2228,9 +2271,11 @@
       "updatedAt": "2026-07-30T15:22:03.145000+00:00",
       "investmentScore": 36.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423535363934333335",
       "title": "2 BHK Flat 1000 Sq-ft For Rent in Uphaar Khushi Homes, Rajendra Park, Gurgaon",
       "location": "Uphaar Khushi Homes, Gurgaon",
       "price": "15,000/month",
@@ -2325,9 +2370,11 @@
       "updatedAt": "2026-07-30T15:22:06.099000+00:00",
       "investmentScore": 36.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423535353135353735",
       "title": "3 BHK 2250 Sq-ft Flat/Apartment For Rent in Sihi, Gurgaon",
       "location": "Sihi, Gurgaon",
       "price": "35,000/month",
@@ -2402,9 +2449,11 @@
       "updatedAt": "2026-07-30T15:22:16.377000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303436333739",
       "title": "2 BHK Flat 691 Sq-ft For Rent in Pyramid Elite, Sector 86, Gurgaon",
       "location": "Sector 86, Gurgaon",
       "price": "23,000/month",
@@ -2521,9 +2570,11 @@
       "updatedAt": "2026-07-30T15:22:19.827000+00:00",
       "investmentScore": 38.75,
       "riskScore": 29.5,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333335313937",
       "title": "3 BHK Flat 2250 Sq-ft For Rent in Huda CGHS, Sector 56, Gurgaon",
       "location": "Sector 56, Gurgaon",
       "price": "42,000/month",
@@ -2648,9 +2699,11 @@
       "updatedAt": "2026-07-30T15:22:22.054000+00:00",
       "investmentScore": 42.27,
       "riskScore": 29.5,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423531373431363633",
       "title": "3 BHK Flat 1813 Sq-ft For Rent in Park View City 1, Sector 48, Gurgaon",
       "location": "Sector 48, Gurgaon",
       "price": "56,000/month",
@@ -2789,9 +2842,11 @@
       "updatedAt": "2026-07-30T15:22:23.606000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833383934323535",
       "title": "4 BHK 4000 Sq-ft Flat/Apartment For Rent in Sector 46, Gurgaon",
       "location": "Sector 46, Gurgaon",
       "price": "95,000/month",
@@ -2871,9 +2926,11 @@
       "updatedAt": "2026-07-30T15:22:29.330000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830303031363431",
       "title": "2 BHK Flat 600 Sq-ft For Rent in Deep Mala, Sector 10a, Gurgaon, Gurgaon",
       "location": "Sector 10A, Gurgaon",
       "price": "17,000/month",
@@ -2943,9 +3000,11 @@
       "updatedAt": "2026-07-30T15:22:33.481000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423636323436333631",
       "title": "3 BHK Flat 2025 Sq-ft For Rent in Antriksh Heights, Sector 84, Gurgaon",
       "location": "Sector 84, Gurgaon",
       "price": "21,284/month",
@@ -3068,9 +3127,11 @@
       "updatedAt": "2026-07-30T15:22:36.084000+00:00",
       "investmentScore": 38.75,
       "riskScore": 29.5,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373636363631",
       "title": "2 BHK 1105 Sq-ft Flat/Apartment For Rent in DLF Regency Park 1, DLF Phase 4, Gurgaon",
       "location": "DLF Regency Park 1, Gurgaon",
       "price": "60,000/month",
@@ -3205,9 +3266,11 @@
       "updatedAt": "2026-07-30T15:22:44.289000+00:00",
       "investmentScore": 43.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373636343231",
       "title": "4 BHK 2193 Sq-ft Flat/Apartment For Rent in CHD Avenue 71, Sector 71, Gurgaon",
       "location": "Sector 71, Gurgaon",
       "price": "48,000/month",
@@ -3379,9 +3442,11 @@
       "updatedAt": "2026-07-30T15:22:46.348000+00:00",
       "investmentScore": 40.83,
       "riskScore": 29.5,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373639303235",
       "title": "3 BHK 1852 Sq-ft Flat/Apartment For Rent in Shapoorji Pallonji Joyville, Sector 102, Gurgaon",
       "location": "Sector 102, Gurgaon",
       "price": "52,000/month",
@@ -3502,9 +3567,11 @@
       "updatedAt": "2026-07-30T15:22:51.655000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373638353339",
       "title": "3 BHK 2095 Sq-ft Flat/Apartment For Rent in Conscient Elevate, Sector 59, Gurgaon",
       "location": "Sector 59, Gurgaon",
       "price": "1.1 L/month",
@@ -3638,9 +3705,11 @@
       "updatedAt": "2026-07-30T15:22:56.116000+00:00",
       "investmentScore": 40.27,
       "riskScore": 29.5,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373730323331",
       "title": "3 BHK 2022 Sq-ft Flat/Apartment For Rent in Brisk Lumbini Terrace Homes, Sector 109, Gurgaon",
       "location": "Sector 109, Gurgaon",
       "price": "45,000/month",
@@ -3783,9 +3852,11 @@
       "updatedAt": "2026-07-30T15:22:58.528000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373731393635",
       "title": "3 BHK 1935 Sq-ft Flat/Apartment For Rent in Bestech Park View Spa Next, Sector 67, Gurgaon",
       "location": "Sector 67, Gurgaon",
       "price": "59,000/month",
@@ -3956,9 +4027,11 @@
       "updatedAt": "2026-07-30T15:23:04.780000+00:00",
       "investmentScore": 42.27,
       "riskScore": 29.5,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373733353137",
       "title": "3 BHK 1704 Sq-ft Flat/Apartment For Rent in Tulip Yellow, Sector 69, Gurgaon",
       "location": "Sector 69, Gurgaon",
       "price": "47,999/month",
@@ -4088,9 +4161,11 @@
       "updatedAt": "2026-07-30T15:23:06.128000+00:00",
       "investmentScore": 40.83,
       "riskScore": 29.5,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373736303839",
       "title": "3 BHK 1895 Sq-ft Flat/Apartment For Rent in Ansal Height 86, Sector 86, Gurgaon",
       "location": "Sector 86, Gurgaon",
       "price": "33,500/month",
@@ -4243,9 +4318,11 @@
       "updatedAt": "2026-07-30T15:23:13.383000+00:00",
       "investmentScore": 39.75,
       "riskScore": 29.5,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373636343535",
       "title": "2 BHK Flat 1418 Sq-ft For Rent in Central Park, Gurgaon",
       "location": "Central Park, Gurgaon",
       "price": "75,000/month",
@@ -4322,9 +4399,11 @@
       "updatedAt": "2026-07-30T15:23:20.963000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835363937393831",
       "title": "3 BHK 2000 Sq-ft Flat/Apartment For Rent in Sector 92, Gurgaon",
       "location": "Sector 92, Gurgaon",
       "price": "28,000/month",
@@ -4395,9 +4474,11 @@
       "updatedAt": "2026-07-30T15:23:39.162000+00:00",
       "investmentScore": 41.16,
       "riskScore": 32.0,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373533353537",
       "title": "3 BHK Flat For Rent in Bestech Park View Grand Spa , Sector 81, Gurgaon",
       "location": "Sector 81, Gurgaon",
       "price": "65,000/month",
@@ -4532,9 +4613,11 @@
       "updatedAt": "2026-07-30T15:23:41.840000+00:00",
       "investmentScore": 39.75,
       "riskScore": 29.5,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373632363335",
       "title": "3 BHK Flat 1395 Sq-ft For Rent in Emaar Emerald Estate, Sector 65, Gurgaon",
       "location": "Sector 65, Gurgaon",
       "price": "60,000/month",
@@ -4687,9 +4770,11 @@
       "updatedAt": "2026-07-30T15:23:46.016000+00:00",
       "investmentScore": 40.83,
       "riskScore": 29.5,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373439393033",
       "title": "3 BHK Flat 2727 Sq-ft For Rent in M3M Merlin, Sector 67, Gurgaon",
       "location": "Sector 67, Gurgaon",
       "price": "95,000/month",
@@ -4813,9 +4898,11 @@
       "updatedAt": "2026-07-30T15:23:47.059000+00:00",
       "investmentScore": 40.27,
       "riskScore": 29.5,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373331333533",
       "title": "1 BHK 750 Sq-ft Flat/Apartment For Rent in Sector 43, Gurgaon",
       "location": "Sector 43, Gurgaon",
       "price": "40,000/month",
@@ -4876,9 +4963,11 @@
       "updatedAt": "2026-07-30T15:23:51.118000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373835353739",
       "title": "3 BHK Flat 645 Sq-ft For Rent in Landmark The Homes 81, Sector 81, Gurgaon",
       "location": "Sector 81, Gurgaon",
       "price": "25,000/month",
@@ -5009,9 +5098,11 @@
       "updatedAt": "2026-07-30T15:23:59.153000+00:00",
       "investmentScore": 39.75,
       "riskScore": 29.5,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833343232323731",
       "title": "3 BHK Flat 1850 Sq-ft For Rent in Huda Floor, Sector 38, Gurgaon",
       "location": "Sector 38, Gurgaon",
       "price": "50,000/month",
@@ -5088,9 +5179,11 @@
       "updatedAt": "2026-07-30T15:24:06.531000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833343137373139",
       "title": "4 BHK 1890 Sq-ft Flat/Apartment For Rent in Sector 55, Gurgaon",
       "location": "Sector 55, Gurgaon",
       "price": "55,000/month",
@@ -5162,9 +5255,11 @@
       "updatedAt": "2026-07-30T15:24:11.919000+00:00",
       "investmentScore": 41.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830393530393933",
       "title": "3 BHK Flat 1850 Sq-ft For Rent in Sukriti Apartments, Block B Sector 56, Gurgaon",
       "location": "Sector 56, Gurgaon",
       "price": "72,000/month",
@@ -5270,9 +5365,11 @@
       "updatedAt": "2026-07-30T15:24:18.421000+00:00",
       "investmentScore": 42.27,
       "riskScore": 29.5,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313037323539",
       "title": "3 BHK Flat 2400 Sq-ft For Rent in Essel Towers, Mehrauli Gurgaon Road, Gurgaon",
       "location": "Essel Towers, Gurgaon",
       "price": "68,000/month",
@@ -5424,9 +5521,11 @@
       "updatedAt": "2026-07-30T15:24:21.856000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323730323633",
       "title": "4 BHK Flat 3600 Sq-ft For Rent in DLF The Belaire, DLF Phase 5, Gurgaon",
       "location": "DLF The Belaire, Gurgaon",
       "price": "2.3 L/month",
@@ -5578,9 +5677,11 @@
       "updatedAt": "2026-07-30T15:24:29.382000+00:00",
       "investmentScore": 39.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834313531383735",
       "title": "4 BHK Flat 6400 Sq-ft For Rent in DLF The Magnolias, DLF Phase 5, Gurgaon",
       "location": "DLF The Magnolias, Gurgaon",
       "price": "8.3 L/month",
@@ -5721,9 +5822,11 @@
       "updatedAt": "2026-07-30T15:24:34.214000+00:00",
       "investmentScore": 37.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832313834353531",
       "title": "1 BHK 650 Sq-ft Flat/Apartment For Rent in Sector 24, Gurgaon",
       "location": "Sector 24, Gurgaon",
       "price": "30,000/month",
@@ -5808,9 +5911,11 @@
       "updatedAt": "2026-07-30T15:24:36.819000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303135343237",
       "title": "3 BHK Flat 2149 Sq-ft For Rent in Tashee Capital Gateway, Sector 111, Gurgaon",
       "location": "Sector 111, Gurgaon",
       "price": "35,000/month",
@@ -5946,9 +6051,11 @@
       "updatedAt": "2026-07-30T15:24:43.944000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737303338313239",
       "title": "2 BHK Flat 545 Sq-ft For Rent in Tulip Lemon, Sector 69, Gurgaon",
       "location": "Sector 69, Gurgaon",
       "price": "31,000/month",
@@ -6085,9 +6192,11 @@
       "updatedAt": "2026-07-30T15:24:58.595000+00:00",
       "investmentScore": 40.83,
       "riskScore": 29.5,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303036323431",
       "title": "3 BHK Flat 2685 Sq-ft For Rent in Suncity Platinum Towers, Sector 28, Gurgaon",
       "location": "Sector 28, Gurgaon",
       "price": "2.3 L/month",
@@ -6345,9 +6454,11 @@
       "updatedAt": "2026-07-30T15:25:01.647000+00:00",
       "investmentScore": 33.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423533353238303839",
       "title": "2 BHK 600 Sq-ft Flat/Apartment For Rent in Sector 81A, Gurgaon",
       "location": "Sector 81A, Gurgaon",
       "price": "22,000/month",
@@ -6428,9 +6539,11 @@
       "updatedAt": "2026-07-30T15:25:03.769000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833363634313831",
       "title": "2 BHK Flat 995 Sq-ft For Rent in Godrej Nature Plus, Sohna Road, Gurgaon",
       "location": "Godrej Nature Plus, Gurgaon",
       "price": "28,000/month",
@@ -6557,9 +6670,11 @@
       "updatedAt": "2026-07-30T15:25:28.598000+00:00",
       "investmentScore": 39.39,
       "riskScore": 29.5,
-      "locationScore": 40.8
+      "locationScore": 40.8,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333638353933",
       "title": "2 BHK Flat 1360 Sq-ft For Rent in Project Model Town, Sector 11, Gurgaon",
       "location": "Sector 11, Gurgaon",
       "price": "25,000/month",
@@ -6686,9 +6801,11 @@
       "updatedAt": "2026-07-30T15:25:30.173000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832363736373333",
       "title": "1 BHK 650 Sq-ft Flat/Apartment For Rent in Sector 69, Gurgaon",
       "location": "Sector 69, Gurgaon",
       "price": "24,500/month",
@@ -6765,9 +6882,11 @@
       "updatedAt": "2026-07-30T15:25:31.760000+00:00",
       "investmentScore": 39.08,
       "riskScore": 32.0,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739303236313531",
       "title": "2 BHK Flat 1578 Sq-ft For Rent in Imperia Esfera, Sector 37C, Gurgaon",
       "location": "Sector 37C, Gurgaon",
       "price": "35,000/month",
@@ -6875,9 +6994,11 @@
       "updatedAt": "2026-07-30T15:25:36.302000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423334343333323931",
       "title": "4 BHK Flat 2215 Sq-ft For Rent in DLF Regal Gardens, Sector 90, Gurgaon",
       "location": "Sector 90, Gurgaon",
       "price": "55,000/month",
@@ -7001,9 +7122,11 @@
       "updatedAt": "2026-07-30T15:25:39.371000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423638393234333233",
       "title": "1 BHK Flat 700 Sq-ft For Rent in Sushant Lok 3, Sector 57, Gurgaon",
       "location": "Sector 57, Gurgaon",
       "price": "36,000/month",
@@ -7100,9 +7223,11 @@
       "updatedAt": "2026-07-30T15:25:58.190000+00:00",
       "investmentScore": 41.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834353734383535",
       "title": "3 BHK Flat 745 Sq-ft For Rent in Signature Global Solera, Sector 107, Gurgaon",
       "location": "Sector 107, Gurgaon",
       "price": "18,000/month",
@@ -7232,9 +7357,11 @@
       "updatedAt": "2026-07-30T15:26:02.528000+00:00",
       "investmentScore": 40.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834363030373831",
       "title": "3 BHK Flat 1376 Sq-ft For Rent in DLF Ridgewood Estate, Galleria Market Area, Gurgaon",
       "location": "DLF Ridgewood Estate, Gurgaon",
       "price": "66,000/month",
@@ -7364,9 +7491,11 @@
       "updatedAt": "2026-07-30T15:26:09.514000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834353737393631",
       "title": "4 BHK Flat 3350 Sq-ft For Rent in Tata Primanti, Sector 72, Gurgaon",
       "location": "Sector 72, Gurgaon",
       "price": "1 L/month",
@@ -7514,9 +7643,11 @@
       "updatedAt": "2026-07-30T15:26:15.387000+00:00",
       "investmentScore": 38.83,
       "riskScore": 29.5,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423530333232373930",
       "title": "5 BHK Flat 3250 Sq-ft For Rent in Unitech Heritage City, Mehrauli Gurgaon Road, Gurgaon",
       "location": "Unitech Heritage City, Gurgaon",
       "price": "1.4 L/month",
@@ -7649,9 +7780,11 @@
       "updatedAt": "2026-07-30T15:26:18.774000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833353039393739",
       "title": "3 BHK Flat 1900 Sq-ft For Rent in Ansal Estella, Sector 103, Gurgaon",
       "location": "Sector 103, Gurgaon",
       "price": "28,000/month",
@@ -7788,9 +7921,11 @@
       "updatedAt": "2026-07-30T15:26:20.561000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423230383639313832",
       "title": "3 BHK 1137 Sq-ft Flat/Apartment For Rent in Sohna Road, Gurgaon",
       "location": "Gurgaon",
       "price": "30,000/month",
@@ -7860,9 +7995,11 @@
       "updatedAt": "2026-07-30T15:26:23.647000+00:00",
       "investmentScore": 38.64,
       "riskScore": 32.0,
-      "locationScore": 40.8
+      "locationScore": 40.8,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834353537323035",
       "title": "4 BHK 2600 Sq-ft Flat/Apartment For Rent in Sector 37C, Gurgaon",
       "location": "Sector 37C, Gurgaon",
       "price": "45,000/month",
@@ -7930,9 +8067,11 @@
       "updatedAt": "2026-07-30T15:26:33.118000+00:00",
       "investmentScore": 41.16,
       "riskScore": 32.0,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423630353838313637",
       "title": "2 BHK Flat 1350 Sq-ft For Rent in Shree Vardhman Flora, Sector 90, Gurgaon",
       "location": "Sector 90, Gurgaon",
       "price": "27,000/month",
@@ -8090,9 +8229,11 @@
       "updatedAt": "2026-07-30T15:26:35.645000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835353036323139",
       "title": "4 BHK Flat 2700 Sq-ft For Rent in SS Linden Floors, Sector 84, Gurgaon",
       "location": "Sector 84, Gurgaon",
       "price": "55,000/month",
@@ -8216,9 +8357,11 @@
       "updatedAt": "2026-07-30T15:26:44.620000+00:00",
       "investmentScore": 39.75,
       "riskScore": 29.5,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833303130363431",
       "title": "3 BHK Flat 1930 Sq-ft For Rent in DLF Skycourt, Sector 86, Gurgaon",
       "location": "Sector 86, Gurgaon",
       "price": "60,000/month",
@@ -8363,9 +8506,11 @@
       "updatedAt": "2026-07-30T15:26:46.209000+00:00",
       "investmentScore": 39.75,
       "riskScore": 29.5,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834353433323639",
       "title": "3 BHK Flat 2350 Sq-ft For Rent in Birla Navya, Sector 63A, Gurgaon",
       "location": "Sector 63A, Gurgaon",
       "price": "80,000/month",
@@ -8535,9 +8680,11 @@
       "updatedAt": "2026-07-30T15:26:51.710000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423736323430323539",
       "title": "2 BHK 1460 Sq-ft Flat/Apartment For Rent in Sector 66, Gurgaon",
       "location": "Sector 66, Gurgaon",
       "price": "50,000/month",
@@ -8604,9 +8751,11 @@
       "updatedAt": "2026-07-30T15:26:55.550000+00:00",
       "investmentScore": 41.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343130303433",
       "title": "4 BHK Flat 2300 Sq-ft For Rent in Adani Samsara Avasa, Sector 63, Gurgaon",
       "location": "Sector 63, Gurgaon",
       "price": "1.2 L/month",
@@ -8708,9 +8857,11 @@
       "updatedAt": "2026-07-30T15:27:06.988000+00:00",
       "investmentScore": 38.83,
       "riskScore": 29.5,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831353831383437",
       "title": "1 BHK 929 Sq-ft For Rent in Central Park Flower Valley, Sohna, Gurgaon",
       "location": "Central Park Flower Valley, Gurgaon",
       "price": "50,000/month",
@@ -8826,9 +8977,11 @@
       "updatedAt": "2026-07-30T15:27:08.189000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423630323138303031",
       "title": "2 BHK Flat 600 Sq-ft For Rent in Signature Global Orchard Avenue, Sector 93, Gurgaon",
       "location": "Sector 93, Gurgaon",
       "price": "23,000/month",
@@ -8940,9 +9093,11 @@
       "updatedAt": "2026-07-30T15:27:10.335000+00:00",
       "investmentScore": 40.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383135343331",
       "title": "3 BHK 2782 Sq-ft Flat/Apartment For Rent in Sector 37C, Gurgaon",
       "location": "Sector 37C, Gurgaon",
       "price": "38,000/month",
@@ -9018,9 +9173,11 @@
       "updatedAt": "2026-07-30T15:27:13.867000+00:00",
       "investmentScore": 41.16,
       "riskScore": 32.0,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333939323235",
       "title": "3 BHK Flat 1828 Sq-ft For Rent in M3M Skycity, Sector 65, Gurgaon",
       "location": "Sector 65, Gurgaon",
       "price": "95,000/month",
@@ -9141,9 +9298,11 @@
       "updatedAt": "2026-07-30T15:27:15.117000+00:00",
       "investmentScore": 38.83,
       "riskScore": 29.5,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343934323237",
       "title": "4 BHK 2720 Sq-ft Flat/Apartment For Rent in Sector 106, Gurgaon",
       "location": "Sector 106, Gurgaon",
       "price": "85,000/month",
@@ -9210,9 +9369,11 @@
       "updatedAt": "2026-07-30T15:27:17.397000+00:00",
       "investmentScore": 39.16,
       "riskScore": 32.0,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833383734363239",
       "title": "3 BHK Flat 1494 Sq-ft For Rent in M3M Soulitude, Sector 89, Gurgaon",
       "location": "Sector 89, Gurgaon",
       "price": "38,000/month",
@@ -9351,9 +9512,11 @@
       "updatedAt": "2026-07-30T15:27:25.432000+00:00",
       "investmentScore": 41.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383032383939",
       "title": "3 BHK 2350 Sq-ft Flat/Apartment For Rent in Ardee City, Gurgaon",
       "location": "Ardee City, Gurgaon",
       "price": "90,000/month",
@@ -9438,9 +9601,11 @@
       "updatedAt": "2026-07-30T15:27:30.481000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373939383733",
       "title": "1 BHK 200 Sq-ft Flat/Apartment For Rent in Ambience Island, Gurgaon",
       "location": "Ambience Island, Gurgaon",
       "price": "38,000/month",
@@ -9519,9 +9684,11 @@
       "updatedAt": "2026-07-30T15:27:32.909000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423734303033333237",
       "title": "3 BHK Flat 2050 Sq-ft For Rent in IREO Skyon, Sector 60, Gurgaon",
       "location": "Sector 60, Gurgaon",
       "price": "90,000/month",
@@ -9660,9 +9827,11 @@
       "updatedAt": "2026-07-30T15:27:36.034000+00:00",
       "investmentScore": 40.27,
       "riskScore": 29.5,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373537333739",
       "title": "2 BHK Builder Floor 2000 Sq-ft For Rent in Sector 53, Gurgaon",
       "location": "Sector 53, Gurgaon",
       "price": "32,000/month",
@@ -9729,9 +9898,11 @@
       "updatedAt": "2026-07-30T15:20:03.228000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373534363431",
       "title": "2 BHK Builder Floor 890 Sq-ft For Rent in Palam Vihar Extension, Gurgaon",
       "location": "Palam Vihar Extension, Gurgaon",
       "price": "25,000/month",
@@ -9799,9 +9970,11 @@
       "updatedAt": "2026-07-30T15:20:10.642000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373430353937",
       "title": "3 BHK Builder Floor 1400 Sq-ft For Rent in Huda Floors, Sector 45, Gurgaon",
       "location": "Sector 45, Gurgaon",
       "price": "75,000/month",
@@ -9865,9 +10038,11 @@
       "updatedAt": "2026-07-30T15:20:30.558000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373336393035",
       "title": "2 BHK Builder Floor 1210 Sq-ft For Rent in Sushant Lok 1 Block E, Gurgaon",
       "location": "Gurgaon",
       "price": "55,000/month",
@@ -9927,9 +10102,11 @@
       "updatedAt": "2026-07-30T15:20:56.184000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383535333335",
       "title": "4 BHK Builder Floor 2350 Sq-ft For Rent in Sector 50, Gurgaon",
       "location": "Sector 50, Gurgaon",
       "price": "65,000/month",
@@ -10006,9 +10183,11 @@
       "updatedAt": "2026-07-30T15:21:10.021000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834393038313439",
       "title": "4 BHK Builder Floor 2500 Sq-ft For Rent in Sushant Lok 1, Gurgaon",
       "location": "Sushant Lok 1, Gurgaon",
       "price": "1.3 L/month",
@@ -10082,9 +10261,11 @@
       "updatedAt": "2026-07-30T15:21:21.356000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835313531303235",
       "title": "3 BHK Builder Floor 2150 Sq-ft For Rent in Sector 40, Gurgaon",
       "location": "Sector 40, Gurgaon",
       "price": "69,000/month",
@@ -10156,9 +10337,11 @@
       "updatedAt": "2026-07-30T15:21:27.975000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835323835343337",
       "title": "3 BHK Builder Floor 1360 Sq-ft For Rent in Sector 57, Gurgaon",
       "location": "Sector 57, Gurgaon",
       "price": "50,000/month",
@@ -10234,9 +10417,11 @@
       "updatedAt": "2026-07-30T15:21:32.396000+00:00",
       "investmentScore": 41.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833373939373939",
       "title": "2 BHK Builder Floor 1600 Sq-ft For Rent in Sector 15 Part 2, Gurgaon",
       "location": "Sector 15, Gurgaon",
       "price": "37,500/month",
@@ -10303,9 +10488,11 @@
       "updatedAt": "2026-07-30T15:21:44.156000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835343832333933",
       "title": "2 BHK Builder Floor 2200 Sq-ft For Rent in Sector 51, Gurgaon",
       "location": "Sector 51, Gurgaon",
       "price": "75,000/month",
@@ -10376,9 +10563,11 @@
       "updatedAt": "2026-07-30T15:21:59.762000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423139343137393430",
       "title": "5 BHK Builder Floor 1800 Sq-ft For Rent in Surya Vihar, Gurgaon",
       "location": "Surya Vihar, Gurgaon",
       "price": "35,000/month",
@@ -10451,9 +10640,11 @@
       "updatedAt": "2026-07-30T15:22:04.437000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333132303333",
       "title": "3 BHK Flat 1615 Sq-ft For Rent in Independent Floors at DLF Gardencity Enclave, Hayatpur, Gurgaon",
       "location": "Gurgaon",
       "price": "40,000/month",
@@ -10617,9 +10808,11 @@
       "updatedAt": "2026-07-30T15:22:09.239000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373731313833",
       "title": "3 BHK Builder Floor 1800 Sq-ft For Rent in Sector 22B, Gurgaon",
       "location": "Sector 22B, Gurgaon",
       "price": "65,000/month",
@@ -10694,9 +10887,11 @@
       "updatedAt": "2026-07-30T15:22:11.702000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373638343431",
       "title": "4 BHK Builder Floor 2350 Sq-ft For Rent in Rosewood City, Sector 49, Gurgaon",
       "location": "Sector 49, Gurgaon",
       "price": "80,000/month",
@@ -10831,9 +11026,11 @@
       "updatedAt": "2026-07-30T15:22:48.666000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373637313337",
       "title": "4 BHK Builder Floor 350 Sq-yrd For Rent in Emaar Emerald Hills, Sector 65, Gurgaon",
       "location": "Sector 65, Gurgaon",
       "price": "70,000/month",
@@ -10977,9 +11174,11 @@
       "updatedAt": "2026-07-30T15:22:57.483000+00:00",
       "investmentScore": 40.83,
       "riskScore": 29.5,
-      "locationScore": 45.6
+      "locationScore": 45.6,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373730313235",
       "title": "3 BHK Builder Floor 2000 Sq-ft For Rent in Vipul World Floors , Sector 48, Gurgaon",
       "location": "Sector 48, Gurgaon",
       "price": "60,000/month",
@@ -11054,9 +11253,11 @@
       "updatedAt": "2026-07-30T15:23:10.118000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373736373139",
       "title": "2 BHK Builder Floor 750 Sq-ft For Rent in ROF Aalayas, Sector 102, Gurgaon",
       "location": "Sector 102, Gurgaon",
       "price": "16,000/month",
@@ -11209,9 +11410,11 @@
       "updatedAt": "2026-07-30T15:23:15.851000+00:00",
       "investmentScore": 40.91,
       "riskScore": 29.5,
-      "locationScore": 49.2
+      "locationScore": 49.2,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373638353733",
       "title": "4 BHK Builder Floor 2700 Sq-ft For Rent in Sector 57, Gurgaon",
       "location": "Sector 57, Gurgaon",
       "price": "70,000/month",
@@ -11287,9 +11490,11 @@
       "updatedAt": "2026-07-30T15:23:23.469000+00:00",
       "investmentScore": 41.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373637323633",
       "title": "4 BHK Builder Floor 3600 Sq-ft For Rent in South City 2, Gurgaon",
       "location": "South City 2, Gurgaon",
       "price": "1.5 L/month",
@@ -11369,9 +11574,11 @@
       "updatedAt": "2026-07-30T15:23:26.245000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373639393633",
       "title": "3 BHK Builder Floor 1800 Sq-ft For Rent in Sector 23, Gurgaon",
       "location": "Sector 23, Gurgaon",
       "price": "50,000/month",
@@ -11452,9 +11659,11 @@
       "updatedAt": "2026-07-30T15:23:31.246000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333838323931",
       "title": "4 BHK Builder Floor 2900 Sq-ft For Rent in 4S Aradhya Homes, Sector 67A, Gurgaon",
       "location": "Sector 67A, Gurgaon",
       "price": "60,000/month",
@@ -11593,9 +11802,11 @@
       "updatedAt": "2026-07-30T15:23:56.629000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834393834333035",
       "title": "3 BHK Builder Floor 1800 Sq-ft For Rent in Vipul World, Sector 48, Gurgaon",
       "location": "Sector 48, Gurgaon",
       "price": "55,000/month",
@@ -11732,9 +11943,11 @@
       "updatedAt": "2026-07-30T15:24:15.226000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834323130303231",
       "title": "3 BHK Builder Floor 1800 Sq-ft For Rent in Sector 63A, Gurgaon",
       "location": "Sector 63A, Gurgaon",
       "price": "60,000/month",
@@ -11806,9 +12019,11 @@
       "updatedAt": "2026-07-30T15:24:17.355000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373635313539",
       "title": "2 BHK Builder Floor 1160 Sq-ft For Rent in Sector 95A, Gurgaon",
       "location": "Sector 95A, Gurgaon",
       "price": "30,000/month",
@@ -11887,9 +12102,11 @@
       "updatedAt": "2026-07-30T15:24:31.569000+00:00",
       "investmentScore": 39.0,
       "riskScore": 32.0,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832373238393937",
       "title": "4 BHK Builder Floor 2000 Sq-ft For Rent in Hariom Kunj IV, Dhunela, Sector 33, Sohna Road, Gurgaon",
       "location": "Sector 33, Gurgaon",
       "price": "25,000/month",
@@ -11955,9 +12172,11 @@
       "updatedAt": "2026-07-30T15:24:42.409000+00:00",
       "investmentScore": 38.64,
       "riskScore": 32.0,
-      "locationScore": 40.8
+      "locationScore": 40.8,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830343533393833",
       "title": "3 BHK Builder Floor 1600 Sq-ft For Rent in Block F Suncity, Gurgaon",
       "location": "Block F Suncity, Gurgaon",
       "price": "65,000/month",
@@ -12021,9 +12240,11 @@
       "updatedAt": "2026-07-30T15:24:46.079000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423735343232303331",
       "title": "1 BHK Builder Floor 300 Sq-ft For Rent in Sohna Road, Gurgaon",
       "location": "Gurgaon",
       "price": "12,000/month",
@@ -12083,9 +12304,11 @@
       "updatedAt": "2026-07-30T15:24:51.245000+00:00",
       "investmentScore": 37.64,
       "riskScore": 32.0,
-      "locationScore": 40.8
+      "locationScore": 40.8,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333636373233",
       "title": "4 BHK Builder Floor 360 Sq-yrd For Rent in DLF Phase 4, Gurgaon",
       "location": "Gurgaon",
       "price": "1.8 L/month",
@@ -12158,9 +12381,11 @@
       "updatedAt": "2026-07-30T15:25:18.948000+00:00",
       "investmentScore": 41.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833363837383635",
       "title": "3 BHK Builder Floor 2000 Sq-ft For Rent in Sushant Lok 3 Block B, Gurgaon",
       "location": "Gurgaon",
       "price": "82,000/month",
@@ -12239,9 +12464,11 @@
       "updatedAt": "2026-07-30T15:25:34.259000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423531363631343731",
       "title": "3 BHK Builder Floor 1200 Sq-ft For Rent in Sector 46, Gurgaon",
       "location": "Sector 46, Gurgaon",
       "price": "42,000/month",
@@ -12315,9 +12542,11 @@
       "updatedAt": "2026-07-30T15:25:47.660000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423738343733323333",
       "title": "3 BHK Builder Floor 2100 Sq-ft For Rent in Sushant Lok 1 Block A, Gurgaon",
       "location": "Gurgaon",
       "price": "95,000/month",
@@ -12398,9 +12627,11 @@
       "updatedAt": "2026-07-30T15:25:48.832000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834353933323331",
       "title": "4 BHK Builder Floor 328 Sq-yrd For Rent in Sector 57, Gurgaon",
       "location": "Sector 57, Gurgaon",
       "price": "1 L/month",
@@ -12464,9 +12695,11 @@
       "updatedAt": "2026-07-30T15:25:51.565000+00:00",
       "investmentScore": 39.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835303531313035",
       "title": "Builder Floor For Rent in Sector 56, Gurgaon",
       "location": "Sector 56, Gurgaon",
       "price": "45,000/month",
@@ -12520,9 +12753,11 @@
       "updatedAt": "2026-07-30T15:25:53.881000+00:00",
       "investmentScore": 41.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831383730343033",
       "title": "2 BHK Builder Floor 805 Sq-ft For Rent in Sector 38, Gurgaon",
       "location": "Sector 38, Gurgaon",
       "price": "44,000/month",
@@ -12593,9 +12828,11 @@
       "updatedAt": "2026-07-30T15:26:22.333000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833353432333839",
       "title": "3 BHK Builder Floor 225 Sq-yrd For Rent in DLF Phase 4, Gurgaon",
       "location": "Gurgaon",
       "price": "75,000/month",
@@ -12668,9 +12905,11 @@
       "updatedAt": "2026-07-30T15:26:30.693000+00:00",
       "investmentScore": 41.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833393238353433",
       "title": "3 BHK Builder Floor 1642 Sq-ft For Rent in Orchid Island, Gurgaon",
       "location": "Orchid Island, Gurgaon",
       "price": "57,000/month",
@@ -12745,9 +12984,11 @@
       "updatedAt": "2026-07-30T15:26:41.319000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423131383539333132",
       "title": "2 BHK Builder Floor 1200 Sq-ft For Rent in 5001693, South City 2, Gurgaon",
       "location": "South City 2, Gurgaon",
       "price": "42,000/month",
@@ -12819,9 +13060,11 @@
       "updatedAt": "2026-07-30T15:26:53.004000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383138363933",
       "title": "4 BHK Builder Floor 4500 Sq-ft For Rent in Suncity, Gurgaon",
       "location": "Suncity, Gurgaon",
       "price": "1.8 L/month",
@@ -12896,9 +13139,11 @@
       "updatedAt": "2026-07-30T15:27:02.608000+00:00",
       "investmentScore": 35.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834383231393633",
       "title": "3 BHK Builder Floor 1575 Sq-ft For Rent in Ardee City, Ardee City, Gurgaon",
       "location": "Ardee City, Gurgaon",
       "price": "60,000/month",
@@ -13041,9 +13286,11 @@
       "updatedAt": "2026-07-30T15:27:04.731000+00:00",
       "investmentScore": 37.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834313930323433",
       "title": "2 BHK Builder Floor 2700 Sq-ft For Rent in Sushant Lok 1 Block C, Gurgaon",
       "location": "Gurgaon",
       "price": "50,000/month",
@@ -13118,9 +13365,11 @@
       "updatedAt": "2026-07-30T15:27:20.501000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423831323630363731",
       "title": "2 BHK Builder Floor 1400 Sq-ft For Rent in Sector 31, Gurgaon",
       "location": "Sector 31, Gurgaon",
       "price": "40,000/month",
@@ -13181,9 +13430,11 @@
       "updatedAt": "2026-07-30T15:27:27.927000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833383239323731",
       "title": "3 BHK Builder Floor 2100 Sq-ft For Rent in DLF Phase 1, Gurgaon",
       "location": "Gurgaon",
       "price": "1.4 L/month",
@@ -13268,9 +13519,11 @@
       "updatedAt": "2026-07-30T15:27:37.953000+00:00",
       "investmentScore": 41.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834373839333031",
       "title": "3 BHK Builder Floor 2340 Sq-ft For Rent in Malibu Town, Gurgaon",
       "location": "Malibu Town, Gurgaon",
       "price": "65,000/month",
@@ -13335,9 +13588,11 @@
       "updatedAt": "2026-07-30T15:27:45.370000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373733353737",
       "title": "> 10 BHK Residential House For Rent Sector 76, Gurgaon",
       "location": "Sector 76, Gurgaon",
       "price": "2.1 L/month",
@@ -13382,9 +13637,11 @@
       "updatedAt": "2026-07-30T15:20:18.376000+00:00",
       "investmentScore": 35.0,
       "riskScore": 32.0,
-      "locationScore": 42.0
+      "locationScore": 42.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834333738353431",
       "title": "3 BHK Residential House For Rent Sector 57, Gurgaon",
       "location": "Sector 57, Gurgaon",
       "price": "62,000/month",
@@ -13465,9 +13722,11 @@
       "updatedAt": "2026-07-30T15:21:06.233000+00:00",
       "investmentScore": 41.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834303639323237",
       "title": "3 BHK Residential House For Rent Urban Estate, Gurgaon",
       "location": "Gurgaon",
       "price": "52,000/month",
@@ -13544,9 +13803,11 @@
       "updatedAt": "2026-07-30T15:21:08.047000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423834353139303939",
       "title": "3 BHK Residential House For Rent Sector 14, Gurgaon",
       "location": "Sector 14, Gurgaon",
       "price": "1.3 L/month",
@@ -13612,9 +13873,11 @@
       "updatedAt": "2026-07-30T15:21:33.834000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423737313439303539",
       "title": "1 BHK Residential House For Rent Ashok Vihar Phase 3 Extension Block G, Gurgaon",
       "location": "Gurgaon",
       "price": "7,500/month",
@@ -13669,9 +13932,11 @@
       "updatedAt": "2026-07-30T15:21:34.945000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373735363937",
       "title": "1 BHK Residential House 750 Sq-ft For Rent in All Punjabi Welfare Association, Huda Sector 23, Gurgaon",
       "location": "Sector 23, Gurgaon",
       "price": "20,000/month",
@@ -13775,9 +14040,11 @@
       "updatedAt": "2026-07-30T15:23:11.451000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423731313733323531",
       "title": "4 BHK Residential House For Rent Sector 15 Part 1, Gurgaon",
       "location": "Sector 15, Gurgaon",
       "price": "85,000/month",
@@ -13853,9 +14120,11 @@
       "updatedAt": "2026-07-30T15:24:01.066000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739373235383037",
       "title": "1 BHK Residential House For Rent Palam Vihar Pocket C, Gurgaon",
       "location": "Gurgaon",
       "price": "10,500/month",
@@ -13915,9 +14184,11 @@
       "updatedAt": "2026-07-30T15:24:08.855000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739333531343837",
       "title": "1 BHK Residential House 1100 Sq-ft For Rent in Ansals Palam Vihar, Palam Vihar, Gurgaon",
       "location": "Ansals Palam Vihar, Gurgaon",
       "price": "25,000/month",
@@ -14011,9 +14282,11 @@
       "updatedAt": "2026-07-30T15:24:26.368000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423531393631353631",
       "title": "2 BHK Residential House For Rent Sector 9, Gurgaon",
       "location": "Sector 9, Gurgaon",
       "price": "17,000/month",
@@ -14078,9 +14351,11 @@
       "updatedAt": "2026-07-30T15:24:56.330000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423832313431353933",
       "title": "2 BHK Residential House For Rent New Basti, Gurgaon",
       "location": "Gurgaon",
       "price": "11,000/month",
@@ -14140,9 +14415,11 @@
       "updatedAt": "2026-07-30T15:25:08.365000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423632383533323537",
       "title": "2 BHK Residential House For Rent Sector 7, Gurgaon",
       "location": "Sector 7, Gurgaon",
       "price": "8,000/month",
@@ -14201,9 +14478,11 @@
       "updatedAt": "2026-07-30T15:25:14.827000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423239373631363237",
       "title": "2 BHK Residential House For Rent Sector 14, Gurgaon",
       "location": "Sector 14, Gurgaon",
       "price": "26,000/month",
@@ -14277,9 +14556,11 @@
       "updatedAt": "2026-07-30T15:25:15.876000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423335373538353035",
       "title": "1 BHK Residential House For Rent DLF Phase 3, Gurgaon",
       "location": "Gurgaon",
       "price": "23,000/month",
@@ -14347,9 +14628,11 @@
       "updatedAt": "2026-07-30T15:25:41.054000+00:00",
       "investmentScore": 42.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423636373133333335",
       "title": "1 BHK Residential House For Rent Sector 23, Gurgaon",
       "location": "Sector 23, Gurgaon",
       "price": "12,000/month",
@@ -14410,9 +14693,11 @@
       "updatedAt": "2026-07-30T15:26:05.715000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833353532303037",
       "title": "5 BHK Residential House For Rent DLF Phase 1, Gurgaon",
       "location": "Gurgaon",
       "price": "4 L/month",
@@ -14479,9 +14764,11 @@
       "updatedAt": "2026-07-30T15:26:11.847000+00:00",
       "investmentScore": 39.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423136333330353333",
       "title": "2 BHK Residential House For Rent Jacobpura, Gurgaon",
       "location": "Gurgaon",
       "price": "16,000/month",
@@ -14557,9 +14844,11 @@
       "updatedAt": "2026-07-30T15:26:49.854000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423739393132363633",
       "title": "3 BHK Residential House 1500 Sq-ft For Rent in Sushant Lok 3, Sector 57, Gurgaon",
       "location": "Sector 57, Gurgaon",
       "price": "50,000/month",
@@ -14649,9 +14938,11 @@
       "updatedAt": "2026-07-30T15:26:57.771000+00:00",
       "investmentScore": 41.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833333935373437",
       "title": "1 BHK Residential House For Rent Sector 40, Gurgaon",
       "location": "Sector 40, Gurgaon",
       "price": "28,000/month",
@@ -14727,9 +15018,11 @@
       "updatedAt": "2026-07-30T15:27:40.225000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373637393031",
       "title": "6 BHK Residential House 316 Sq-yrd For Rent in DLF City Plot Phase 4 , DLF Phase 4, Gurgaon",
       "location": "DLF City Phase 4, Gurgaon",
       "price": "2.8 L/month",
@@ -14864,9 +15157,11 @@
       "updatedAt": "2026-07-30T15:23:03.464000+00:00",
       "investmentScore": 39.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835373338393039",
       "title": "Studio Apartment 500 Sq-ft For Rent in DLF Phase 1, Gurgaon",
       "location": "Gurgaon",
       "price": "25,000/month",
@@ -14933,9 +15228,11 @@
       "updatedAt": "2026-07-30T15:20:38.941000+00:00",
       "investmentScore": 43.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423632353136333835",
       "title": "Studio Apartment 500 Sq-ft For Rent in DLF Phase 3, Gurgaon",
       "location": "Gurgaon",
       "price": "10,000/month",
@@ -15003,9 +15300,11 @@
       "updatedAt": "2026-07-30T15:21:51.205000+00:00",
       "investmentScore": 42.35,
       "riskScore": 29.5,
-      "locationScore": 54.0
+      "locationScore": 54.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835363835383633",
       "title": "Studio Apartment 800 Sq-ft For Rent in Sushant Lok 2 Sector 55, Gurgaon",
       "location": "Sector 55, Gurgaon",
       "price": "40,000/month",
@@ -15080,9 +15379,11 @@
       "updatedAt": "2026-07-30T15:23:33.509000+00:00",
       "investmentScore": 41.52,
       "riskScore": 32.0,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423536323534373337",
       "title": "Studio Apartment 400 Sq-ft For Rent in Sector 5, Gurgaon",
       "location": "Sector 5, Gurgaon",
       "price": "6,000/month",
@@ -15139,9 +15440,11 @@
       "updatedAt": "2026-07-30T15:24:23.360000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423637333132313333",
       "title": "Studio Apartment 450 Sq-ft For Rent in Vipul World, Sector 48, Gurgaon",
       "location": "Sector 48, Gurgaon",
       "price": "16,000/month",
@@ -15284,9 +15587,11 @@
       "updatedAt": "2026-07-30T15:24:48.320000+00:00",
       "investmentScore": 36.05,
       "riskScore": 29.5,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833323232393335",
       "title": "Studio Apartment 350 Sq-ft For Rent in Sector 9A, Gurgaon",
       "location": "Sector 9A, Gurgaon",
       "price": "17,500/month",
@@ -15358,9 +15663,11 @@
       "updatedAt": "2026-07-30T15:25:21.566000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423835333632333639",
       "title": "Studio Apartment 500 Sq-ft For Rent in Sector 39, Gurgaon",
       "location": "Sector 39, Gurgaon",
       "price": "17,000/month",
@@ -15432,9 +15739,11 @@
       "updatedAt": "2026-07-30T15:25:46.248000+00:00",
       "investmentScore": 35.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423531353134303138",
       "title": "Studio Apartment 9200 Sq-ft For Rent in Sector 39 Jharsa, Gurgaon",
       "location": "Sector 39, Gurgaon",
       "price": "1.9 L/month",
@@ -15506,9 +15815,11 @@
       "updatedAt": "2026-07-30T15:26:25.066000+00:00",
       "investmentScore": 34.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423830343034383139",
       "title": "5 BHK Villa 4000 Sq-ft For Rent in Vista Vilas, Gurgaon",
       "location": "Vista Vilas, Gurgaon",
       "price": "3 L/month",
@@ -15582,9 +15893,11 @@
       "updatedAt": "2026-07-30T15:21:39.075000+00:00",
       "investmentScore": 32.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423235393838303431",
       "title": "2 BHK Villa 1450 Sq-ft For Rent in Shivaji Nagar, Gurgaon",
       "location": "Shivaji Nagar, Gurgaon",
       "price": "25,000/month",
@@ -15643,9 +15956,11 @@
       "updatedAt": "2026-07-30T15:24:53.338000+00:00",
       "investmentScore": 36.3,
       "riskScore": 32.0,
-      "locationScore": 33.0
+      "locationScore": 33.0,
+      "aiSummary": null
     },
     {
+      "id": "magicbricks:4d423833363638373839",
       "title": "5 BHK Villa 6520 Sq-ft For Rent in Emaar MGF Marbella, Sector 66, Gurgaon",
       "location": "Sector 66, Gurgaon",
       "price": "3 L/month",
@@ -15784,7 +16099,8 @@
       "updatedAt": "2026-07-30T15:25:23.630000+00:00",
       "investmentScore": 38.27,
       "riskScore": 29.5,
-      "locationScore": 50.4
+      "locationScore": 50.4,
+      "aiSummary": null
     }
   ]
 }
