@@ -531,6 +531,22 @@ _CITY_SLUGS = {
 }
 
 
+#: Commercial sub-types live under a distinct URL *prefix* each, not a query
+#: filter on the generic "/property-for-sale-..." search — that generic path
+#: is 100% residential. Verified live against gurgaon; each returned 30 real
+#: cards. "warehouse"/"offices" (plural) 404 — "office-space" is correct.
+_COMMERCIAL_PREFIXES = {
+    "shop": "shops",
+    "office": "office-space",
+    "showroom": "showroom",
+    "commercial-land": "commercial-land",
+    "industrial-land": "industrial-land",
+    # Kept for backward compatibility with the old (non-functional) job
+    # definition — maps to the closest real category rather than 404ing.
+    "commercial-real-estate": "office-space",
+}
+
+
 def build_search_url(
     *,
     city: str,
@@ -544,20 +560,19 @@ def build_search_url(
     `-pppfr` for rent. Using pppfs for rent 404s, which is how the first
     version of this failed.
 
-        sale  https://www.magicbricks.com/property-for-sale-in-gurgaon-pppfs
-        rent  https://www.magicbricks.com/property-for-rent-in-gurgaon-pppfr
-        page  …-pppfs?page=2
+        sale        https://www.magicbricks.com/property-for-sale-in-gurgaon-pppfs
+        rent        https://www.magicbricks.com/property-for-rent-in-gurgaon-pppfr
+        commercial  https://www.magicbricks.com/shops-for-sale-in-gurgaon-pppfs
+        page        …-pppfs?page=2
 
     Kept in the parser module so the scraper stays free of URL trivia and this
     stays unit-testable.
     """
     slug = city.strip().lower()
     slug = _CITY_SLUGS.get(slug, slug).replace(" ", "-")
+    suffix = "pppfr" if listing_type == "rent" else "pppfs"
+    prefix = _COMMERCIAL_PREFIXES.get(property_type or "", "property")
 
-    if listing_type == "rent":
-        path = f"/property-for-rent-in-{slug}-pppfr"
-    else:
-        path = f"/property-for-sale-in-{slug}-pppfs"
-
+    path = f"/{prefix}-for-{listing_type}-in-{slug}-{suffix}"
     query = f"?page={page}" if page > 1 else ""
     return f"{BASE_URL}{path}{query}"

@@ -39,13 +39,33 @@ class MagicBricksScraper(BaseScraper):
         ScrapeJob(name="sale", city="delhi", listing_type="sale", max_pages=5, max_items=250),
         ScrapeJob(name="sale", city="faridabad", listing_type="sale", max_pages=3, max_items=150),
         ScrapeJob(name="sale", city="ghaziabad", listing_type="sale", max_pages=3, max_items=150),
+        # Commercial sub-types each live under their own URL prefix (see
+        # parser._COMMERCIAL_PREFIXES) — the old single "commercial-real-estate"
+        # job was silently a no-op, since build_search_url ignored property_type
+        # entirely and just re-scraped the residential sale feed.
         ScrapeJob(
-            name="commercial",
-            city="gurgaon",
-            listing_type="sale",
-            property_type="commercial-real-estate",
-            max_pages=3,
-            max_items=150,
+            name="commercial-shop", city="gurgaon", listing_type="sale",
+            property_type="shop", max_pages=3, max_items=150,
+        ),
+        ScrapeJob(
+            name="commercial-shop-rent", city="gurgaon", listing_type="rent",
+            property_type="shop", max_pages=3, max_items=150,
+        ),
+        ScrapeJob(
+            name="commercial-office", city="gurgaon", listing_type="sale",
+            property_type="office", max_pages=3, max_items=150,
+        ),
+        ScrapeJob(
+            name="commercial-office-rent", city="gurgaon", listing_type="rent",
+            property_type="office", max_pages=3, max_items=150,
+        ),
+        ScrapeJob(
+            name="commercial-showroom", city="gurgaon", listing_type="sale",
+            property_type="showroom", max_pages=2, max_items=100,
+        ),
+        ScrapeJob(
+            name="commercial-land", city="gurgaon", listing_type="sale",
+            property_type="commercial-land", max_pages=2, max_items=100,
         ),
     )
 

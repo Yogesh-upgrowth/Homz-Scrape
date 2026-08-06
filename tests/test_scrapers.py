@@ -486,6 +486,20 @@ class TestSearchUrlBuilders:
         assert mb.build_search_url(city="noida", page=3).endswith("-pppfs?page=3")
         assert "?page=" not in mb.build_search_url(city="noida", page=1)
 
+    def test_magicbricks_commercial_property_type_changes_the_prefix(self) -> None:
+        # property_type was accepted but silently ignored before — the old
+        # "commercial-real-estate" job just re-scraped the residential feed.
+        url = mb.build_search_url(city="Gurgaon", listing_type="sale", property_type="shop")
+        assert url == "https://www.magicbricks.com/shops-for-sale-in-gurgaon-pppfs"
+
+    def test_magicbricks_office_space_rent(self) -> None:
+        url = mb.build_search_url(city="Gurgaon", listing_type="rent", property_type="office")
+        assert url == "https://www.magicbricks.com/office-space-for-rent-in-gurgaon-pppfr"
+
+    def test_magicbricks_unknown_property_type_falls_back_to_generic(self) -> None:
+        url = mb.build_search_url(city="Gurgaon", listing_type="sale", property_type="something-new")
+        assert url == "https://www.magicbricks.com/property-for-sale-in-gurgaon-pppfs"
+
 
 class TestJobStatus:
     """A job that produced nothing must not report success."""
