@@ -1,0 +1,16 @@
+# Only `api/` and `data/feed/` need to ship to Vercel — everything else here
+# is the Python scraper/exporter, which doesn't run on Vercel at all.
+.venv/
+venv/
+node_modules/
+__pycache__/
+*.egg-info/
+data/raw/
+data/checkpoints/
+*.html.gz
+*.meta.json
+tests/
+docs/
+web/
+*.js
+!api/*.js

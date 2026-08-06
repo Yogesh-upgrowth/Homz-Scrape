@@ -59,6 +59,11 @@ IMAGE_HOSTS = ("static.squareyards.com", "squareyards.com")
 _ID_PATTERNS = (
     re.compile(r"/([a-z0-9-]+)-(\d{4,})(?:/|$)", re.I),
     re.compile(r"[?&]projectId=(\d+)", re.I),
+    # `/{city}-residential-property/{slug}/{id}/project` — the id is its own
+    # path segment here, not hyphen-suffixed, so the first pattern misses it
+    # and silently falls back to the literal segment "project" for every URL
+    # of this shape (the majority of them), collapsing them onto one _id.
+    re.compile(r"/(\d+)/project(?:/|$)", re.I),
 )
 
 

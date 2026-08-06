@@ -680,49 +680,84 @@ def export_feed(
 ) -> None:
     """Write the website's `/api/data` payloads from the warehouse.
 
-    Produces one file per city segment (`ggnResidentialProjects.json`, …) in
-    exactly the envelope the front end already consumes, so publishing them
-    refreshes the site without a front-end change.
+    Produces one file per city segment for the Projects catalogue
+    (`ggnResidentialProjects.json`, …) plus one per city+category for
+    individual listings (`ggnSaleProperties.json`, `ggnRentProperties.json`,
+    `ggnPgProperties.json`, `ggnCommercialProperties.json`, …), all in the
+    envelope the front end already consumes, so publishing them refreshes the
+    site without a front-end change.
     """
     from pathlib import Path
 
     from homz.db.mongo import get_database
     from homz.services import feed as feed_service
+    from homz.services import listings_feed
 
-    async def _run() -> tuple[dict[str, list], int]:
+    async def _run() -> tuple[
+        tuple[dict[str, list], int], tuple[dict[str, list], int]
+    ]:
         db = get_database()
         projects = await feed_service.load_projects(db)
-        return feed_service.partition(projects)
+        properties = await listings_feed.load_properties(db)
+        return feed_service.partition(projects), listings_feed.partition(properties)
 
-    buckets, withheld = asyncio.run(_run())
+    (project_buckets, project_withheld), (listing_buckets, listing_withheld) = asyncio.run(_run())
     target = Path(out)
     target.mkdir(parents=True, exist_ok=True)
 
-    table = Table("segment", "projects", "file")
-    total = 0
-    for segment, records in buckets.items():
-        payload = feed_service.build_response(segment, records, limit=limit)
-        path = target / f"{segment}.json"
-        path.write_text(
-            json.dumps(payload, default=feed_service._default, indent=2 if indent else None),
-            encoding="utf-8",
-        )
-        total += len(records)
-        table.add_row(segment, str(len(records)), str(path))
+    def _write_segments(
+        buckets: dict[str, list], build_response, kind: str, *, full: bool = False
+    ) -> tuple[int, Table]:
+        """`full=True` writes every record in the segment, ignoring `--limit`.
 
-    console.print(table)
-    if withheld:
+        The Properties feed is meant to be fetched once per category and
+        filtered client-side — silently truncating it at the CLI's page-size
+        default would make that filtering operate on a partial dataset.
+        """
+        table = Table("segment", kind, "file")
+        total = 0
+        for segment, records in buckets.items():
+            segment_limit = max(limit, len(records)) if full else limit
+            payload = build_response(segment, records, limit=segment_limit)
+            path = target / f"{segment}.json"
+            path.write_text(
+                json.dumps(payload, default=feed_service._default, indent=2 if indent else None),
+                encoding="utf-8",
+            )
+            total += len(records)
+            table.add_row(segment, str(len(records)), str(path))
+        return total, table
+
+    project_total, project_table = _write_segments(
+        project_buckets, feed_service.build_response, "projects", full=True
+    )
+    console.print(project_table)
+    if project_withheld:
         console.print(
-            f"[dim]Withheld {withheld} stub project(s) with no price, configurations "
+            f"[dim]Withheld {project_withheld} stub project(s) with no price, configurations "
             f"or amenities — they stay in the warehouse and publish once details appear.[/dim]"
         )
-    if total == 0:
+
+    listing_total, listing_table = _write_segments(
+        listing_buckets, listings_feed.build_response, "properties", full=True
+    )
+    console.print(listing_table)
+    if listing_withheld:
         console.print(
-            "[yellow]No projects in the warehouse — run `homz scrape source squareyards` "
-            "first, then re-export.[/yellow]"
+            f"[dim]Withheld {listing_withheld} listing(s) with no price, configuration "
+            f"or amenities, or an unrecognized listing type.[/dim]"
+        )
+
+    if project_total == 0 and listing_total == 0:
+        console.print(
+            "[yellow]No projects or properties in the warehouse — run `homz scrape source "
+            "squareyards` / `magicbricks` first, then re-export.[/yellow]"
         )
     else:
-        console.print(f"[green]Exported {total} projects across {len(buckets)} segments.[/green]")
+        console.print(
+            f"[green]Exported {project_total} projects across {len(project_buckets)} segments "
+            f"and {listing_total} properties across {len(listing_buckets)} segments.[/green]"
+        )
 
 
 if __name__ == "__main__":

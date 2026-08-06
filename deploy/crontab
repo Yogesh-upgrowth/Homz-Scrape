@@ -39,11 +39,14 @@ LOGS=/var/log/homz
 0 */4 * * *  cd $HOMZ_HOME && $HOMZ_BIN enrich scores --json-logs >> $LOGS/scores.log 2>&1
 
 # --- publish ---------------------------------------------------------------
-# Renders the website's /api/data payloads from the warehouse. Runs after
-# enrichment so `aboutProject` and builder copy are populated. Whatever serves
-# the catalogue must pick $HOMZ_HOME/data/feed up from here — without this step
-# the scrapers fill MongoDB and the site never changes.
-0 10 * * *   cd $HOMZ_HOME && $HOMZ_BIN export feed --out $HOMZ_HOME/data/feed >> $LOGS/export.log 2>&1
+# Renders the website's /api/data payloads from the warehouse, then commits
+# and pushes them — Vercel deploys `api/data.js` + `data/feed/*.json` from
+# git (see deploy/publish-feed.sh), so the push IS the deploy trigger via
+# Vercel's own Git integration. Runs after enrichment so `aboutProject` and
+# builder copy are populated. Requires this host to already have git push
+# access to the tracked branch configured (SSH deploy key or a PAT) — a
+# one-time setup step, not something this script does.
+0 10 * * *   cd $HOMZ_HOME && ./deploy/publish-feed.sh >> $LOGS/export.log 2>&1
 
 # --- housekeeping ----------------------------------------------------------
 0 3 * * 0    cd $HOMZ_HOME && $HOMZ_BIN ops raw --prune >> $LOGS/prune.log 2>&1

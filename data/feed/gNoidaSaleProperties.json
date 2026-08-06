@@ -1,0 +1,82 @@
+{
+  "success": true,
+  "city": "gNoidaSaleProperties",
+  "page": 1,
+  "limit": 500,
+  "total": 1,
+  "results": [
+    {
+      "title": "2 BHK 860 Sqft Flat For Sale in 1ST AVENUE PLOT NO. GCIN TOWNSHIP GAURCITY PLOT NO. GH-01 SEC-4 GREATER NOIDA, Noida",
+      "location": "Sector 4, Greater Noida",
+      "price": "80 L",
+      "priceValue": 8000000.0,
+      "rentMonthly": null,
+      "size": "860 sq.ft",
+      "areaValue": 860.0,
+      "configuration": "2 BHK",
+      "bedrooms": 2,
+      "propertyType": "plot",
+      "listingType": "resale",
+      "isCommercial": false,
+      "reraId": "",
+      "projectStatus": "Ready to Move",
+      "possession": "Ready to Move",
+      "builderDescription": "",
+      "aboutProject": [
+        "You can buy 860 Sqft 2 BHK Flat for Sale in Noida at the price of 80.0 Lac. Ready to Move \u2713 Semi-Furnished \u2713 12(Out of 23) floor \u2713 2 Beds \u2713 2 Baths. Click the page to know more >>"
+      ],
+      "amenities": [],
+      "specifications": [
+        {
+          "heading": "Super Built-up Area",
+          "value": "860 sqft sqft sqyrd sqm acre bigha hectare marla kanal biswa1 biswa2 ground aankadam rood chatak kottah marla cent perch guntha are katha gaj killa kuncham \u20b9 9,302/sqft"
+        },
+        {
+          "heading": "Floor",
+          "value": "12(Out of 23 Floors)"
+        },
+        {
+          "heading": "Transaction type",
+          "value": "Resale"
+        },
+        {
+          "heading": "Status",
+          "value": "Ready to Move"
+        },
+        {
+          "heading": "Furnished Status",
+          "value": "Semi-Furnished"
+        }
+      ],
+      "images": [
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnjVN99A9dsN7ynhbxoEMbuzm-wqo_XIy/Photo_h300_w450/78640933_4_gaur_city_4_300_450.jpeg",
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnjVN99A9dsN7ynhbxoEMbuzm-wqo_XIy/Photo_h300_w450/78640933_10_gaur_city_11_300_450.jpeg",
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnjVN99A9dsN7ynhbxoEMbuzm-wqo_XIy/Photo_h300_w450/78640933_2_gaur_city_2_300_450.jpeg",
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnjVN99A9dsN7ynhbxoEMbuzm-wqo_XIy/Photo_h300_w450/78640933_3_gaur_city_3_300_450.jpeg",
+        "https://img.staticmb.com/mbimages/project/Photo_h310_w462/2023/08/11/Project-Photo-72-Jaypee-Aman-Noida-5021506_900_2000_310_462.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h310_w462/2024/12/18/Project-Photo-74-Jaypee-Greens-Kube-Noida-5025112_322_600_310_462.jpg",
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnTVN99A9dsjnoSJjxVKt3g235I9BgtIg/Photo_h300_w450/83898775_1_PropertyImage720-3428990645175_300_450.jpg",
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnTVN99A9d8o5QMtPLMJcupLiO-6uW9Vn/Photo_h300_w450/83333259_7_1774874181188-3156_300_450.jpg",
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnTVK48w9ds_l-N0l0DrrjvVBfCFxSJUe/Photo_h300_w450/76155211_5_PropertyImage910-2156227586206_300_450.jpg",
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnTVK48w9dc9dBxnZEw2W2fqg3saO3LSV/Photo_h300_w450/85109923_7_PropertyImage362-4360570231637_300_450.jpg",
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnTVK48w9dsPWQyI2IzY2e6l--qrutsWY/Photo_h300_w450/85184747_1_PropertyImage1782733130874_300_450.jpg",
+        "https://img.staticmb.com/mbphoto/property/cropped_images/ver2/XIwvQlc61t8ZIpanz4mAnTVK4849ds0mGwp40SLEmawOl_oK7yG5/Photo_h300_w450/85713441_3_PropertyImage392-4515879997832_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/2024/07/24/Project-Photo-88-ACE-Divino-Noida-5085077_410_1440_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/2021/07/13/Project-Photo-32-Gulshan-Bellina-Noida-5070674_345_1366_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/2018/10/17/Project-Photo-95-Jaypee-Kalypso-Court-Noida-5021510_345_1366_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/Project-Photo-34-Jaypee-Greens-Kingswood-Oriental-Noida-5010154_480_1366_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/2019/08/13/Project-Photo-86-Cleo-County-Noida-5019020_345_1366_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/2018/12/11/Project-Photo-51-The-Golden-Palm-Noida-5027828_345_1366_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/2020/07/27/Project-Photo-9-ACE-Golfshire-Noida-5041375_345_1366_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/2024/11/06/Project-Photo-13-Experion-Elements-Noida-5420285_410_1440_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/2025/09/18/Project-Photo-1-L-and-T-Green-Reserve-Noida-5436825_410_1440_300_450.jpg",
+        "https://img.staticmb.com/mbimages/project/Photo_h300_w450/2024/12/18/Project-Photo-1-Godrej-Riverine-Noida-5425491_410_1440_300_450.jpg"
+      ],
+      "interiorImages": [],
+      "masterPlan": {},
+      "landmarks": {},
+      "listingUrl": "https://www.magicbricks.com/propertyDetails/2-BHK-860-Sq-ft-Multistorey-Apartment-FOR-Sale-in-Noida&id=4d423738363430393333",
+      "updatedAt": "2026-07-30T15:32:54.300000+00:00"
+    }
+  ]
+}

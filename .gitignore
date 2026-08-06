@@ -24,8 +24,11 @@ node_modules
 
 # --- scraped data ----------------------------------------------------------
 # The raw archive can reach tens of GB and is reproducible. Never commit it.
-data/
+# `data/feed` is the exception: those are the deploy artifacts the Vercel
+# serving function under `api/` reads directly, so they must be committed.
+data/*
 !data/.gitkeep
+!data/feed/
 *.html.gz
 *.meta.json
 

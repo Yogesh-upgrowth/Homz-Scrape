@@ -170,12 +170,15 @@ looks the same".
 .venv/bin/homz export feed --out ./data/feed --indent
 ```
 
-You get one file per city segment, in exactly the envelope the front end
-already consumes:
+You get one file per city segment for the Projects catalogue, plus one per
+city+category for individual listings, in exactly the envelope the front end
+consumes:
 
 ```
-ggnResidentialProjects.json   ggnCommercialProjects.json
-noidaResidentialProjects.json …and so on, 10 files
+ggnResidentialProjects.json   ggnCommercialProjects.json      # projects, 10 files
+ggnSaleProperties.json        ggnRentProperties.json          # listings, 20 files
+ggnPgProperties.json          ggnCommercialProperties.json
+noidaResidentialProjects.json …and so on
 ```
 
 Expected output is a table of segment counts plus, usually, a line like
@@ -189,14 +192,29 @@ Sanity-check a file before shipping it:
 ```bash
 jq '{total, first: .results[0] | {projectTitle, location, price, BHKType, updatedAt}}' \
    data/feed/ggnResidentialProjects.json
+jq '{total, first: .results[0] | {title, priceValue, listingType, propertyType, updatedAt}}' \
+   data/feed/ggnSaleProperties.json
 ```
 
 Every record should have a real `location` ("Sector 80, Gurgaon" — *not* a
 sentence starting "Explore…"), and `updatedAt` should be the scrape time. If
 `total` is 0, the warehouse is empty: scrape first, then re-export.
 
-**Then someone must serve those files at the URL the site fetches.** That hop
-is deployment-specific and is the one remaining manual link in the chain.
+**Serving those files**: `api/data.js` at the repo root is a Vercel serverless
+function that reads `data/feed/{city}.json` directly and answers
+`…/api/data?city={segment}` — the same endpoint the site already calls. It
+needs no environment variables (no DB access, it only reads committed files).
+Point the Vercel project's git source at this repo and it deploys from
+here — no separate backend-hosting repo needed.
+
+Publishing a fresh export means the new `data/feed/*.json` files have to
+actually reach that deployment, i.e. get **committed and pushed** — `git`
+doesn't track `data/` by default except this one path
+(see `.gitignore`'s `!data/feed/` exception). `deploy/publish-feed.sh` does
+export + commit + push in one step and is what `deploy/crontab` runs daily;
+the push itself is the deploy trigger via Vercel's Git integration. Running
+`homz export feed` by hand still works for local testing, it just won't reach
+the live site until something commits and pushes `data/feed/`.
 
 ---
 
