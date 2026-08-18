@@ -1,8 +1,1 @@
-{
-  "success": true,
-  "city": "gNoidaResidentialProjects",
-  "page": 1,
-  "limit": 500,
-  "total": 0,
-  "results": []
-}
+{"success": true, "city": "gNoidaResidentialProjects", "page": 1, "limit": 500, "total": 0, "results": []}
