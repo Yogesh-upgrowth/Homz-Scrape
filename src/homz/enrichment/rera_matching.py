@@ -18,7 +18,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from homz.common.dedupe import jaccard, tokenize
-from homz.common.parsing import normalize_name
+from homz.common.parsing import normalize_name, parse_rera_number
 
 # What an actual HRERA "Project ID" looks like (e.g. "RERA-GRG-1789-2024").
 # A stored rera_number that doesn't match this shape is not necessarily wrong
@@ -27,6 +27,34 @@ from homz.common.parsing import normalize_name
 # (a bare "367", a certificate-number fragment "GGM/2018/05") were found
 # stored where a real Project ID belonged. See EnrichmentPipeline.verify_existing_rera_numbers.
 RERA_NUMBER_SHAPE_RE = re.compile(r"^RERA-[A-Z]+-\d+-\d{4}$")
+
+# Registration Certificate Number shape (e.g. "GGM/864/596/2024/91") — a real
+# government reference, just the wrong field (the Project ID belongs there).
+# Distinct from RERA_NUMBER_SHAPE_RE: this is "real but unconfirmed", not
+# "actively wrong" — see is_plausible_rera_reference.
+_CERTIFICATE_LIKE_RE = re.compile(r"^[A-Z]{2,6}/\d+/\d+/20\d{2}/\d+")
+
+
+def is_plausible_rera_reference(value: str | None) -> bool:
+    """False for values that aren't a RERA reference of any kind at all —
+    a bare "1"/"104", a floor-number fragment like "36(A)" — confirmed live
+    2026-08-31 as leftover pre-fix squareyards scrape data (138 projects),
+    not a real Registration Certificate Number or Project ID in any format.
+
+    True doesn't mean *correct* (a certificate number or legacy "NNN OF
+    YYYY" filing is real but still unconfirmed against the Project ID
+    registry — that's what UNVERIFIED means downstream), only that the
+    value is a plausible reference worth keeping and asking a human/the
+    registry about, rather than pure noise worth clearing outright.
+    """
+    if not value:
+        return False
+    value = value.strip()
+    if RERA_NUMBER_SHAPE_RE.match(value):
+        return True
+    if _CERTIFICATE_LIKE_RE.match(value.upper()):
+        return True
+    return parse_rera_number(value) is not None
 
 # Score >= HIGH: auto-write as the live rera_number.
 # LOW <= score < HIGH: store as a review candidate only.

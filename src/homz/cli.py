@@ -294,6 +294,27 @@ def enrich_rera(limit: int = typer.Option(50000, "--limit")) -> None:
     _print_json(asyncio.run(_run()))
 
 
+@enrich_app.command("rera-sanitize")
+def enrich_rera_sanitize(limit: int = typer.Option(50000, "--limit")) -> None:
+    """Clear rera_number values that aren't a RERA reference of any kind.
+
+    Not a certificate-number-vs-Project-ID problem (that's rera-verify) —
+    this catches pure noise like a bare "104" or a floor fragment "36(A)"
+    left over from before the squareyards parser fix. Run this BEFORE
+    rera-verify/rera-promote so garbage doesn't occupy a "has a value"
+    slot that attach_rera_numbers would otherwise get a real shot at.
+    """
+    from homz.db.mongo import get_database
+    from homz.enrichment.pipeline import EnrichmentPipeline
+
+    async def _run() -> dict[str, int]:
+        pipeline = EnrichmentPipeline(get_database(), use_llm=False)
+        count = await pipeline.sanitize_invalid_rera_numbers(limit=limit)
+        return {"cleared": count}
+
+    _print_json(asyncio.run(_run()))
+
+
 @enrich_app.command("rera-verify")
 def enrich_rera_verify(limit: int = typer.Option(50000, "--limit")) -> None:
     """Flag existing rera_number values that don't look like a real HRERA ID.

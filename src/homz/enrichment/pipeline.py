@@ -31,7 +31,12 @@ from homz.enrichment.extractors import (
     lexicon_sentiment,
 )
 from homz.enrichment.llm import ENRICHMENT_VERSION, LLMClient, LLMRequest, LLMResult, estimate_cost
-from homz.enrichment.rera_matching import HIGH, RERA_NUMBER_SHAPE_RE, match_hrera
+from homz.enrichment.rera_matching import (
+    HIGH,
+    RERA_NUMBER_SHAPE_RE,
+    is_plausible_rera_reference,
+    match_hrera,
+)
 from homz.enrichment.scoring import (
     builder_trust_score,
     investment_score,
@@ -388,6 +393,55 @@ class EnrichmentPipeline:
                 "rera_matched_at": now,
             }},
         )
+
+    # ==================================================================
+    # Tier 2 — clear rera_number values that aren't a RERA reference at all
+    # ==================================================================
+
+    async def sanitize_invalid_rera_numbers(self, *, limit: int = 50_000) -> int:
+        """Clear `rera_number` (and every derived field) on documents whose
+        value isn't a plausible RERA reference of *any* kind — not even a
+        wrong-field certificate number, just noise. Confirmed live
+        2026-08-31: 138 squareyards-sourced projects had bare numbers
+        ("1", "104") or floor-number fragments ("36(A)") sitting in
+        rera_number — leftover from before the squareyards parser fix
+        (data-reraid was previously accepted unvalidated; see
+        scrapers/squareyards/parser.py). Displaying these as "RERA 104 ·
+        Unverified" is worse than showing nothing — it isn't a real
+        reference at all, unlike a certificate-number shape.
+
+        This only clears the field so the document is eligible for a fresh
+        attempt via attach_rera_numbers() — it does not itself find a
+        replacement, and never touches a value that has any real structure
+        (a certificate number, a legacy "NNN OF YYYY" filing, or a proper
+        Project ID), even if that value later turns out to be wrong; that
+        case is verify_existing_rera_numbers()'s job, not this one's.
+        """
+        cleared = 0
+        for collection in (D.PROPERTIES, D.PROJECTS):
+            rows = await self.db[collection].find(
+                {"rera_number": {"$exists": True, "$ne": None}},
+                projection={"rera_number": 1},
+            ).limit(limit).to_list(length=limit)
+            garbage_ids = [r["_id"] for r in rows if not is_plausible_rera_reference(r["rera_number"])]
+            if not garbage_ids:
+                continue
+
+            unset_fields = {
+                "rera_number": "", "rera_status": "", "rera_certificate_number": "",
+                "rera_registered_with": "", "rera_valid_upto": "", "rera_certificate_url": "",
+                "rera_match_status": "", "rera_match_confidence": "", "rera_matched_at": "",
+                "rera_candidate_number": "", "rera_candidate_confidence": "",
+                "rera_verify_status": "", "rera_existing_number": "", "rera_suggested_number": "",
+                "rera_suggested_confidence": "", "rera_verified_at": "", "rera_corrected_at": "",
+            }
+            result = await self.db[collection].update_many(
+                {"_id": {"$in": garbage_ids}}, {"$unset": unset_fields}
+            )
+            cleared += result.modified_count
+
+        log.info("enrich.rera_sanitized", count=cleared)
+        return cleared
 
     # ==================================================================
     # Tier 2 — flag existing rera_number values that don't look like a real
