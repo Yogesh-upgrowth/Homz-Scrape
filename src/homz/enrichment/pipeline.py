@@ -400,18 +400,23 @@ class EnrichmentPipeline:
         confirmed live 2026-08-31: Ireo Skyon was stored as rera_number
         "367" while the registry's real ID is "RERA-GRG-1789-2024".
 
-        Never overwrites the live `rera_number` — this is audit-only. A
-        confident match against the registry is stored as
-        `rera_suggested_number` for a human to promote; anything without one
-        is marked `unverifiable` (it may still be a real, valid pre-HRERA-ID
-        format this registry simply can't confirm — absence of proof isn't
-        proof of wrongness).
+        Never overwrites the live `rera_number` — this is audit-only.
+        Three-tier, same shape as attach_rera_numbers: a HIGH-confidence,
+        builder-corroborated match is stored as `rera_suggested_number` for a
+        human to promote; a weaker [LOW, HIGH) match is stored as
+        `rera_candidate_number`/`rera_candidate_confidence` for manual
+        review rather than discarded — earlier versions of this method
+        collapsed both into one "unverifiable" bucket, losing the weak-signal
+        cases that are exactly the ones worth a human glance; genuinely
+        below LOW is `unverifiable` (it may still be a real, valid
+        pre-HRERA-ID format this registry simply can't confirm — absence of
+        proof isn't proof of wrongness).
         """
         suspect = {
             "rera_number": {"$exists": True, "$ne": None},
             "rera_verify_status": {"$exists": False},
         }
-        totals = {"mismatch_flagged": 0, "unverifiable": 0}
+        totals = {"mismatch_flagged": 0, "needs_review": 0, "unverifiable": 0}
 
         for city, district in _RERA_CITY_DISTRICT.items():
             candidates = await self.db[D.HRERA_REGISTRY].find(
@@ -459,13 +464,36 @@ class EnrichmentPipeline:
                 }},
             )
 
+        if match is not None:
+            # LOW <= score < HIGH (or below HIGH without builder
+            # corroboration) — a candidate exists but isn't confident enough
+            # to suggest as THE fix; still worth a human glance instead of
+            # silently discarding it.
+            totals["needs_review"] += 1
+            return UpdateOne(
+                {"_id": row["_id"]},
+                {"$set": {
+                    "rera_verify_status": "needs_review",
+                    "rera_existing_number": row["rera_number"],
+                    "rera_candidate_number": match.candidate["rera_number"],
+                    "rera_candidate_confidence": round(match.score, 3),
+                    "rera_verified_at": now,
+                }},
+            )
+
         totals["unverifiable"] += 1
         return UpdateOne(
             {"_id": row["_id"]},
             {"$set": {"rera_verify_status": "unverifiable", "rera_verified_at": now}},
         )
 
-    async def promote_verified_rera_corrections(self, *, limit: int = 50_000) -> int:
+    async def promote_verified_rera_corrections(
+        self,
+        *,
+        limit: int = 50_000,
+        also_promote_exact_needs_review: bool = False,
+        promote_needs_review_with_builder_at: float | None = None,
+    ) -> int:
         """Overwrite `rera_number` with `rera_suggested_number` for every
         `mismatch_flagged` document — the one case in this whole RERA
         pipeline where an *existing* live value is intentionally replaced,
@@ -474,28 +502,69 @@ class EnrichmentPipeline:
         `verify_existing_rera_numbers`). `rera_existing_number` (the old
         value) stays on the document as an audit trail.
 
-        Does not touch `unverifiable` documents — there is no confirmed
-        correct value for those, only a shape that looks wrong.
+        Does not touch plain `unverifiable` documents — there is no
+        confirmed correct value for those, only a shape that looks wrong.
+
+        `also_promote_exact_needs_review=True` is a deliberately higher-risk,
+        explicitly-opted-into mode: it additionally promotes `needs_review`
+        documents whose `rera_candidate_confidence == 1.0` even without
+        builder corroboration. Many of these are missing `builder_name`
+        entirely on our side (not an ambiguous match, just nothing to
+        cross-check against) — but a perfect project-name-only score is
+        exactly the failure mode that produced the earlier false positive
+        ("The Residences" matching an unrelated "The Estate Residences" at
+        score 1.0), so this must never be the default.
+
+        `promote_needs_review_with_builder_at` additionally promotes
+        needs_review documents scoring at or above this threshold, but only
+        when our own document HAS a builder_name (i.e. a builder comparison
+        actually happened, even if it scored low). Verified live 2026-08-31:
+        the entire 0.70-1.0 band with a builder present was inspected by
+        hand — 39/40 sampled were exact project-name matches where the score
+        was merely dragged down by a brand-vs-SPV builder-name mismatch
+        (e.g. "M3M" vs the project's actual "Roshni Builders Pvt. Ltd."), a
+        real and common pattern in Indian real estate, not a false positive.
+        The unscoped 0.5-1.0 band was explicitly rejected: confirmed wrong
+        matches there (e.g. "Signature Global Tonino Lamborghini Residences"
+        -> "Signature Global SCO-37D", matched on shared builder-brand
+        tokens alone) came from PARTIAL project-name overlap combined with a
+        same-family builder — exactly what this threshold must stay above.
         """
         promoted = 0
         for collection in (D.PROPERTIES, D.PROJECTS):
+            match: dict[str, Any] = {"rera_verify_status": "mismatch_flagged"}
+            extra_or: list[dict[str, Any]] = []
+            if also_promote_exact_needs_review:
+                extra_or.append({"rera_verify_status": "needs_review", "rera_candidate_confidence": 1.0})
+            if promote_needs_review_with_builder_at is not None:
+                extra_or.append({
+                    "rera_verify_status": "needs_review",
+                    "rera_candidate_confidence": {"$gte": promote_needs_review_with_builder_at},
+                    "builder_name": {"$ne": None},
+                })
+            if extra_or:
+                match = {"$or": [match, *extra_or]}
+
             rows = await self.db[collection].find(
-                {"rera_verify_status": "mismatch_flagged"},
-                projection={"rera_suggested_number": 1},
+                match,
+                projection={"rera_suggested_number": 1, "rera_candidate_number": 1},
             ).limit(limit).to_list(length=limit)
             if not rows:
                 continue
 
-            suggested_numbers = list({r["rera_suggested_number"] for r in rows})
+            def target_number(row: dict[str, Any]) -> str | None:
+                return row.get("rera_suggested_number") or row.get("rera_candidate_number")
+
+            target_numbers = list({n for r in rows if (n := target_number(r))})
             registry_rows = await self.db[D.HRERA_REGISTRY].find(
-                {"rera_number": {"$in": suggested_numbers}}
+                {"rera_number": {"$in": target_numbers}}
             ).to_list(length=None)
             registry_by_number = {r["rera_number"]: r for r in registry_rows}
 
             now = datetime.now(UTC)
             ops = []
             for row in rows:
-                candidate = registry_by_number.get(row["rera_suggested_number"])
+                candidate = registry_by_number.get(target_number(row) or "")
                 if candidate is None:
                     continue
                 ops.append(UpdateOne(

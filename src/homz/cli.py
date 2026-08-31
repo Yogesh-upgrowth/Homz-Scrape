@@ -313,12 +313,26 @@ def enrich_rera_verify(limit: int = typer.Option(50000, "--limit")) -> None:
 
 
 @enrich_app.command("rera-promote")
-def enrich_rera_promote(limit: int = typer.Option(50000, "--limit")) -> None:
+def enrich_rera_promote(
+    limit: int = typer.Option(50000, "--limit"),
+    include_exact_needs_review: bool = typer.Option(
+        False,
+        "--include-exact-needs-review",
+        help="Also promote needs_review docs at exactly 1.0 confidence (no builder corroboration) — higher risk, explicit opt-in only.",
+    ),
+    needs_review_with_builder_at: float = typer.Option(
+        None,
+        "--needs-review-with-builder-at",
+        help="Also promote needs_review docs >= this score, restricted to docs that HAVE a builder_name (verified safe at 0.70 — see docstring). Never combine a low value here with missing-builder docs.",
+    ),
+) -> None:
     """Overwrite rera_number with rera_suggested_number for mismatch_flagged docs.
 
     The one command in this pipeline that replaces an existing live value —
     only for documents that already passed the same high-confidence,
-    builder-corroborated bar as every other auto-write. Run
+    builder-corroborated bar as every other auto-write, unless one of the
+    higher-risk flags below is passed (see promote_verified_rera_corrections'
+    docstring for what was actually verified safe vs rejected). Run
     `homz enrich rera-verify` first to populate the candidates.
     """
     from homz.db.mongo import get_database
@@ -326,7 +340,11 @@ def enrich_rera_promote(limit: int = typer.Option(50000, "--limit")) -> None:
 
     async def _run() -> dict[str, int]:
         pipeline = EnrichmentPipeline(get_database(), use_llm=False)
-        count = await pipeline.promote_verified_rera_corrections(limit=limit)
+        count = await pipeline.promote_verified_rera_corrections(
+            limit=limit,
+            also_promote_exact_needs_review=include_exact_needs_review,
+            promote_needs_review_with_builder_at=needs_review_with_builder_at,
+        )
         return {"promoted": count}
 
     _print_json(asyncio.run(_run()))
