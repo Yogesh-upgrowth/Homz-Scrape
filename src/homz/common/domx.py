@@ -293,6 +293,13 @@ def first(values: Iterable[Any], default: Any = None) -> Any:
 
 _IMAGE_EXT_RE = re.compile(r"\.(jpe?g|png|webp|avif)(\?|$)", re.I)
 _PLACEHOLDER_RE = re.compile(r"placeholder|blank|lazy|spacer|no[-_]?image|default", re.I)
+# Sitewide chrome (logo, amenity icon sprites, developer-logo thumbnails)
+# lives under these paths on every portal we scrape, and shares the same
+# host + a real-looking image extension as genuine photos, so it survives
+# every other check. E.g. squareyards puts its own logo at
+# www.squareyards.com/assets/images/squareyards.png on literally every
+# project page, and amenity icons at .../assets/images/svg/amenities/...
+_CHROME_PATH_RE = re.compile(r"/assets/images/|/developerlogo/", re.I)
 
 
 def extract_images(
@@ -330,11 +337,14 @@ def extract_images(
             continue
 
         url = absolute_url(base_url, candidate)
-        if not url or _PLACEHOLDER_RE.search(url):
+        if not url or _PLACEHOLDER_RE.search(url) or _CHROME_PATH_RE.search(url):
             continue
         if allow_hosts and not any(host in url for host in allow_hosts):
             continue
-        if not _IMAGE_EXT_RE.search(url) and "image" not in url.lower():
+        # No "or 'image' in url.lower()" fallback: that bypass let SVG icons
+        # under an /images/ directory through unfiltered — real listing
+        # photos are always jpg/png/webp/avif, never svg.
+        if not _IMAGE_EXT_RE.search(url):
             continue
 
         key = url.split("?")[0]

@@ -121,20 +121,40 @@ class TestSimilarity:
         score, _ = similarity(a, b)
         assert score < 0.75
 
-    def test_shared_image_is_conclusive(self) -> None:
+    def test_two_shared_images_is_conclusive(self) -> None:
+        shared = ["https://cdn.example.com/photo-abc.jpg", "https://cdn.example.com/photo-def.jpg"]
+        a = make_property(source_id="a", images=shared, price="35000000")
+        b = make_property(
+            source=Source.HOUSING,
+            source_id="b",
+            images=shared,
+            price="41000000",  # price differs, images do not
+            title="Luxury residence available",
+            project=None,
+        )
+        score, reason = similarity(a, b)
+        assert score >= 0.95
+        assert "shared images" in reason
+
+    def test_single_shared_image_is_not_conclusive(self) -> None:
+        # A lone shared photo is exactly what a leaked "similar properties"
+        # carousel image or a reused platform placeholder looks like
+        # (verified live: this was 97.5% of every duplicate link ever
+        # recorded, nearly all false) — real syndication shares its whole
+        # photo set, not one photo, so this alone must not cross threshold.
         shared = "https://cdn.example.com/photo-abc.jpg"
         a = make_property(source_id="a", images=[shared], price="35000000")
         b = make_property(
             source=Source.HOUSING,
             source_id="b",
             images=[shared],
-            price="41000000",  # price differs, image does not
+            price="41000000",
             title="Luxury residence available",
             project=None,
         )
         score, reason = similarity(a, b)
-        assert score >= 0.95
-        assert "shared image" in reason
+        assert score < 0.75
+        assert "shared image" not in reason
 
     def test_same_source_id_short_circuits(self) -> None:
         a = make_property(source_id="x")

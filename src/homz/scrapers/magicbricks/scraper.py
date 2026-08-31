@@ -67,6 +67,26 @@ class MagicBricksScraper(BaseScraper):
             name="commercial-land", city="gurgaon", listing_type="sale",
             property_type="commercial-land", max_pages=2, max_items=100,
         ),
+        # Villa/plot have the same problem as the commercial sub-types: the
+        # generic residential feed mixes every property type together, so a
+        # niche category (491 villas vs. 25,607 total listings in Gurgaon)
+        # is easily undersampled to near-zero by a citywide crawl budget
+        # spent mostly on apartments. Dedicated category URLs fix that the
+        # same way the commercial jobs above do.
+        ScrapeJob(
+            name="villa", city="gurgaon", listing_type="sale",
+            property_type="villa", max_pages=4, max_items=200,
+        ),
+        ScrapeJob(
+            name="villa-rent", city="gurgaon", listing_type="rent",
+            property_type="villa", max_pages=3, max_items=150,
+        ),
+        # No rent counterpart: plots-for-rent is an empty category (404s
+        # live) — plots for rent are essentially nonexistent in this market.
+        ScrapeJob(
+            name="plot", city="gurgaon", listing_type="sale",
+            property_type="plot", max_pages=4, max_items=200,
+        ),
     )
 
     # -- discovery ----------------------------------------------------------

@@ -153,12 +153,24 @@ def similarity(left: PropertyRecord, right: PropertyRecord) -> tuple[float, str]
         score += 0.10 * (1 - title_distance / 8)
         reasons.append(f"title_hd={title_distance}")
 
-    # A shared image URL is conclusive — portals syndicate the same photos.
+    # A *single* shared image is not conclusive — verified live: a source
+    # parser can leak one photo from an unrelated listing surfaced on the
+    # same "similar/recommended properties" carousel (see
+    # homz.scrapers.magicbricks.parser._extract_property_images), and a
+    # generic platform placeholder (a template banner, a review-badge icon)
+    # gets reused across thousands of otherwise-unrelated listings site-wide.
+    # Both looked "conclusive" under the old any-overlap rule — one
+    # contaminated MagicBricks photo alone drove 97.5% of every duplicate
+    # link ever recorded in this warehouse, nearly all of them false. Two
+    # portals genuinely syndicating the same physical unit share their whole
+    # photo set, not one photo, so requiring 2+ distinct shared URLs keeps
+    # that real signal while dropping the single-photo coincidence.
     left_images = {i.url.split("?")[0] for i in left.images}
     right_images = {i.url.split("?")[0] for i in right.images}
-    if left_images & right_images:
+    shared_images = left_images & right_images
+    if len(shared_images) >= 2:
         score = max(score, 0.95)
-        reasons.append("shared image")
+        reasons.append(f"shared images x{len(shared_images)}")
 
     return min(score, 1.0), ", ".join(reasons) or "weak"
 

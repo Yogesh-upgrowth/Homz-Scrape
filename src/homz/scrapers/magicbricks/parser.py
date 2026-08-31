@@ -55,6 +55,61 @@ from homz.common.schema import (
 BASE_URL = "https://www.magicbricks.com"
 IMAGE_HOSTS = ("magicbricks.com", "mbimg", "img.staticmb.com")
 
+# Property photos live at `.../cropped_images/ver2/{hash}/Photo_h{H}_w{W}/
+# {stem}_{H}_{W}.{ext}` — several fixed, pre-signed crop sizes under the same
+# hash-keyed path. Guessing an arbitrary size 401s ("Un-authorized access",
+# verified live), but h600_w900 is verified live as a real, fetchable size
+# for any photo id on this same path (41.5KB actual photo data vs 11.7KB for
+# the h300_w450 crop of the *same* shot) — every detail page's own cover
+# photo already uses it, this just applies that same already-legitimate size
+# to every other photo instead of leaving them at whatever smaller crop the
+# thumbnail strip happens to reference.
+_MB_PHOTO_CROP_RE = re.compile(
+    r"(/cropped_images/ver2/[^/]+/)Photo_h(\d+)_w(\d+)/([^/?#]+?)_\d+_\d+(\.\w+)"
+)
+
+# Project-banner photos live at `.../mbimages/project/Photo_h{H}_w{W}/{rest}
+# _{H}_{W}.{ext}` — a *different* CDN path from the per-listing photos above,
+# with its own separate set of pre-signed crop sizes. Requesting h600_w900
+# here 404s ("Original image not found", verified live) since that size was
+# never signed for this path. But dropping the crop folder AND the trailing
+# `_{H}_{W}` suffix entirely serves the uncropped original (verified live:
+# 300-650KB actual photo data vs ~25KB for the h300_w450/h310_w462/h240_w0
+# crops that are the only sizes this path actually signs).
+_MB_PROJECT_CROP_RE = re.compile(r"(mbimages/project/)Photo_h\d+_w\d+/(.+?)_\d+_\d+(\.\w+)$")
+
+
+def _own_photo_digits(source_id: str | None) -> str | None:
+    """`source_id` is hex-encoded ASCII of MagicBricks' own listing id (e.g.
+    "4d423835363939303139" decodes to "MB85699019") — and that same numeric
+    tail ("85699019") is exactly the id embedded at the front of that
+    listing's own `cropped_images` photo filenames (".../85699019_1_....jpg").
+    This recovers it so `_extract_property_images` can tell this listing's
+    real photos apart from a *different* listing's photo that leaked in via
+    a "similar/owner properties" carousel sharing the same URL shape (see
+    that function's docstring)."""
+    if not source_id:
+        return None
+    try:
+        decoded = bytes.fromhex(source_id).decode("ascii")
+    except (ValueError, UnicodeDecodeError):
+        return None
+    digits = re.sub(r"\D", "", decoded)
+    return digits or None
+
+
+def _upscale_photo(url: str) -> str:
+    match = _MB_PHOTO_CROP_RE.search(url)
+    if match:
+        prefix, h, w, stem, ext = match.groups()
+        if int(h) < 600 or int(w) < 900:
+            url = _MB_PHOTO_CROP_RE.sub(rf"\g<1>Photo_h600_w900/{stem}_600_900{ext}", url)
+    match = _MB_PROJECT_CROP_RE.search(url)
+    if match:
+        prefix, rest, ext = match.groups()
+        url = _MB_PROJECT_CROP_RE.sub(rf"\g<1>{rest}{ext}", url)
+    return url
+
 _ID_PATTERNS = (
     re.compile(r"pdpid[-_]?([A-Za-z0-9]+)", re.I),
     re.compile(r"-pdpid-([A-Za-z0-9]+)", re.I),
@@ -118,6 +173,72 @@ def has_next_page(html: str) -> bool:
 # ---------------------------------------------------------------------------
 # detail page
 # ---------------------------------------------------------------------------
+
+
+def _extract_property_images(soup: BeautifulSoup, source_id: str | None = None) -> list:
+    """`.mb-ldp__gallery` no longer exists on the live site — MagicBricks
+    renamed its detail-page gallery markup to `mb-ldp__premium-dtls__photo*`
+    at some point, so that selector (and its `[class*='gallery']` fallback)
+    silently matched nothing and every image fell through to a bare "img"
+    sweep instead. Try the current real gallery class first, keep the old
+    ones as fallbacks in case it changes again, and upscale whatever crop
+    size the thumbnail strip happened to reference.
+
+    The bare "img" fallback is unscoped, though, and on current pages the
+    actual photo gallery is populated client-side (its markup isn't in the
+    static HTML we fetch at all — confirmed live: none of `.photoGallery
+    img`/`.sliderImages img`/etc. match anything in the raw response), so
+    every one of the three scoped selectors above now comes up empty and
+    every page falls through to the bare sweep. That sweeps in whatever *is*
+    server-rendered instead: a "similar projects nearby" carousel
+    (`mbimages/project/...` banner photos — always some other project, never
+    this listing) and "properties you may also like"/"owner-listed
+    properties" carousels (real `cropped_images/...` property photos, but
+    for a *different* listing). Both got treated as this listing's own
+    images, feeding bogus "shared image" duplicate links in
+    `homz.common.dedupe` between totally unrelated properties that merely
+    appeared on the same recommendation widget together.
+
+    So the carousel filtering below applies only once we're actually in that
+    unscoped bare-sweep tier — a properly-scoped selector (e.g.
+    `.mb-ldp__gallery`) can legitimately return a `mbimages/project/...`
+    banner as this listing's own photo (a project with no unit photos yet
+    falls back to its project banner), and that case is left untouched.
+    """
+    scoped_selectors = (
+        "[class*='premium-dtls__photo'] img, img[class*='premium-dtls__photo']",
+        ".mb-ldp__gallery img",
+        "[class*='gallery'] img",
+    )
+    images = domx.extract_images(
+        soup, base_url=BASE_URL, selectors=scoped_selectors, allow_hosts=IMAGE_HOSTS
+    )
+    used_bare_sweep = not images
+    if used_bare_sweep:
+        images = domx.extract_images(
+            soup, base_url=BASE_URL, selectors=("img",), allow_hosts=IMAGE_HOSTS
+        )
+
+    own_digits = _own_photo_digits(source_id)
+    deduped = []
+    seen: set[str] = set()
+    for image in images:
+        if used_bare_sweep:
+            if _MB_PROJECT_CROP_RE.search(image.url):
+                continue  # recommended-project banner, never this listing's own
+            photo_match = _MB_PHOTO_CROP_RE.search(image.url)
+            if photo_match and own_digits and not photo_match.group(4).startswith(own_digits):
+                continue  # a *different* listing's photo, same URL shape
+        image.url = _upscale_photo(image.url)
+        # Upscaling can collapse two distinct pre-upscale URLs onto the same
+        # photo (e.g. the hero already at h600_w900 and a thumbnail-strip
+        # copy of that same shot at h300_w450) — dedup again post-upscale.
+        key = image.url.split("?")[0]
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(image)
+    return deduped
 
 
 def parse_property_detail(
@@ -360,16 +481,7 @@ def parse_property_detail(
         rera_number=parse_rera_number(spec("rera") or html[:200_000]),
         amenities=amenities,
         specifications=specs,
-        images=domx.extract_images(
-            soup,
-            base_url=BASE_URL,
-            selectors=(
-                ".mb-ldp__gallery img",
-                "[class*='gallery'] img",
-                "img",
-            ),
-            allow_hosts=IMAGE_HOSTS,
-        ),
+        images=_extract_property_images(soup, source_id),
         landmarks=landmarks,
         contact=contact,
         listed_at=listed_at,
@@ -531,16 +643,24 @@ _CITY_SLUGS = {
 }
 
 
-#: Commercial sub-types live under a distinct URL *prefix* each, not a query
+#: Commercial sub-types (and villa/plot, which have the same problem on the
+#: residential side) live under a distinct URL *prefix* each, not a query
 #: filter on the generic "/property-for-sale-..." search — that generic path
-#: is 100% residential. Verified live against gurgaon; each returned 30 real
-#: cards. "warehouse"/"offices" (plural) 404 — "office-space" is correct.
+#: mixes every residential type together, so a niche category like "villa"
+#: (491 of them in Gurgaon alone) is easily undersampled to near-zero by a
+#: citywide crawl budget spent mostly on apartments. Verified live against
+#: gurgaon; each returned real cards. "warehouse"/"offices" (plural) 404 —
+#: "office-space" is correct. Residential plots have no rent variant (empty
+#: category, 404s) — plots for rent are essentially nonexistent in this
+#: market, so no entry for it here.
 _COMMERCIAL_PREFIXES = {
     "shop": "shops",
     "office": "office-space",
     "showroom": "showroom",
     "commercial-land": "commercial-land",
     "industrial-land": "industrial-land",
+    "villa": "villa",
+    "plot": "residential-plots-land",
     # Kept for backward compatibility with the old (non-functional) job
     # definition — maps to the closest real category rather than 404ing.
     "commercial-real-estate": "office-space",
@@ -574,5 +694,38 @@ def build_search_url(
     prefix = _COMMERCIAL_PREFIXES.get(property_type or "", "property")
 
     path = f"/{prefix}-for-{listing_type}-in-{slug}-{suffix}"
+    query = f"?page={page}" if page > 1 else ""
+    return f"{BASE_URL}{path}{query}"
+
+
+def build_apartment_search_url(
+    city: str, *, listing_type: str = "sale", locality: str | None = None, page: int = 1
+) -> str:
+    """MagicBricks' dedicated "flats" category — apartments mixed in with
+    the generic residential feed are easily undersampled (21,519 apartments
+    is only a fraction of Gurgaon's ~25,607 total listings), and its own
+    pagination caps at page 100 (page 101+ silently repeats page 1's
+    results — confirmed live), so exhaustive coverage needs one request per
+    locality rather than one deep paginated stream.
+
+    Verified live: sale and rent use *different* url grammar for this one
+    category specifically — `build_search_url`'s uniform
+    `{prefix}-for-{listing_type}-in-{slug}-{suffix}` template only holds for
+    rent here:
+
+        sale (city)      /flats-in-gurgaon-for-sale-pppfs
+        sale (locality)  /flats-in-sector-56-gurgaon-for-sale-pppfs
+        rent (city)       /flats-for-rent-in-gurgaon-pppfr
+        rent (locality)  /flats-for-rent-in-sector-56-gurgaon-pppfr
+    """
+    slug = city.strip().lower()
+    slug = _CITY_SLUGS.get(slug, slug).replace(" ", "-")
+    scope = f"{locality.strip().lower().replace(' ', '-')}-{slug}" if locality else slug
+    suffix = "pppfr" if listing_type == "rent" else "pppfs"
+    path = (
+        f"/flats-for-rent-in-{scope}-{suffix}"
+        if listing_type == "rent"
+        else f"/flats-in-{scope}-for-sale-{suffix}"
+    )
     query = f"?page={page}" if page > 1 else ""
     return f"{BASE_URL}{path}{query}"

@@ -26,9 +26,10 @@ from decimal import Decimal
 from bs4 import BeautifulSoup
 
 from homz.common import domx
-from homz.common.enums import ListingType, PossessionStatus, Source
+from homz.common.enums import ListingType, PossessionStatus, SellerType, Source
 from homz.common.geo import build_location
 from homz.common.parsing import (
+    absolute_url,
     classify_segment,
     clean_text,
     dedupe_preserve_order,
@@ -36,17 +37,22 @@ from homz.common.parsing import (
     is_price_on_request,
     normalize_configuration,
     parse_area,
+    parse_area_sqft,
     parse_bedrooms,
     parse_float,
+    parse_floor,
     parse_int,
     parse_possession_date,
     parse_possession_status,
+    parse_price,
     parse_price_range,
     parse_property_type,
     parse_rera_number,
     to_sqft,
 )
 from homz.common.schema import (
+    ContactInfo,
+    Image,
     Landmark,
     ProjectRecord,
     PropertyRecord,
@@ -55,6 +61,20 @@ from homz.common.schema import (
 
 BASE_URL = "https://www.squareyards.com"
 IMAGE_HOSTS = ("static.squareyards.com", "squareyards.com")
+
+_RESIZE_QUERY_RE = re.compile(r"[?&]aio=[^&]*")
+
+
+def _strip_resize(url: str) -> str:
+    """Drop squareyards' own `?aio=w-N;h-N;crop;` resize/crop directive.
+
+    Verified live against a real listing photo: the `h-438` variant this
+    directive produces is a *cropped* 603x438, while the same path with the
+    query dropped serves the uncropped 603x800 original — that crop, stretched
+    back out to card size by the frontend, is what "blurry" turns out to mean.
+    """
+    return _RESIZE_QUERY_RE.sub("", url)
+
 
 _ID_PATTERNS = (
     re.compile(r"/([a-z0-9-]+)-(\d{4,})(?:/|$)", re.I),
@@ -160,9 +180,198 @@ def parse_project_cards(html: str, *, base_url: str = BASE_URL) -> list[str]:
     return urls
 
 
+_RENTAL_URL_RE = re.compile(r"squareyards\.com/rental-[a-z0-9-]+/\d+", re.I)
+
+
+def parse_jsonld_rental_urls(html: str) -> list[str]:
+    """Individual rental-listing URLs from a `/rent/property-for-rent-in-*`
+    search page's JSON-LD.
+
+    Unlike project listing pages, card anchors here only exist once the
+    page's JS runs, but every card still emits a residence block
+    (`Apartment`/`House`/...) plus a paired `RentAction` server-side, both
+    carrying the same canonical listing `url` — matching on that url pattern
+    picks up either block without needing to enumerate every `@type` schema.org
+    uses for a rented residence.
+    """
+    from homz.common.parsing import canonical_url
+
+    urls: list[str] = []
+    seen: set[str] = set()
+    for node in _iter_jsonld(html):
+        url = node.get("url")
+        if not isinstance(url, str) or not _RENTAL_URL_RE.search(url):
+            continue
+        key = canonical_url(url)
+        if key in seen:
+            continue
+        seen.add(key)
+        urls.append(key)
+    return urls
+
+
+def build_rent_search_url(city: str, *, page: int = 1, category: str = "property-for-rent") -> str:
+    """`/rent/property-for-rent-in-{city}` — NOT `/{city}/property-for-rent`
+    (that 404s; squareyards' own 404 page links to the working pattern) and
+    NOT `/rental/search?...` (robots.txt disallows `/rental/search*` and
+    several of its query params outright, so that endpoint is off-limits
+    regardless of what it renders live).
+
+    `category` swaps in a type-scoped variant of the same page shape, e.g.
+    `apartments-for-rent` -> `/rent/apartments-for-rent-in-{city}` — verified
+    live to carry its own independent listing count (14,338+ for Gurgaon
+    apartments vs. 34,882+ for the unscoped page) and its own "Popular
+    Localities" widget, so `parse_locality_links` works against it unchanged.
+    """
+    city_slug = city.strip().lower().replace(" ", "-")
+    url = f"{BASE_URL}/rent/{category}-in-{city_slug}"
+    return f"{url}?page={page}" if page > 1 else url
+
+
+_RESALE_URL_RE = re.compile(r"squareyards\.com/resale-[a-z0-9-]+/\d+", re.I)
+
+
+def parse_resale_urls(html: str) -> list[str]:
+    """Individual resale-listing URLs from a `/sale/property-for-sale-in-*`
+    search page's JSON-LD `ItemList`.
+
+    Unlike the rent page's per-card JSON-LD, this page publishes one
+    `ItemList` block whose `itemListElement` mixes individual
+    `/resale-{slug}/{id}` listings with builder-project urls — the latter are
+    already covered by the existing sitemap+listing project discovery, so
+    filter down to just the resale shape.
+    """
+    urls: list[str] = []
+    seen: set[str] = set()
+    for node in _iter_jsonld(html):
+        items = node.get("itemListElement")
+        if not isinstance(items, list):
+            continue
+        for item in items:
+            url = item.get("url") if isinstance(item, dict) else None
+            if not isinstance(url, str) or not _RESALE_URL_RE.search(url) or url in seen:
+                continue
+            seen.add(url)
+            urls.append(url)
+    return urls
+
+
+def build_sale_search_url(city: str, *, page: int = 1, category: str = "property-for-sale") -> str:
+    """`/sale/property-for-sale-in-{city}` — the resale-listing analogue of
+    `build_rent_search_url`; NOT `/resale/search?...`, which robots.txt
+    disallows the same way it disallows `/rental/search*`.
+
+    `category` swaps in a type-scoped variant, e.g. `apartments-for-sale` ->
+    `/sale/apartments-for-sale-in-{city}` (verified live: 16,232+ for Gurgaon
+    apartments, its own independent count and "Popular Localities" widget)."""
+    city_slug = city.strip().lower().replace(" ", "-")
+    url = f"{BASE_URL}/sale/{category}-in-{city_slug}"
+    return f"{url}?page={page}" if page > 1 else url
+
+
+_LOCALITY_LINK_RE = re.compile(
+    r'href="(https://www\.squareyards\.com/(?:rent|sale)/[a-z-]+-in-[a-z0-9-]+)"',
+    re.I,
+)
+
+
+def parse_locality_links(html: str, *, city: str, base_url: str) -> list[str]:
+    """"Popular Localities" links off a city-wide rent or sale search page.
+
+    Each is the same crawlable `/rent/property-for-rent-in-*` (or
+    `/sale/property-for-sale-in-*`) URL shape as the city page passed in via
+    `base_url`, just scoped to one sector/micro-market (e.g.
+    `...-in-sector-56-gurgaon`). A citywide sample of a few hundred listings
+    out of tens of thousands can easily land zero for any one sector — paging
+    through these too is how a sector-scoped filter ends up with real
+    listings instead of whatever the firehose sample happened to include.
+
+    Real bug this guards against: the same page also has a "nearby cities"
+    widget (its FAQ section links "Property for Rent in Delhi", "...in
+    Noida", etc.) using this *exact* URL shape with no locality segment at
+    all — indistinguishable from a locality link by pattern alone. Requiring
+    the slug to end with `-{city}` excludes those other cities' bare pages
+    (and the current city's own bare page) without excluding a genuine
+    locality whose slug happens to end in the city name twice, e.g.
+    `central-gurgaon-gurgaon`.
+
+    Second real bug hit live: the *sale* page's own "Popular Localities"
+    widget also links its `/rent/property-for-rent-in-gurgaon` counterpart
+    (a mode-switch link) — matches `_LOCALITY_LINK_RE` and ends with
+    `-gurgaon` just like a real locality, so it must be excluded by requiring
+    the matched url to share `base_url`'s own `/rent/...-in-` or
+    `/sale/...-in-` prefix, not just any prefix the regex allows.
+    """
+    city_slug = city.strip().lower().replace(" ", "-")
+    suffix = f"-{city_slug}"
+    base_url = base_url.rstrip("/")
+    prefix = base_url.rsplit("-in-", 1)[0] + "-in-"
+    seen: set[str] = {base_url}
+    urls: list[str] = []
+    for match in _LOCALITY_LINK_RE.finditer(html):
+        url = match.group(1).rstrip("/")
+        if url in seen or not url.startswith(prefix) or not url.lower().endswith(suffix):
+            continue
+        seen.add(url)
+        urls.append(url)
+    return urls
+
+
 # ---------------------------------------------------------------------------
 # project detail (PDP)
 # ---------------------------------------------------------------------------
+
+
+def _extract_project_images(soup: BeautifulSoup, *, base_url: str) -> list[Image]:
+    """Prefer the page's schema.org `ImageGallery` block over scraping `<img>` tags.
+
+    SquareYards' server-rendered gallery `<img>`s carry a `?aio=w-N;h-N;crop;`
+    resize directive capped well below the source resolution (a 931x350 cover
+    shot, 192x168 "peek" thumbnails for the rest — that's what "blurry" turns
+    out to mean once stretched to fill a card), and the same page also runs a
+    "similar projects" carousel through plain `<img>` tags for *other*
+    projects entirely. The `ImageGallery` JSON-LD block that every PDP also
+    emits lists this project's own photos only, as original URLs with no
+    resize suffix at all — strictly better resolution and provenance, so it
+    wins whenever present.
+    """
+    gallery = domx.json_ld_of_type(soup, "ImageGallery")
+    entries = gallery.get("image") if isinstance(gallery, dict) else None
+    if isinstance(entries, list):
+        images: list[Image] = []
+        seen: set[str] = set()
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            url = absolute_url(base_url, entry.get("contentUrl"))
+            if not url:
+                continue
+            key = url.split("?")[0]
+            if key in seen:
+                continue
+            seen.add(key)
+            images.append(
+                Image(url=url, caption=clean_text(entry.get("caption")), is_primary=not images)
+            )
+        if images:
+            return images[:40]
+
+    # Fallback: a bare "img" selector would also sweep in every thumbnail
+    # from the "similar projects" carousel (other projects' photos, not this
+    # one's) — exclude that subtree by DOM position, not by URL shape, since
+    # a lone flagship thumbnail for *this* project (when it has no full
+    # gallery uploaded) lives at an identical-looking path and would
+    # otherwise be excluded right along with the carousel, leaving no image
+    # at all instead of the one low-res photo the project actually has.
+    fallback = domx.extract_images(
+        soup,
+        base_url=base_url,
+        selectors=("img:not([class*='project-tile'] img)",),
+        allow_hosts=IMAGE_HOSTS,
+    )
+    for image in fallback:
+        image.url = _strip_resize(image.url)
+    return fallback
 
 
 def parse_project_detail(
@@ -261,12 +470,7 @@ def parse_project_detail(
         configurations=configurations,
         amenities=amenities,
         specifications=specifications,
-        images=domx.extract_images(
-            soup,
-            base_url=BASE_URL,
-            selectors=("img", "[class*='gallery'] img"),
-            allow_hosts=IMAGE_HOSTS,
-        ),
+        images=_extract_project_images(soup, base_url=BASE_URL),
         landmarks=landmarks,
         construction_updates=updates[:40],
         description=clean_text(about) or clean_text(builder_description),
@@ -335,6 +539,188 @@ def project_to_property(record: ProjectRecord) -> PropertyRecord:
     prop.is_luxury = prop.segment.value in {"luxury", "ultra_luxury"}
     prop.is_affordable = prop.segment.value == "affordable"
     return prop.finalize()
+
+
+# ---------------------------------------------------------------------------
+# individual listing — rent (`/rental-{slug}/{id}`) or resale
+# (`/resale-{slug}/{id}`) — distinct from a project — one unit, one owner or
+# agent, its own price/floor/furnishing, not a range across configurations
+# ---------------------------------------------------------------------------
+
+_LISTING_ID_RE = re.compile(r"/(\d+)/?(?:[?#].*)?$")
+
+
+def _unit_info(soup: BeautifulSoup) -> dict[str, str]:
+    """`.unit-info-list li` rows look like
+    `<span class="span">Label<strong>Value</strong></span>` — label and value
+    share one text node, so split on the `<strong>` rather than using
+    `label_value_pairs()`, which expects them in separate elements."""
+    out: dict[str, str] = {}
+    for li in domx.select_all(soup, ".unit-info-list li"):
+        span = li.select_one(".span")
+        strong = span.find("strong") if span else None
+        if not span or not strong:
+            continue
+        value = clean_text(strong.get_text(" "))
+        label = clean_text(span.get_text(" ").replace(strong.get_text(" "), "", 1))
+        if label and value:
+            out[label.lower()] = value
+    return out
+
+
+def _extract_listing_images(soup: BeautifulSoup, *, base_url: str) -> list[Image]:
+    """Individual listing PDPs carry no `ImageGallery` JSON-LD (unlike project
+    PDPs) — stay scoped to the cover photo and gallery-launcher thumbnail
+    (both marked `load-gallery`, either on the `<img>` itself or a wrapping
+    `<div>`), which skips the unrelated "3D Virtual Tour" thumbnail, and
+    strip the `?aio=...` resize query the same way project images do."""
+    images = domx.extract_images(
+        soup,
+        base_url=base_url,
+        selectors=("img[class*='gallery'], [class*='gallery'] img",),
+        allow_hosts=IMAGE_HOSTS,
+    )
+    for image in images:
+        image.url = _strip_resize(image.url)
+    return images
+
+
+def _parse_individual_listing(
+    html: str, url: str, *, is_rent: bool, raw_html_key: str | None = None
+) -> PropertyRecord | None:
+    """Shared by `parse_rental_detail` and `parse_resale_detail` — rent and
+    resale PDPs are the same template family (same `unit-info-list`, same
+    `data-button="view-number"` attribute set), differing only in which
+    price field the listing's amount belongs in and the RENT/SALE default."""
+    match = _LISTING_ID_RE.search(url)
+    if not match:
+        return None
+    source_id = match.group(1)
+
+    soup = BeautifulSoup(html, "lxml")
+    button = domx.select_one(soup, "[data-button='view-number']", "[data-button='contact']")
+    attrs = button.attrs if button else {}
+
+    title = domx.first(
+        [
+            attrs.get("propertytitle"),
+            domx.text_of(soup, ".listing-title strong", ".listing-title"),
+            domx.meta_content(soup, "og:title"),
+        ]
+    )
+    if not title:
+        return None
+
+    property_type_raw = attrs.get("propertytype")
+    property_type = parse_property_type(property_type_raw, title, url)
+    commercial = is_commercial(property_type, title, url)
+    # Same rule as elsewhere in this codebase: commercial is its own top-level
+    # feed segment and must win over the plain residential Rent/Sale bucket.
+    listing_type = ListingType.COMMERCIAL if commercial else (
+        ListingType.RENT if is_rent else ListingType.SALE
+    )
+
+    info = _unit_info(soup)
+    # unitType is "N/A" for plots/land — no BHK to report, `parse_bedrooms`
+    # and `normalize_configuration` both already treat that as "no match".
+    config_text = domx.first([attrs.get("unittype"), title])
+    bedrooms = parse_bedrooms(config_text) or parse_int(info.get("bedroom"))
+    floor_number, total_floors = parse_floor(info.get("floor"))
+
+    price_text = attrs.get("totalprice") or attrs.get("priceamount")
+    price_value = parse_price(price_text) if price_text else None
+    if price_value is None:
+        price_value, _ = parse_price_range(
+            domx.text_of(soup, ".listing-price", "[class*='listing-price']")
+        )
+    rent_monthly = price_value if is_rent else None
+    price = None if is_rent else price_value
+
+    area_sqft = parse_area_sqft(attrs.get("area")) or parse_area_sqft(info.get("area"))
+
+    location_raw = domx.first(
+        [attrs.get("location"), domx.text_of(soup, ".listing-loction", ".listing-title")]
+    )
+    latitude = parse_float(domx.attr_of(soup, "data-lat", "[data-lat]"))
+    longitude = parse_float(domx.attr_of(soup, "data-long", "[data-long]"))
+    location = build_location(
+        location_raw, extra_texts=(title, url), latitude=latitude, longitude=longitude
+    )
+
+    amenities = dedupe_preserve_order(
+        domx.texts_of(soup, ".amenities-list li", "[class*='amenities'] li")
+    )
+
+    agent_name = clean_text(attrs.get("username"))
+    user_type = (attrs.get("usertype") or "").lower()
+    seller_type = (
+        SellerType.OWNER
+        if "owner" in user_type
+        else SellerType.BUILDER
+        if "builder" in user_type
+        else SellerType.AGENT
+        if agent_name
+        else SellerType.UNKNOWN
+    )
+    contact = ContactInfo(
+        name=agent_name, seller_type=seller_type, company=clean_text(attrs.get("brokerlocation"))
+    )
+
+    # "area" is dropped here: its value node also wraps the sqft/sqm/sqyard
+    # unit-switcher dropdown, so `_unit_info()`'s text-diff comes out full of
+    # unit-list noise; `attrs["area"]` above is the clean source for it.
+    specifications = {k.title(): v for k, v in info.items() if k != "area"}
+    if attrs.get("depositamount"):
+        specifications["Deposit Amount"] = clean_text(attrs["depositamount"])
+
+    record = PropertyRecord(
+        source=Source.SQUAREYARDS,
+        source_id=source_id,
+        listing_url=url,
+        title=title,
+        description=domx.meta_content(soup, "og:description"),
+        project_name=clean_text(attrs.get("projectname")),
+        listing_type=listing_type,
+        property_type=property_type,
+        property_type_raw=property_type_raw,
+        is_commercial=commercial,
+        configuration=normalize_configuration(config_text),
+        bedrooms=bedrooms,
+        bathrooms=parse_int(info.get("bath")),
+        floor_number=floor_number,
+        total_floors=total_floors,
+        furnishing=clean_text(info.get("furnishing status")),
+        price=price,
+        rent_monthly=rent_monthly,
+        is_price_on_request=price_value is None,
+        area_sqft=area_sqft,
+        location=location,
+        amenities=amenities,
+        specifications=specifications,
+        images=_extract_listing_images(soup, base_url=BASE_URL),
+        contact=contact,
+        raw_html_key=raw_html_key,
+        raw={"unit_info": info},
+    )
+    record.segment = classify_segment(price_value, listing_type)
+    record.is_luxury = record.segment.value in {"luxury", "ultra_luxury"}
+    record.is_affordable = record.segment.value == "affordable"
+    return record.finalize()
+
+
+def parse_rental_detail(
+    html: str, url: str, *, raw_html_key: str | None = None
+) -> PropertyRecord | None:
+    """`/rental-{slug}/{id}` — one specific unit posted by an owner or agent."""
+    return _parse_individual_listing(html, url, is_rent=True, raw_html_key=raw_html_key)
+
+
+def parse_resale_detail(
+    html: str, url: str, *, raw_html_key: str | None = None
+) -> PropertyRecord | None:
+    """`/resale-{slug}/{id}` — an individual owner/broker sale listing,
+    distinct from a builder's new-launch project page."""
+    return _parse_individual_listing(html, url, is_rent=False, raw_html_key=raw_html_key)
 
 
 # ---------------------------------------------------------------------------

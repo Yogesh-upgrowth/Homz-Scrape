@@ -28,7 +28,16 @@ def get_client() -> AsyncIOMotorClient:
             minPoolSize=settings.mongodb_min_pool_size,
             serverSelectionTimeoutMS=settings.mongodb_timeout_ms,
             connectTimeoutMS=settings.mongodb_timeout_ms,
+            # Bounds a *stalled* read/write on an already-established
+            # connection (e.g. a silently-dropped TCP session) — without it,
+            # server selection can succeed fine and a later cursor read still
+            # hangs forever with no exception ever raised, since only
+            # connect/serverSelection had a timeout. Verified live: a backfill
+            # script hung indefinitely at 0% CPU on exactly this after
+            # `get_database()` returned instantly.
+            socketTimeoutMS=settings.mongodb_timeout_ms,
             retryWrites=True,
+            retryReads=True,
             appname="homz-intel",
             tz_aware=True,
         )
