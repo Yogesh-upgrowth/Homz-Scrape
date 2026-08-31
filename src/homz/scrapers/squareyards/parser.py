@@ -236,9 +236,20 @@ def parse_project_detail(
         location=location,
         status=status,
         possession_date=parse_possession_date(possession_raw),
+        # data-reraid is taken as-is from the page, unvalidated — SquareYards
+        # sometimes puts the *Registration Certificate Number* there instead
+        # of the RERA Project ID (e.g. "GGM/1062/794/2026/34", missing the
+        # "HARERA" marker _RERA_PATTERNS looks for), which then gets stored
+        # as rera_number with no way to tell it apart from a real one.
+        # Verified live 2026-08-31 by cross-checking against the actual
+        # HRERA registry (see homz.scrapers.hrera). Routing the attribute
+        # through parse_rera_number() rejects that shape instead of trusting
+        # it outright, while still accepting a well-formed value (including
+        # the full "RC/REP/HARERA/..." certificate format this codebase has
+        # always treated as valid — see tests/test_scrapers.py).
         rera_number=domx.first(
             [
-                domx.attr_of(soup, "data-reraid", ".accordion-header[data-reraid]"),
+                parse_rera_number(domx.attr_of(soup, "data-reraid", ".accordion-header[data-reraid]")),
                 parse_rera_number(html[:300_000]),
             ]
         ),

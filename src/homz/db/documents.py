@@ -69,6 +69,7 @@ SCRAPE_RUNS = "scrape_runs"
 PROPERTY_DUPLICATES = "property_duplicates"
 ENRICHMENT_QUEUE = "enrichment_queue"
 FILL_TASKS = "fill_tasks"
+HRERA_REGISTRY = "hrera_registry"
 
 # Rollup collections — the materialized-view equivalents, rebuilt by the ETL
 # with an aggregation pipeline ending in `$merge`.
@@ -82,6 +83,7 @@ ALL_COLLECTIONS = (
     REDDIT_POSTS, REDDIT_COMMENTS, MARKET_INSIGHTS, SCRAPE_STATE,
     SCRAPE_RUNS, PROPERTY_DUPLICATES, ENRICHMENT_QUEUE, FILL_TASKS,
     MV_LOCALITY_TRENDS, MV_RENTAL_YIELD, MV_BUILDER_SCORECARD, MV_SUPPLY_DEMAND,
+    HRERA_REGISTRY,
 )
 
 
@@ -200,6 +202,12 @@ INDEXES: dict[str, list[IndexModel]] = {
         IndexModel([("created_at", DESCENDING)], name="ix_created"),
         # Tasks self-expire, so an abandoned queue cannot grow without bound.
         IndexModel([("expires_at", ASCENDING)], name="ix_ttl", expireAfterSeconds=0),
+    ],
+    HRERA_REGISTRY: [
+        IndexModel([("district", ASCENDING)], name="ix_district"),
+        IndexModel([("project_name_normalized", ASCENDING)], name="ix_project_name_norm"),
+        IndexModel([("builder_name_normalized", ASCENDING)], name="ix_builder_name_norm"),
+        IndexModel([("rera_number", ASCENDING)], name="ix_rera_number", unique=True),
     ],
     MV_LOCALITY_TRENDS: [
         IndexModel([("city", ASCENDING), ("sector", ASCENDING),

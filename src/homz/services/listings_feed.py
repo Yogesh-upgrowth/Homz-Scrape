@@ -22,6 +22,7 @@ from typing import Any
 
 from homz.common.enums import ListingType
 from homz.common.schema import PropertyRecord
+from homz.enrichment.rera_matching import rera_badge_status
 from homz.services.feed import (
     _STATUS_LABELS,
     CITY_KEYS,
@@ -118,6 +119,17 @@ def to_listing_feed_record(record: PropertyRecord) -> dict[str, Any]:
         "listingType": record.listing_type.value,
         "isCommercial": record.is_commercial,
         "reraId": record.rera_number or "",
+        # See rera_matching.rera_badge_status for what these mean and why a
+        # bare reraId isn't enough (a correctly-shaped, real Project ID can
+        # still be a lapsed/interim registration — confirmed: Ireo Skyon).
+        "reraStatus": rera_badge_status(
+            record.rera_number,
+            valid_upto=enrichment.get("rera_valid_upto"),
+            registered_with=enrichment.get("rera_registered_with"),
+        ),
+        "reraValidUpto": _iso(enrichment.get("rera_valid_upto")),
+        "reraRegisteredWith": enrichment.get("rera_registered_with"),
+        "reraCertificateUrl": enrichment.get("rera_certificate_url"),
         "projectStatus": _STATUS_LABELS.get(record.possession_status, ""),
         "possession": _possession(record),
         "builderDescription": record.builder_name or record.developer_name or "",
@@ -238,6 +250,9 @@ async def load_properties(db: Any) -> list[PropertyRecord]:
                         "risk_score": doc.get("risk_score"),
                         "location_score": doc.get("location_score"),
                         "ai_summary": doc.get("ai_summary"),
+                        "rera_valid_upto": doc.get("rera_valid_upto"),
+                        "rera_registered_with": doc.get("rera_registered_with"),
+                        "rera_certificate_url": doc.get("rera_certificate_url"),
                     }
                     out.append(record)
     return out

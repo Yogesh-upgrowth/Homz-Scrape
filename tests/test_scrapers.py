@@ -260,6 +260,20 @@ class TestSquareYardsParser:
         record = sy.parse_project_detail(SY_PDP_HTML, "https://x/p-123456")
         assert record.project_area_acres == 9.19
 
+    def test_rera_rejects_certificate_number_without_harera_marker(self) -> None:
+        """data-reraid sometimes holds the Registration Certificate Number,
+        not the Project ID (e.g. "GGM/1062/794/2026/34" — no "HARERA" marker,
+        unlike the accepted "RC/REP/HARERA/GGM/..." shape above). Verified
+        live 2026-08-31 against the real HRERA registry: values in this shape
+        were confirmed wrong on stored projects (e.g. Ireo Skyon). Must not
+        be stored as rera_number."""
+        html = SY_PDP_HTML.replace(
+            'data-reraid="RC/REP/HARERA/GGM/812/544/2024/45"',
+            'data-reraid="GGM/1062/794/2026/34"',
+        )
+        record = sy.parse_project_detail(html, "https://x/p-123456")
+        assert record.rera_number is None
+
     def test_price_list_prefers_data_sqft_over_display_unit(self) -> None:
         # Display text is sq yards; data-sqft is authoritative.
         record = sy.parse_project_detail(SY_PDP_HTML, "https://x/p-123456")

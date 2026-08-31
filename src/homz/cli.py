@@ -113,6 +113,20 @@ def scrape_source(
     _render_pipeline_results([result])
 
 
+@scrape_app.command("hrera")
+def scrape_hrera() -> None:
+    """Sync the Haryana RERA (Gurugram) registered-projects registry.
+
+    One request (see homz.scrapers.hrera) — reference data, not a listing
+    crawl. Run this before `homz enrich rera` so the match step has fresh
+    candidates.
+    """
+    from homz.db.mongo import get_database
+    from homz.scrapers.hrera.scraper import sync_registry
+
+    _print_json(asyncio.run(sync_registry(get_database())))
+
+
 @scrape_app.command("list")
 def scrape_list() -> None:
     """Show registered sources and their default jobs."""
@@ -258,6 +272,62 @@ def enrich_scores(
         builders = await pipeline.score_builders()
         properties = await pipeline.score_properties(force=force)
         return {"builders": builders, "properties": properties}
+
+    _print_json(asyncio.run(_run()))
+
+
+@enrich_app.command("rera")
+def enrich_rera(limit: int = typer.Option(50000, "--limit")) -> None:
+    """Backfill rera_number for Gurugram docs from the synced HRERA registry.
+
+    Run `homz scrape hrera` first. Only fills documents currently missing
+    rera_number; only auto-writes high-confidence matches, weaker matches are
+    stored as a review candidate (rera_candidate_number) instead.
+    """
+    from homz.db.mongo import get_database
+    from homz.enrichment.pipeline import EnrichmentPipeline
+
+    async def _run() -> dict[str, int]:
+        pipeline = EnrichmentPipeline(get_database(), use_llm=False)
+        return await pipeline.attach_rera_numbers(limit=limit)
+
+    _print_json(asyncio.run(_run()))
+
+
+@enrich_app.command("rera-verify")
+def enrich_rera_verify(limit: int = typer.Option(50000, "--limit")) -> None:
+    """Flag existing rera_number values that don't look like a real HRERA ID.
+
+    Audit-only — never overwrites the live rera_number. A confident registry
+    match is stored as rera_suggested_number for manual promotion; run
+    `homz scrape hrera` first so candidates are fresh.
+    """
+    from homz.db.mongo import get_database
+    from homz.enrichment.pipeline import EnrichmentPipeline
+
+    async def _run() -> dict[str, int]:
+        pipeline = EnrichmentPipeline(get_database(), use_llm=False)
+        return await pipeline.verify_existing_rera_numbers(limit=limit)
+
+    _print_json(asyncio.run(_run()))
+
+
+@enrich_app.command("rera-promote")
+def enrich_rera_promote(limit: int = typer.Option(50000, "--limit")) -> None:
+    """Overwrite rera_number with rera_suggested_number for mismatch_flagged docs.
+
+    The one command in this pipeline that replaces an existing live value —
+    only for documents that already passed the same high-confidence,
+    builder-corroborated bar as every other auto-write. Run
+    `homz enrich rera-verify` first to populate the candidates.
+    """
+    from homz.db.mongo import get_database
+    from homz.enrichment.pipeline import EnrichmentPipeline
+
+    async def _run() -> dict[str, int]:
+        pipeline = EnrichmentPipeline(get_database(), use_llm=False)
+        count = await pipeline.promote_verified_rera_corrections(limit=limit)
+        return {"promoted": count}
 
     _print_json(asyncio.run(_run()))
 

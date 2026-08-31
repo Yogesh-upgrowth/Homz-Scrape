@@ -30,6 +30,7 @@ from typing import Any
 from homz.common.enums import City, PossessionStatus
 from homz.common.parsing import format_price_inr
 from homz.common.schema import ProjectRecord
+from homz.enrichment.rera_matching import rera_badge_status
 
 # Front-end city keys (see `CITY_KEYS` in lib/scraping/homzbackend.ts).
 CITY_KEYS: dict[City, str] = {
@@ -247,6 +248,7 @@ def _about(record: ProjectRecord) -> list[str]:
 def to_feed_record(record: ProjectRecord) -> dict[str, Any]:
     """One warehouse project in the shape the website's `/api/data` serves."""
     gallery, interior, master_plan = _split_images(record)
+    enrichment = record.raw.get("_enrichment", {})
     return {
         "projectTitle": record.name,
         "location": _location(record),
@@ -254,6 +256,18 @@ def to_feed_record(record: ProjectRecord) -> dict[str, Any]:
         "size": _size_range(record),
         "BHKType": _bhk_type(record),
         "reraId": record.rera_number or "",
+        # See rera_matching.rera_badge_status — lets the front end show a
+        # "Lapsed/Expired" badge instead of a bare number that would
+        # otherwise misrepresent e.g. a real, correctly-shaped Project ID
+        # whose only registration on file has lapsed (confirmed: Ireo Skyon).
+        "reraStatus": rera_badge_status(
+            record.rera_number,
+            valid_upto=enrichment.get("rera_valid_upto"),
+            registered_with=enrichment.get("rera_registered_with"),
+        ),
+        "reraValidUpto": _iso(enrichment.get("rera_valid_upto")),
+        "reraRegisteredWith": enrichment.get("rera_registered_with"),
+        "reraCertificateUrl": enrichment.get("rera_certificate_url"),
         "projectStatus": _STATUS_LABELS.get(record.status, ""),
         "possession": _possession(record),
         "numberOfUnits": str(record.total_units) if record.total_units else "",
@@ -383,5 +397,14 @@ async def load_projects(db: Any, *, city: str | None = None) -> list[ProjectReco
     async for doc in cursor:
         record = record_from_doc(doc)
         if record is not None:
+            # rera_valid_upto/rera_registered_with live on the Mongo document,
+            # not the ProjectRecord schema, so record_from_doc() already
+            # dropped them by the time we get here — same pattern as
+            # listings_feed.load_properties()'s _enrichment stash.
+            record.raw["_enrichment"] = {
+                "rera_valid_upto": doc.get("rera_valid_upto"),
+                "rera_registered_with": doc.get("rera_registered_with"),
+                "rera_certificate_url": doc.get("rera_certificate_url"),
+            }
             out.append(record)
     return out

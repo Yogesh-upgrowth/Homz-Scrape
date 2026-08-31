@@ -31,6 +31,7 @@ from homz.enrichment.extractors import (
     lexicon_sentiment,
 )
 from homz.enrichment.llm import ENRICHMENT_VERSION, LLMClient, LLMRequest, LLMResult, estimate_cost
+from homz.enrichment.rera_matching import HIGH, RERA_NUMBER_SHAPE_RE, match_hrera
 from homz.enrichment.scoring import (
     builder_trust_score,
     investment_score,
@@ -42,6 +43,13 @@ from homz.settings import settings
 
 log = get_logger(__name__)
 
+# hrera_registry (see homz.scrapers.hrera) only covers Gurugram district today
+# — Faridabad and the rest of Haryana fall under the separate HRERA Panchkula
+# authority, not yet scraped. Matching against Faridabad docs here would just
+# produce a wall of false "no_match" results, so it's excluded rather than
+# silently attempted.
+_RERA_CITY_DISTRICT = {"gurgaon": "GURUGRAM"}
+
 
 @dataclass
 class EnrichmentReport:
@@ -51,6 +59,9 @@ class EnrichmentReport:
     reddit_llm: int = 0
     builders_scored: int = 0
     llm_failures: int = 0
+    rera_auto_matched: int = 0
+    rera_needs_review: int = 0
+    rera_no_match: int = 0
     usage: dict[str, Any] = field(default_factory=dict)
     cost: dict[str, float] = field(default_factory=dict)
 
@@ -62,6 +73,9 @@ class EnrichmentReport:
             "reddit_llm": self.reddit_llm,
             "builders_scored": self.builders_scored,
             "llm_failures": self.llm_failures,
+            "rera_auto_matched": self.rera_auto_matched,
+            "rera_needs_review": self.rera_needs_review,
+            "rera_no_match": self.rera_no_match,
             "usage": self.usage,
             "cost": self.cost,
         }
@@ -265,6 +279,242 @@ class EnrichmentPipeline:
         self.report.builders_scored += len(operations)
         log.info("enrich.builders_scored", count=len(operations))
         return len(operations)
+
+    # ==================================================================
+    # Tier 2 — RERA number backfill from the scraped HRERA registry
+    # ==================================================================
+
+    async def attach_rera_numbers(self, *, limit: int = 50_000) -> dict[str, int]:
+        """Fill in `rera_number` for Haryana properties/projects missing it,
+        by fuzzy-matching against `hrera_registry` (see `homz.scrapers.hrera`
+        and `homz.enrichment.rera_matching`).
+
+        Only fills blanks — never touches a document that already has a
+        `rera_number` (even a possibly-wrong one scraped from a listing
+        portal; cross-checking existing values is a separate follow-up, not
+        this pass). Only auto-writes matches scoring >= HIGH; everything in
+        [LOW, HIGH) is stored as a review candidate, never as the live value.
+
+        Excludes documents that already have a `rera_match_status` from a
+        prior run — without this, a run that hits `limit` would keep
+        re-deciding the same leading batch forever (Mongo's default find()
+        order is stable) instead of ever reaching the rest of the backlog.
+        `limit` is intentionally high (unlike the LLM-tier steps): this is
+        cheap in-memory string matching, not a paid or rate-limited call, so
+        there's little reason to cap a run short of the actual backlog size.
+        """
+        missing = {
+            "$or": [{"rera_number": None}, {"rera_number": {"$exists": False}}],
+            "rera_match_status": {"$exists": False},
+        }
+        totals = {"auto_matched": 0, "needs_review": 0, "no_match": 0}
+
+        for city, district in _RERA_CITY_DISTRICT.items():
+            candidates = await self.db[D.HRERA_REGISTRY].find(
+                {"district": district}
+            ).to_list(length=None)
+            if not candidates:
+                continue
+
+            property_ops: list[UpdateOne] = []
+            rows = await self.db[D.PROPERTIES].find(
+                {"city": city, **missing},
+                projection={"project_name": 1, "builder_name": 1},
+            ).limit(limit).to_list(length=limit)
+            for row in rows:
+                op = self._rera_update(row, candidates, totals)
+                if op is not None:
+                    property_ops.append(op)
+            await self._bulk(D.PROPERTIES, property_ops)
+
+            project_ops: list[UpdateOne] = []
+            rows = await self.db[D.PROJECTS].find(
+                {"city": city, **missing},
+                projection={"name": 1, "builder_name": 1},
+            ).limit(limit).to_list(length=limit)
+            for row in rows:
+                op = self._rera_update(row, candidates, totals, name_field="name")
+                if op is not None:
+                    project_ops.append(op)
+            await self._bulk(D.PROJECTS, project_ops)
+
+        self.report.rera_auto_matched += totals["auto_matched"]
+        self.report.rera_needs_review += totals["needs_review"]
+        self.report.rera_no_match += totals["no_match"]
+        log.info("enrich.rera_done", **totals)
+        return totals
+
+    @staticmethod
+    def _rera_update(
+        row: dict[str, Any],
+        candidates: list[dict[str, Any]],
+        totals: dict[str, int],
+        *,
+        name_field: str = "project_name",
+    ) -> UpdateOne | None:
+        match = match_hrera(row.get(name_field), row.get("builder_name"), candidates)
+        now = datetime.now(UTC)
+
+        if match is None:
+            totals["no_match"] += 1
+            return UpdateOne({"_id": row["_id"]}, {"$set": {"rera_match_status": "no_match"}})
+
+        if match.score >= HIGH and match.builder_corroborated:
+            totals["auto_matched"] += 1
+            candidate = match.candidate
+            return UpdateOne(
+                {"_id": row["_id"]},
+                {"$set": {
+                    "rera_number": candidate["rera_number"],
+                    "rera_certificate_number": candidate.get("certificate_number"),
+                    "rera_registered_with": candidate.get("registered_with"),
+                    "rera_valid_upto": candidate.get("registration_upto"),
+                    "rera_certificate_url": candidate.get("certificate_url"),
+                    "rera_match_status": "auto_matched",
+                    "rera_match_confidence": round(match.score, 3),
+                    "rera_matched_at": now,
+                }},
+            )
+
+        # LOW <= score < HIGH: a candidate exists but isn't confident enough
+        # to become the live rera_number — surface it for manual review only.
+        totals["needs_review"] += 1
+        return UpdateOne(
+            {"_id": row["_id"]},
+            {"$set": {
+                "rera_match_status": "needs_review",
+                "rera_candidate_number": match.candidate["rera_number"],
+                "rera_candidate_confidence": round(match.score, 3),
+                "rera_matched_at": now,
+            }},
+        )
+
+    # ==================================================================
+    # Tier 2 — flag existing rera_number values that don't look like a real
+    # HRERA Project ID, without touching the live value
+    # ==================================================================
+
+    async def verify_existing_rera_numbers(self, *, limit: int = 50_000) -> dict[str, int]:
+        """Audit documents that already HAVE a `rera_number` whose shape
+        doesn't match a real HRERA Project ID (`RERA_NUMBER_SHAPE_RE`) —
+        confirmed live 2026-08-31: Ireo Skyon was stored as rera_number
+        "367" while the registry's real ID is "RERA-GRG-1789-2024".
+
+        Never overwrites the live `rera_number` — this is audit-only. A
+        confident match against the registry is stored as
+        `rera_suggested_number` for a human to promote; anything without one
+        is marked `unverifiable` (it may still be a real, valid pre-HRERA-ID
+        format this registry simply can't confirm — absence of proof isn't
+        proof of wrongness).
+        """
+        suspect = {
+            "rera_number": {"$exists": True, "$ne": None},
+            "rera_verify_status": {"$exists": False},
+        }
+        totals = {"mismatch_flagged": 0, "unverifiable": 0}
+
+        for city, district in _RERA_CITY_DISTRICT.items():
+            candidates = await self.db[D.HRERA_REGISTRY].find(
+                {"district": district}
+            ).to_list(length=None)
+            if not candidates:
+                continue
+
+            for collection, name_field in ((D.PROPERTIES, "project_name"), (D.PROJECTS, "name")):
+                rows = await self.db[collection].find(
+                    {"city": city, **suspect},
+                    projection={name_field: 1, "builder_name": 1, "rera_number": 1},
+                ).limit(limit).to_list(length=limit)
+                shaped_out = [r for r in rows if not RERA_NUMBER_SHAPE_RE.match(r["rera_number"])]
+                ops = [
+                    self._rera_verify_update(row, candidates, totals, name_field=name_field)
+                    for row in shaped_out
+                ]
+                await self._bulk(collection, ops)
+
+        log.info("enrich.rera_verify_done", **totals)
+        return totals
+
+    @staticmethod
+    def _rera_verify_update(
+        row: dict[str, Any],
+        candidates: list[dict[str, Any]],
+        totals: dict[str, int],
+        *,
+        name_field: str,
+    ) -> UpdateOne:
+        match = match_hrera(row.get(name_field), row.get("builder_name"), candidates)
+        now = datetime.now(UTC)
+
+        if match is not None and match.score >= HIGH and match.builder_corroborated:
+            totals["mismatch_flagged"] += 1
+            return UpdateOne(
+                {"_id": row["_id"]},
+                {"$set": {
+                    "rera_verify_status": "mismatch_flagged",
+                    "rera_existing_number": row["rera_number"],
+                    "rera_suggested_number": match.candidate["rera_number"],
+                    "rera_suggested_confidence": round(match.score, 3),
+                    "rera_verified_at": now,
+                }},
+            )
+
+        totals["unverifiable"] += 1
+        return UpdateOne(
+            {"_id": row["_id"]},
+            {"$set": {"rera_verify_status": "unverifiable", "rera_verified_at": now}},
+        )
+
+    async def promote_verified_rera_corrections(self, *, limit: int = 50_000) -> int:
+        """Overwrite `rera_number` with `rera_suggested_number` for every
+        `mismatch_flagged` document — the one case in this whole RERA
+        pipeline where an *existing* live value is intentionally replaced,
+        because these already passed the same HIGH-confidence,
+        builder-corroborated bar as every other auto-write here (see
+        `verify_existing_rera_numbers`). `rera_existing_number` (the old
+        value) stays on the document as an audit trail.
+
+        Does not touch `unverifiable` documents — there is no confirmed
+        correct value for those, only a shape that looks wrong.
+        """
+        promoted = 0
+        for collection in (D.PROPERTIES, D.PROJECTS):
+            rows = await self.db[collection].find(
+                {"rera_verify_status": "mismatch_flagged"},
+                projection={"rera_suggested_number": 1},
+            ).limit(limit).to_list(length=limit)
+            if not rows:
+                continue
+
+            suggested_numbers = list({r["rera_suggested_number"] for r in rows})
+            registry_rows = await self.db[D.HRERA_REGISTRY].find(
+                {"rera_number": {"$in": suggested_numbers}}
+            ).to_list(length=None)
+            registry_by_number = {r["rera_number"]: r for r in registry_rows}
+
+            now = datetime.now(UTC)
+            ops = []
+            for row in rows:
+                candidate = registry_by_number.get(row["rera_suggested_number"])
+                if candidate is None:
+                    continue
+                ops.append(UpdateOne(
+                    {"_id": row["_id"]},
+                    {"$set": {
+                        "rera_number": candidate["rera_number"],
+                        "rera_certificate_number": candidate.get("certificate_number"),
+                        "rera_registered_with": candidate.get("registered_with"),
+                        "rera_valid_upto": candidate.get("registration_upto"),
+                        "rera_certificate_url": candidate.get("certificate_url"),
+                        "rera_verify_status": "corrected",
+                        "rera_corrected_at": now,
+                    }},
+                ))
+            await self._bulk(collection, ops)
+            promoted += len(ops)
+
+        log.info("enrich.rera_corrections_promoted", count=promoted)
+        return promoted
 
     # ==================================================================
     # Tier 3 — LLM over Reddit
@@ -477,6 +727,8 @@ class EnrichmentPipeline:
     async def run_all(self, *, llm_limit: int | None = None) -> EnrichmentReport:
         await self.score_builders()
         await self.score_properties()
+        await self.attach_rera_numbers()
+        await self.verify_existing_rera_numbers()
         await self.enrich_reddit(limit=llm_limit)
         await self.enrich_properties_llm(limit=llm_limit)
         # Builder trust depends on Reddit sentiment, so a second pass lets the
