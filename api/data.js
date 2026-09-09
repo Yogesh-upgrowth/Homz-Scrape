@@ -18,6 +18,22 @@ module.exports = function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  // No Cache-Control was ever set here — every request (including every one
+  // of homzrealtor-main's ISR regenerations, previously every 30 minutes
+  // across ~35,000 pages) was a full, uncached function execution: reading
+  // and JSON-parsing a multi-MB feed file from scratch, every single time.
+  // Vercel paused both this project and homzrealtor-main on 2026-09-09 from
+  // that combined load. The underlying file only changes when `homz export
+  // feed` re-runs and this gets redeployed (each deployment is immutable),
+  // so it's safe to let Vercel's CDN serve cached responses for a week
+  // between deploys — matching homzrealtor-main's own revalidate, which was
+  // widened the same day for the same reason. stale-while-revalidate gives
+  // a one-day grace window to keep serving the old cached response (instead
+  // of a cache miss hitting this function) while a fresh one is fetched.
+  res.setHeader(
+    "Cache-Control",
+    "public, max-age=604800, s-maxage=604800, stale-while-revalidate=86400"
+  );
 
   if (req.method === "OPTIONS") {
     return res.status(200).end();
