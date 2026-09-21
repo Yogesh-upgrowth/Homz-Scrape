@@ -14,8 +14,20 @@
 const fs = require("fs");
 const path = require("path");
 
+// Not the public widget API -- that's src/homz/search/api.py, which already
+// restricts origins correctly via HOMZ_API_CORS_ORIGINS (see web/README.md's
+// CORS section). This endpoint exists only for homzrealtor-main's own
+// server-side catalogue fetch (lib/scraping/homzbackend.ts, no "use client"
+// anywhere near it -- confirmed nothing in that repo calls this from a
+// browser). A server-to-server fetch never sends an Origin header and is
+// never subject to CORS in the first place, so "*" here bought homzrealtor-main
+// nothing and only gave every other website's browser JS a standing invite to
+// pull this feed directly -- exactly the kind of open scrape target that lets
+// a copy of this data outrank the real site. Restricted to the one real
+// consumer; add another line here (not "*") if a second legitimate origin
+// ever needs it.
 module.exports = function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", "https://www.homzrealtor.com");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   // No Cache-Control was ever set here — every request (including every one
