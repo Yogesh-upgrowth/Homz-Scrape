@@ -14,6 +14,8 @@ from homz.common.enums import City, ListingType, PossessionStatus, PropertyType,
 from homz.common.schema import Image, Landmark, Location, PropertyRecord
 from homz.services import listings_feed
 
+BLOB = "https://gnunxcv3vxg0q9wy.public.blob.vercel-storage.com/listings/"
+
 
 def make_property(**overrides) -> PropertyRecord:
     data = {
@@ -37,9 +39,12 @@ def make_property(**overrides) -> PropertyRecord:
         "rera_number": "GGM/1001/2020/1",
         "amenities": ["Swimming Pool", "CCTV / Video Surveillance", "Power Backup"],
         "specifications": {"Flooring": "Vitrified Tiles"},
+        # See tests/test_feed.py: `blob_url` is served, `url` classifies.
         "images": [
-            Image(url="https://img.staticmb.com/x/gallery1.jpg"),
-            Image(url="https://img.staticmb.com/x/apartment-interior-1.jpg"),
+            Image(url="https://img.staticmb.com/x/gallery1.jpg",
+                  blob_url=BLOB + "dd/44/" + "d" * 64 + ".webp"),
+            Image(url="https://img.staticmb.com/x/apartment-interior-1.jpg",
+                  blob_url=BLOB + "ee/55/" + "e" * 64 + ".webp"),
         ],
         "landmarks": [Landmark(category="school", name="DPS", raw_distance="1.2 KM")],
         "description": "Spacious flat.\n\nPark facing.",
@@ -139,11 +144,10 @@ class TestFieldMapping:
         assert "Power Backup" in by_name["Convenience"]
 
     def test_images_split_into_gallery_and_interior(self) -> None:
+        """The split classifies on the portal URL but serves our own copy."""
         record = listings_feed.to_listing_feed_record(make_property())
-        assert record["images"] == ["https://img.staticmb.com/x/gallery1.jpg"]
-        assert record["interiorImages"] == [
-            "https://img.staticmb.com/x/apartment-interior-1.jpg"
-        ]
+        assert record["images"] == [BLOB + "dd/44/" + "d" * 64 + ".webp"]
+        assert record["interiorImages"] == [BLOB + "ee/55/" + "e" * 64 + ".webp"]
 
     def test_description_becomes_paragraph_list(self) -> None:
         assert listings_feed.to_listing_feed_record(make_property())["aboutProject"] == [
@@ -220,3 +224,55 @@ class TestWarehouseReadback:
 
     def test_undecodable_document_is_skipped_not_raised(self) -> None:
         assert listings_feed.record_from_doc({"_id": "x", "title": "no source or url"}) is None
+
+
+class TestUnprocessedImagery:
+    """Mirror of `tests/test_feed.py`: listings still on portal imagery show
+    the placeholder and sort to the back of their segment."""
+
+    PLACEHOLDER = "listings/3d/29/" + "3" * 64 + ".webp"
+
+    def _with_placeholder(self, monkeypatch) -> str:
+        from homz.images.blobstore import url_for
+        from homz.settings import settings
+
+        monkeypatch.setattr(settings, "placeholder_path", self.PLACEHOLDER)
+        return url_for(self.PLACEHOLDER)
+
+    def test_placeholder_replaces_portal_watermarked_images(self, monkeypatch) -> None:
+        expected = self._with_placeholder(monkeypatch)
+        record = listings_feed.to_listing_feed_record(make_property(images=[
+            Image(url="https://img.staticmb.com/x/gallery1.jpg"),
+        ]))
+        assert record["images"] == [expected]
+        assert record["interiorImages"] == []
+
+    def test_partition_sorts_placeholder_listings_last(self) -> None:
+        processed = make_property(source_id="1", title="Processed")
+        pending = make_property(source_id="2", title="Pending", images=[
+            Image(url="https://img.staticmb.com/x/gallery1.jpg"),
+        ])
+        buckets, _ = listings_feed.partition([pending, processed], publishable_only=False)
+        titles = [r.title for r in buckets["ggnSaleProperties"]]
+        assert titles == ["Processed", "Pending"]
+
+
+class TestPublishedCities:
+    """Mirror of `tests/test_feed.py`: only cities with processed imagery
+    are served, but every segment key still exists."""
+
+    def _noida(self):
+        return make_property(location=Location(
+            locality="Sector 62", sector="Sector 62", city=City.NOIDA,
+            city_raw="Sector 62, Noida"))
+
+    def test_unpublished_city_listings_are_withheld(self) -> None:
+        buckets, withheld = listings_feed.partition([self._noida()], publishable_only=False)
+        assert buckets["noidaSaleProperties"] == []
+        assert withheld == 1
+        assert "noidaSaleProperties" in buckets
+
+    def test_gurgaon_is_unaffected(self) -> None:
+        buckets, withheld = listings_feed.partition([make_property()], publishable_only=False)
+        assert len(buckets["ggnSaleProperties"]) == 1
+        assert withheld == 0

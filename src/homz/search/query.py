@@ -65,10 +65,12 @@ RESULT_PROJECTION: dict[str, Any] = {
     "investment_score": 1, "risk_score": 1, "location_score": 1,
     "builder_trust_score": 1, "ai_summary": 1,
     "listed_at": 1, "first_seen_at": 1, "last_seen_at": 1, "duplicate_count": 1,
+    # Prefer our own processed copy; fall back to the portal's original for
+    # anything the image backfill has not reached yet.
     "primary_image": {
         "$let": {
             "vars": {"first": {"$arrayElemAt": ["$images", 0]}},
-            "in": "$$first.url",
+            "in": {"$ifNull": ["$$first.blob_url", "$$first.url"]},
         }
     },
 }

@@ -837,6 +837,13 @@ def export_feed(
             table.add_row(segment, str(len(records)), str(path))
         return total, table
 
+    published = feed_service.published_cities()
+    if published is not None:
+        console.print(
+            f"[dim]Publishing {', '.join(sorted(published))} only "
+            f"(HOMZ_FEED_CITIES) — other cities export as empty segments.[/dim]"
+        )
+
     project_total, project_table = _write_segments(
         project_buckets, feed_service.build_response, "projects", full=True
     )
@@ -844,7 +851,8 @@ def export_feed(
     if project_withheld:
         console.print(
             f"[dim]Withheld {project_withheld} stub project(s) with no price, configurations "
-            f"or amenities — they stay in the warehouse and publish once details appear.[/dim]"
+            f"or amenities, or outside the published cities — they stay in the warehouse "
+            f"and publish once details appear.[/dim]"
         )
 
     listing_total, listing_table = _write_segments(
@@ -854,7 +862,8 @@ def export_feed(
     if listing_withheld:
         console.print(
             f"[dim]Withheld {listing_withheld} listing(s) with no price, configuration "
-            f"or amenities, or an unrecognized listing type.[/dim]"
+            f"or amenities, an unrecognized listing type, or outside the published "
+            f"cities.[/dim]"
         )
 
     if project_total == 0 and listing_total == 0:

@@ -19,6 +19,8 @@ from homz.common.schema import (
 )
 from homz.services import feed
 
+BLOB = "https://gnunxcv3vxg0q9wy.public.blob.vercel-storage.com/listings/"
+
 
 def make_project(**overrides) -> ProjectRecord:
     data = {
@@ -46,10 +48,16 @@ def make_project(**overrides) -> ProjectRecord:
         ],
         "amenities": ["Swimming Pool", "CCTV / Video Surveillance", "Power Backup", "Kids' Pool"],
         "specifications": {"Master Bedroom-Walls": "Oil Bound Distemper"},
+        # `blob_url` is our own processed copy and is what the feed serves;
+        # `url` is the portal original, kept for provenance and still what the
+        # gallery/interior/master-plan split classifies on.
         "images": [
-            Image(url="https://static.squareyards.com/x/project-large-image1.jpg"),
-            Image(url="https://static.squareyards.com/x/apartment-interior-1.jpg"),
-            Image(url="https://static.squareyards.com/x/master-plan.jpg"),
+            Image(url="https://static.squareyards.com/x/project-large-image1.jpg",
+                  blob_url=BLOB + "aa/11/" + "a" * 64 + ".webp"),
+            Image(url="https://static.squareyards.com/x/apartment-interior-1.jpg",
+                  blob_url=BLOB + "bb/22/" + "b" * 64 + ".webp"),
+            Image(url="https://static.squareyards.com/x/master-plan.jpg",
+                  blob_url=BLOB + "cc/33/" + "c" * 64 + ".webp"),
         ],
         "landmarks": [Landmark(category="school", name="DPS", raw_distance="2.49 KM")],
         "construction_updates": ["Tower A slab cast"],
@@ -115,12 +123,11 @@ class TestFieldMapping:
         assert "Power Backup" in by_name["Convenience"]
 
     def test_images_split_into_gallery_interior_and_master_plan(self) -> None:
+        """The split classifies on the portal URL but serves our own copy."""
         record = feed.to_feed_record(make_project())
-        assert record["images"] == ["https://static.squareyards.com/x/project-large-image1.jpg"]
-        assert record["interiorImages"] == [
-            "https://static.squareyards.com/x/apartment-interior-1.jpg"
-        ]
-        assert record["masterPlan"] == {"image": "https://static.squareyards.com/x/master-plan.jpg"}
+        assert record["images"] == [BLOB + "aa/11/" + "a" * 64 + ".webp"]
+        assert record["interiorImages"] == [BLOB + "bb/22/" + "b" * 64 + ".webp"]
+        assert record["masterPlan"] == {"image": BLOB + "cc/33/" + "c" * 64 + ".webp"}
 
     def test_description_becomes_paragraph_list(self) -> None:
         assert feed.to_feed_record(make_project())["aboutProject"] == ["Para one.", "Para two."]
@@ -221,3 +228,119 @@ class TestWarehouseReadback:
 
     def test_undecodable_document_is_skipped_not_raised(self) -> None:
         assert feed.record_from_doc({"_id": "x", "name": "no source or url"}) is None
+
+
+class TestUnprocessedImagery:
+    """Listings whose photos we have not processed yet.
+
+    Their `images[].url` still points at the portal, and those files have the
+    portal's watermark burnt into the pixels — serving one would put a
+    competitor's brand on a HomzRealtor page. So they are dropped, the
+    "images coming soon" placeholder stands in, and the listing sorts to the
+    back of its segment.
+    """
+
+    PLACEHOLDER = "listings/3d/29/" + "3" * 64 + ".webp"
+
+    def _with_placeholder(self, monkeypatch) -> str:
+        """Configure the placeholder and return the URL the feed should emit."""
+        from homz.images.blobstore import url_for
+        from homz.settings import settings
+
+        monkeypatch.setattr(settings, "placeholder_path", self.PLACEHOLDER)
+        return url_for(self.PLACEHOLDER)
+
+    def test_portal_only_images_are_never_served(self, monkeypatch) -> None:
+        from homz.settings import settings
+
+        monkeypatch.setattr(settings, "placeholder_path", "")
+        record = feed.to_feed_record(make_project(images=[
+            Image(url="https://static.squareyards.com/x/project-large-image1.jpg"),
+        ]))
+        assert record["images"] == []
+
+    def test_placeholder_stands_in_for_the_gallery(self, monkeypatch) -> None:
+        expected = self._with_placeholder(monkeypatch)
+        record = feed.to_feed_record(make_project(images=[
+            Image(url="https://static.squareyards.com/x/project-large-image1.jpg"),
+        ]))
+        assert record["images"] == [expected]
+
+    def test_partially_processed_listing_shows_only_its_own(self, monkeypatch) -> None:
+        self._with_placeholder(monkeypatch)
+        own = BLOB + "aa/11/" + "a" * 64 + ".webp"
+        record = feed.to_feed_record(make_project(images=[
+            Image(url="https://static.squareyards.com/x/one.jpg"),
+            Image(url="https://static.squareyards.com/x/two.jpg", blob_url=own),
+        ]))
+        assert record["images"] == [own]
+
+    def test_has_own_images_tracks_blob_url_not_url(self) -> None:
+        assert feed.has_own_images(make_project())
+        assert not feed.has_own_images(make_project(images=[
+            Image(url="https://static.squareyards.com/x/one.jpg"),
+        ]))
+        assert not feed.has_own_images(make_project(images=[]))
+
+    def test_a_processed_master_plan_alone_is_not_a_gallery(self) -> None:
+        """It renders the placeholder, so it must sort with the placeholders."""
+        master_only = make_project(images=[
+            Image(url="https://static.squareyards.com/x/master-plan.jpg",
+                  blob_url=BLOB + "cc/33/" + "c" * 64 + ".webp"),
+        ])
+        assert not feed.has_own_images(master_only)
+
+    def test_partition_sorts_placeholder_listings_last(self) -> None:
+        processed = make_project(source_id="1", name="Processed")
+        pending = make_project(source_id="2", name="Pending", images=[
+            Image(url="https://static.squareyards.com/x/one.jpg"),
+        ])
+        buckets, _ = feed.partition([pending, processed], publishable_only=False)
+        names = [r.name for r in buckets["ggnResidentialProjects"]]
+        assert names == ["Processed", "Pending"]
+
+    def test_partition_ordering_is_stable_within_each_group(self) -> None:
+        # Two processed projects keep the order they arrived in, so the sort
+        # only moves placeholder listings and does not reshuffle the rest.
+        first = make_project(source_id="1", name="First")
+        second = make_project(source_id="2", name="Second")
+        buckets, _ = feed.partition([first, second], publishable_only=False)
+        assert [r.name for r in buckets["ggnResidentialProjects"]] == ["First", "Second"]
+
+
+class TestPublishedCities:
+    """Only cities with processed imagery are served.
+
+    The rest would be page after page of "images coming soon", which reads as
+    a broken catalogue rather than a thin one. Segment keys still exist, since
+    the front end requests every city and a 404 is worse than an empty list.
+    """
+
+    def _delhi(self, **kw):
+        return make_project(
+            location=Location(locality="Dwarka", sector="Sector 19", city=City.DELHI,
+                              city_raw="Dwarka, Delhi"),
+            **kw,
+        )
+
+    def test_unpublished_city_records_are_withheld(self) -> None:
+        buckets, withheld = feed.partition([self._delhi()], publishable_only=False)
+        assert buckets["delhiResidentialProjects"] == []
+        assert withheld == 1
+
+    def test_the_segment_key_still_exists(self) -> None:
+        buckets, _ = feed.partition([self._delhi()], publishable_only=False)
+        assert "delhiResidentialProjects" in buckets
+
+    def test_gurgaon_is_unaffected(self) -> None:
+        buckets, withheld = feed.partition([make_project()], publishable_only=False)
+        assert len(buckets["ggnResidentialProjects"]) == 1
+        assert withheld == 0
+
+    def test_an_empty_setting_publishes_every_city(self, monkeypatch) -> None:
+        from homz.settings import settings
+
+        monkeypatch.setattr(settings, "feed_cities", [])
+        buckets, withheld = feed.partition([self._delhi()], publishable_only=False)
+        assert len(buckets["delhiResidentialProjects"]) == 1
+        assert withheld == 0

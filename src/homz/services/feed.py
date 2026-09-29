@@ -221,19 +221,81 @@ def _landmarks(record: ProjectRecord) -> dict[str, list[dict[str, str]]]:
     return dict(grouped)
 
 
-def _split_images(record: ProjectRecord) -> tuple[list[str], list[str], dict[str, str]]:
+def _public_url(img) -> str | None:
+    """The URL the site should serve for an image, or None to omit it.
+
+    `blob_url` is our own processed copy — portal watermark removed,
+    homzrealtor mark applied, served from our CDN.
+
+    There is deliberately no fallback to `img.url`. The portal's original
+    still has the portal's watermark burnt into the pixels, so serving it
+    puts a competitor's brand on the page; the caller substitutes the
+    "images coming soon" placeholder instead.
+    """
+    return getattr(img, "blob_url", None) or None
+
+
+def published_cities() -> set[str] | None:
+    """Front-end city keys the feed publishes, or None for all of them.
+
+    Segment *keys* always exist regardless — the front end requests every
+    city and a missing file is a 404, which is worse than an empty list.
+    Only the records are withheld.
+    """
+    from homz.settings import settings
+
+    return set(settings.feed_cities) or None
+
+
+def has_own_images(record) -> bool:
+    """Will this listing render a real gallery rather than the placeholder?
+
+    Deliberately not just "has any blob_url": a record whose one processed
+    image is a master plan still shows the placeholder in the gallery, and
+    sorting it in front of records that do have photos would scatter
+    placeholders through the early pages.
+    """
+    gallery, interior, _ = _split_images(record, placeholder=False)
+    return bool(gallery or interior)
+
+
+def _placeholder_gallery() -> list[str]:
+    """The gallery shown for a listing with no processed images yet."""
+    from homz.settings import settings
+
+    if not settings.placeholder_path:
+        return []
+    from homz.images.blobstore import url_for
+
+    return [url_for(settings.placeholder_path)]
+
+
+def _split_images(
+    record: ProjectRecord, *, placeholder: bool = True
+) -> tuple[list[str], list[str], dict[str, str]]:
     gallery, interior, master = [], [], {}
     for img in record.images:
-        url = img.url
-        if _MASTER_PLAN_RE.search(url) and not master:
+        url = _public_url(img)
+        if url is None:
+            continue
+        # Classify on the *portal* URL, never on the one being served: our
+        # copies are content-addressed (`.../ab/cd/<sha256>.webp`), so their
+        # paths carry no "master-plan" or "interior" to match on, and every
+        # processed image would otherwise land in the gallery.
+        kind = getattr(img, "url", "") or url
+        if _MASTER_PLAN_RE.search(kind) and not master:
             master = {"image": url}
-        elif _INTERIOR_RE.search(url):
+        elif _INTERIOR_RE.search(kind):
             interior.append(url)
         else:
             gallery.append(url)
     # A project with only interior shots should still render a gallery.
     if not gallery and interior:
         gallery, interior = interior, []
+    # Nothing of ours to show: the placeholder, never the portal's watermarked
+    # original.
+    if not gallery and placeholder:
+        gallery = _placeholder_gallery()
     return gallery, interior, master
 
 
@@ -345,16 +407,24 @@ def partition(
     report what was dropped rather than silently shrinking the feed.
     """
     out: dict[str, list[ProjectRecord]] = {s: [] for s in all_segments()}
+    cities = published_cities()
     withheld = 0
     for record in records:
         key = CITY_KEYS.get(record.location.city)
         if key is None:
             continue  # ghaziabad/sohna have no front-end segment
+        if cities is not None and key not in cities:
+            withheld += 1
+            continue
         if publishable_only and not is_publishable(record):
             withheld += 1
             continue
         category = "Commercial" if _is_commercial(record) else "Residential"
         out[segment_name(key, category)].append(record)
+    # Same ordering as the listings feed: projects with our own imagery
+    # first, placeholder ones last.
+    for bucket in out.values():
+        bucket.sort(key=lambda r: not has_own_images(r))
     return out, withheld
 
 

@@ -32,6 +32,8 @@ from homz.services.feed import (
     _landmarks,
     _location,
     _split_images,
+    has_own_images,
+    published_cities,
 )
 
 CATEGORY_LISTING_TYPES: dict[str, frozenset[ListingType]] = {
@@ -179,11 +181,15 @@ def partition(
     `feed.py`'s `partition()`.
     """
     out: dict[str, list[PropertyRecord]] = {s: [] for s in all_segments()}
+    cities = published_cities()
     withheld = 0
     for record in records:
         key = CITY_KEYS.get(record.location.city)
         if key is None:
             continue  # ghaziabad/sohna have no front-end segment
+        if cities is not None and key not in cities:
+            withheld += 1
+            continue
         category = category_of(record.listing_type)
         if category is None:
             withheld += 1
@@ -192,6 +198,13 @@ def partition(
             withheld += 1
             continue
         out[segment_name(key, category)].append(record)
+
+    # Listings whose own images exist go first, so the ones still showing the
+    # "images coming soon" placeholder land on the final pages rather than
+    # being scattered through the catalogue. Stable within each group, so the
+    # existing ordering is otherwise preserved.
+    for bucket in out.values():
+        bucket.sort(key=lambda r: not has_own_images(r))
     return out, withheld
 
 

@@ -1,0 +1,209 @@
+{
+  "900x506": {
+    "x": 191,
+    "y": 185,
+    "w": 442,
+    "h": 221,
+    "prominence": 5.02,
+    "n": 190,
+    "placement": "centre"
+  },
+  "337x600": {
+    "x": 33,
+    "y": 146,
+    "w": 270,
+    "h": 244,
+    "prominence": 5.02,
+    "n": 190,
+    "placement": "centre"
+  },
+  "800x600": {
+    "x": 163,
+    "y": 218,
+    "w": 465,
+    "h": 227,
+    "prominence": 5.46,
+    "n": 190,
+    "placement": "centre"
+  },
+  "450x600": {
+    "x": 49,
+    "y": 180,
+    "w": 352,
+    "h": 183,
+    "prominence": 5.4,
+    "n": 190,
+    "placement": "centre"
+  },
+  "338x600": {
+    "x": 33,
+    "y": 191,
+    "w": 225,
+    "h": 155,
+    "prominence": 4.48,
+    "n": 121,
+    "placement": "centre"
+  },
+  "451x600": {
+    "x": 49,
+    "y": 144,
+    "w": 352,
+    "h": 235,
+    "prominence": 4.54,
+    "n": 111,
+    "placement": "centre"
+  },
+  "900x599": {
+    "x": 167,
+    "y": 164,
+    "w": 634,
+    "h": 269,
+    "prominence": 4.18,
+    "n": 102,
+    "placement": "centre"
+  },
+  "900x600": {
+    "x": 231,
+    "y": 225,
+    "w": 527,
+    "h": 142,
+    "prominence": 4.02,
+    "n": 98,
+    "placement": "centre"
+  },
+  "269x600": {
+    "x": 23,
+    "y": 245,
+    "w": 222,
+    "h": 119,
+    "prominence": 4.45,
+    "n": 89,
+    "placement": "centre"
+  },
+  "900x505": {
+    "x": 199,
+    "y": 117,
+    "w": 503,
+    "h": 244,
+    "prominence": 4.2,
+    "n": 85,
+    "placement": "centre"
+  },
+  "600x600": {
+    "x": 70,
+    "y": 217,
+    "w": 460,
+    "h": 193,
+    "prominence": 3.88,
+    "n": 77,
+    "placement": "centre"
+  },
+  "799x600": {
+    "x": 97,
+    "y": 208,
+    "w": 604,
+    "h": 238,
+    "prominence": 3.97,
+    "n": 76,
+    "placement": "centre"
+  },
+  "340x600": {
+    "x": 33,
+    "y": 142,
+    "w": 273,
+    "h": 224,
+    "prominence": 3.92,
+    "n": 70,
+    "placement": "centre"
+  },
+  "270x600": {
+    "x": 23,
+    "y": 169,
+    "w": 223,
+    "h": 198,
+    "prominence": 3.84,
+    "n": 62,
+    "placement": "centre"
+  },
+  "276x600": {
+    "x": 24,
+    "y": 228,
+    "w": 227,
+    "h": 151,
+    "prominence": 3.87,
+    "n": 58,
+    "placement": "centre"
+  },
+  "796x600": {
+    "x": 238,
+    "y": 142,
+    "w": 307,
+    "h": 214,
+    "prominence": 3.72,
+    "n": 46,
+    "placement": "centre"
+  },
+  "900x507": {
+    "x": 125,
+    "y": 118,
+    "w": 470,
+    "h": 244,
+    "prominence": 3.45,
+    "n": 42,
+    "placement": "centre"
+  },
+  "797x600": {
+    "x": 314,
+    "y": 142,
+    "w": 409,
+    "h": 292,
+    "prominence": 3.34,
+    "n": 39,
+    "placement": "centre"
+  },
+  "801x600": {
+    "x": 352,
+    "y": 198,
+    "w": 370,
+    "h": 191,
+    "prominence": 2.98,
+    "n": 34,
+    "placement": "centre"
+  },
+  "336x600": {
+    "x": 71,
+    "y": 300,
+    "w": 227,
+    "h": 100,
+    "prominence": 3.8,
+    "n": 33,
+    "placement": "centre"
+  },
+  "900x540": {
+    "x": 172,
+    "y": 151,
+    "w": 541,
+    "h": 161,
+    "prominence": 3.21,
+    "n": 30,
+    "placement": "centre"
+  },
+  "268x600": {
+    "x": 23,
+    "y": 182,
+    "w": 221,
+    "h": 43,
+    "prominence": 3.98,
+    "n": 29,
+    "placement": "centre"
+  },
+  "900x504": {
+    "x": 184,
+    "y": 117,
+    "w": 508,
+    "h": 202,
+    "prominence": 3.22,
+    "n": 26,
+    "placement": "centre"
+  }
+}

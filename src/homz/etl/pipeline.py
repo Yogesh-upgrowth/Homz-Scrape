@@ -33,6 +33,7 @@ from homz.db.mongo import get_database
 from homz.db.repository import Repository
 from homz.logging_setup import get_logger
 from homz.scrapers import PROPERTY_SOURCES, get_scraper
+from homz.settings import settings
 
 log = get_logger(__name__)
 
@@ -45,6 +46,11 @@ class LoadResult:
     updated: int = 0
     failed: int = 0
     duplicates_linked: int = 0
+    #: Photo ingestion, reported alongside the record counts so a scheduled
+    #: run shows at a glance whether images actually came down.
+    images_downloaded: int = 0
+    images_stored: int = 0
+    images_dewatermarked: int = 0
     by_type: dict[str, int] = field(default_factory=dict)
     errors: list[str] = field(default_factory=list)
 
@@ -57,6 +63,9 @@ class LoadResult:
             "updated": self.updated,
             "failed": self.failed,
             "duplicates_linked": self.duplicates_linked,
+            "images_downloaded": self.images_downloaded,
+            "images_stored": self.images_stored,
+            "images_dewatermarked": self.images_dewatermarked,
             "by_type": self.by_type,
             "errors": self.errors[:10],
         }
@@ -96,6 +105,15 @@ async def load_records(records: list[ScrapedRecord]) -> LoadResult:
     if not records:
         return result
 
+    # Download, de-watermark, brand and store photos *before* the upsert, so
+    # the stored document carries the local keys from the moment it lands.
+    # This sits in `load_records` rather than in any one caller because every
+    # scrape path funnels through here — the scheduler, `full_crawl`,
+    # `apartment_backfill`, the on-demand service and the re-scrape runner
+    # alike. Wiring it into the callers instead would mean new images picked
+    # up by a scheduled run silently kept their portal watermark.
+    await _ingest_record_images(records, result)
+
     db = get_database()
     property_ids: dict[str, str] = {}
 
@@ -124,6 +142,59 @@ async def load_records(records: list[ScrapedRecord]) -> LoadResult:
 
     log.info("etl.loaded", **result.as_dict())
     return result
+
+
+async def _ingest_record_images(records: list[ScrapedRecord], result: LoadResult) -> None:
+    """Fetch and process every record's photos, in place.
+
+    Never fatal. An image CDN being slow or a photo 404ing must not cost the
+    listing's price, availability and description — those are the point of
+    the scrape, and the images can always be filled in by a later pass since
+    ingestion is idempotent and keyed on content.
+    """
+    if not settings.store_images:
+        return
+
+    from homz.images import ImageStore, ingest_images
+
+    store = ImageStore()
+    totals = None
+    for record in records:
+        images = getattr(record, "images", None)
+        if not images:
+            continue
+        source = getattr(record, "source", None)
+        if not source:
+            continue
+        try:
+            record.images, stats = await ingest_images(
+                list(images),
+                source=str(source),
+                store=store,
+                source_id=getattr(record, "source_id", None),
+            )
+        except Exception as exc:  # noqa: BLE001 - images are best-effort
+            log.warning(
+                "etl.image_ingest_failed",
+                key=getattr(record, "natural_key", None),
+                error=f"{type(exc).__name__}: {str(exc)[:200]}",
+            )
+            continue
+        totals = stats if totals is None else (totals.merge(stats) or totals)
+
+    if totals is not None and totals.considered:
+        result.images_downloaded = totals.downloaded
+        result.images_stored = totals.stored_new
+        result.images_dewatermarked = totals.dewatermarked
+        log.info(
+            "etl.images_ingested",
+            considered=totals.considered,
+            downloaded=totals.downloaded,
+            stored_new=totals.stored_new,
+            dewatermarked=totals.dewatermarked,
+            junk=totals.skipped_junk,
+            failed=totals.failed,
+        )
 
 
 async def _load_one(

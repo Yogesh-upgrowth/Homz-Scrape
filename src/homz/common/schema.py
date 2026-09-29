@@ -88,6 +88,33 @@ class Image(HomzModel):
     width: int | None = None
     height: int | None = None
 
+    # -- local copy ---------------------------------------------------------
+    # Populated by `homz.images.ingest` once the file has actually been
+    # downloaded. `url` stays the portal's URL so re-ingest is idempotent and
+    # the provenance of every file remains traceable.
+    #: Content-addressed path relative to `settings.image_dir`, under `_pool/`.
+    #: None until downloaded.
+    storage_key: str | None = None
+    #: Per-property mirror of the same file, `<source>/<source_id>/NN_<sha8>.webp`,
+    #: hard-linked to the pooled copy so shared photos cost one copy on disk.
+    property_key: str | None = None
+    #: Public URL of the processed image on Vercel Blob, once uploaded. This
+    #: is what the site should serve: `url` remains the portal's original, so
+    #: provenance survives and a re-ingest stays idempotent.
+    blob_url: str | None = None
+    #: SHA-256 of the *stored* bytes. Two listings sharing a photo (SquareYards
+    #: reuses project shots across every unit in a project — 450k references
+    #: collapse to 128k files) converge on one key.
+    sha256: str | None = None
+    bytes: int | None = None
+    #: True once the portal watermark has been reconstructed away; False when
+    #: a mark was found but could not be removed confidently; None when the
+    #: source carries no watermark or the image was never processed.
+    watermark_removed: bool | None = None
+    #: Why an image has no `storage_key` — "http_404", "too_small", etc. Lets
+    #: a re-run skip permanent failures instead of re-fetching them forever.
+    fetch_error: str | None = None
+
 
 class UnitConfiguration(HomzModel):
     """One row of a project's price/config table."""

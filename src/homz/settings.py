@@ -78,6 +78,51 @@ class Settings(BaseSettings):
     store_raw_html: bool = True
     raw_html_retention_days: int = 14
 
+    # ---- images -----------------------------------------------------------
+    #: Content-addressed store for downloaded listing photos. Same "key is a
+    #: path relative to the root" contract as `raw_html_dir`, so the backend
+    #: can be swapped for S3/R2 later without touching the schema.
+    image_dir: Path = Path("./data/images")
+    store_images: bool = True
+    #: Re-encode on ingest. Portal originals run from 26 KB thumbnails to 2.8 MB
+    #: full-resolution phone uploads (SquareYards `reviewrating` photos are
+    #: 4032x3024); stored verbatim the corpus is ~90 GB, and normalizing to
+    #: WebP at this bound brings it to single-digit GB with no visible loss.
+    image_max_edge: int = 1920
+    image_webp_quality: int = 82
+    #: Skip anything too small to be a real photo (tracking pixels, icons).
+    image_min_edge: int = 200
+    #: Per-image download cap; above this the fetch is abandoned rather than
+    #: streaming an unbounded body into memory.
+    image_max_bytes: int = 25 * 1024 * 1024
+    image_concurrency: int = 8
+    #: Strip the portal watermark on ingest where a calibration exists.
+    image_dewatermark: bool = True
+    #: Vercel Blob write token. When set, processed images go to Blob and
+    #: MongoDB stores their URLs instead of the bytes — 505,090 images is
+    #: ~40 GB, which no free Atlas tier can hold but Blob costs cents for.
+    blob_read_write_token: str = ""
+    #: Path prefix inside the Blob store.
+    blob_prefix: str = "listings"
+    #: Blob path of the "images coming soon" placeholder. Listings whose own
+    #: photos are not processed yet show this instead of their portal images,
+    #: which still carry the portal's watermark — serving those would put a
+    #: competitor's brand on the site. Built by scripts/make_placeholder.py.
+    placeholder_path: str = ""
+    #: Front-end city keys the feed publishes; everything else is withheld.
+    #: Only Gurgaon has processed imagery — the other cities' listings would
+    #: be nothing but "images coming soon" cards, which reads as a broken
+    #: page rather than a catalogue. Add a key back here once its images are
+    #: ingested. Empty means publish every city.
+    feed_cities: CsvList = Field(default_factory=lambda: ["ggn"])
+    #: Composite the homzrealtor mark onto stored photos (after resize).
+    image_brand: bool = True
+    #: Below this short edge a badge would dominate the frame — skip it.
+    image_brand_min_edge: int = 240
+    #: Per-property directory tree alongside the content-addressed pool.
+    #: Hardlinked, so shared photos cost one copy on disk.
+    image_by_property: bool = True
+
     # ---- proxies ----------------------------------------------------------
     proxies: CsvList = Field(default_factory=list)
     proxy_strategy: str = "round_robin"
@@ -128,7 +173,8 @@ class Settings(BaseSettings):
     #: widget on a CDN and turn this off.
     api_serve_web: bool = True
 
-    @field_validator("proxies", "reddit_subreddits", "api_cors_origins", mode="before")
+    @field_validator("proxies", "reddit_subreddits", "api_cors_origins",
+                     "feed_cities", mode="before")
     @classmethod
     def _split_csv(cls, v: object) -> object:
         """Accept a JSON list or a plain comma-separated env string.

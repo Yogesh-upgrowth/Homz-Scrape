@@ -317,6 +317,7 @@ def extract_images(
     """
     from homz.common.parsing import absolute_url
     from homz.common.schema import Image
+    from homz.images.urls import is_photo
 
     images: list[Image] = []
     seen: set[str] = set()
@@ -340,6 +341,13 @@ def extract_images(
         if not url or _PLACEHOLDER_RE.search(url) or _CHROME_PATH_RE.search(url):
             continue
         if allow_hosts and not any(host in url for host in allow_hosts):
+            continue
+        # Portal furniture that survives the host allow-list: the footer's
+        # Google Play / App Store badges, and the "posted by" agent headshots.
+        # Measured at ~47k references across the live corpus before this
+        # filter existed. `homz.images.urls` owns the patterns and is
+        # deliberately allow-by-default, so an unknown host is still a photo.
+        if not is_photo(url):
             continue
         # No "or 'image' in url.lower()" fallback: that bypass let SVG icons
         # under an /images/ directory through unfiltered — real listing
