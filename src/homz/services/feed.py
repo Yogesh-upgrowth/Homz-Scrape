@@ -67,6 +67,34 @@ _STATUS_LABELS: dict[PossessionStatus, str] = {
 _INTERIOR_RE = re.compile(r"interior|apartment-interior|room|kitchen|bedroom|bathroom", re.I)
 _MASTER_PLAN_RE = re.compile(r"master-?plan|layout|site-?plan", re.I)
 
+# Cover ordering. SquareYards encodes a category in the filename and puts the
+# location map first almost every time, so the portal's own order picks a map
+# as the cover far more often than a building. The front end used to re-rank
+# on these same patterns (view-model.ts `coverRank`), but it now receives our
+# content-addressed URLs — `.../ab/cd/<sha256>.webp` says nothing about what
+# the photo shows — so the ordering has to happen here, where the portal
+# filename is still in hand. Exteriors first, drawings last, original order
+# preserved within each band.
+_COVER_BOOST: tuple[re.Pattern[str], ...] = tuple(re.compile(p, re.I) for p in (
+    r"-tower-view",
+    r"-apartment-exteriors",
+    r"-villa-view",
+    r"-commercial-exteriors",
+    r"-project-large-image",
+    r"-entrance-view",
+    r"-clubhouse-external-image",
+))
+_COVER_DEMOTE = re.compile(
+    r"-location-image|-floor-plans?|-specification|-site-plan|-master-plan-image", re.I)
+
+
+def _cover_rank(portal_url: str) -> int:
+    """Lower sorts nearer the cover slot."""
+    for i, pattern in enumerate(_COVER_BOOST):
+        if pattern.search(portal_url):
+            return i
+    return 100 if _COVER_DEMOTE.search(portal_url) else 50
+
 
 def segment_name(city_key: str, category: str) -> str:
     """("ggn", "Residential") -> "ggnResidentialProjects"."""
@@ -273,7 +301,8 @@ def _placeholder_gallery() -> list[str]:
 def _split_images(
     record: ProjectRecord, *, placeholder: bool = True
 ) -> tuple[list[str], list[str], dict[str, str]]:
-    gallery, interior, master = [], [], {}
+    ranked: list[tuple[int, int, str]] = []
+    interior, master = [], {}
     for img in record.images:
         url = _public_url(img)
         if url is None:
@@ -288,7 +317,10 @@ def _split_images(
         elif _INTERIOR_RE.search(kind):
             interior.append(url)
         else:
-            gallery.append(url)
+            ranked.append((_cover_rank(kind), len(ranked), url))
+    # Stable within a band, so the portal's order survives except where a
+    # pattern actually fires.
+    gallery = [url for _, _, url in sorted(ranked)]
     # A project with only interior shots should still render a gallery.
     if not gallery and interior:
         gallery, interior = interior, []

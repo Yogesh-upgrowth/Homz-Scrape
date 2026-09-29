@@ -344,3 +344,40 @@ class TestPublishedCities:
         buckets, withheld = feed.partition([self._delhi()], publishable_only=False)
         assert len(buckets["delhiResidentialProjects"]) == 1
         assert withheld == 0
+
+
+class TestCoverOrdering:
+    """The gallery arrives cover-first.
+
+    SquareYards puts the location map first almost every time. The front end
+    used to re-rank on the filename, but it now receives content-addressed
+    URLs that say nothing about the photo, so the ordering happens here.
+    """
+
+    def _gallery(self, *names: str) -> list[str]:
+        images = [
+            Image(url=f"https://static.squareyards.com/x/{n}.jpg",
+                  blob_url=f"{BLOB}{n[:2]}/{n[2:4]}/{n}.webp")
+            for n in names
+        ]
+        return feed.to_feed_record(make_project(images=images))["images"]
+
+    def test_a_building_photo_outranks_the_location_map(self) -> None:
+        out = self._gallery("aaproject-location-image1", "bbproject-tower-view1")
+        assert out[0].endswith("bbproject-tower-view1.webp")
+
+    def test_drawings_sink_below_unclassified_photos(self) -> None:
+        out = self._gallery("aaproject-floor-plans2", "bbsome-photo")
+        assert out[0].endswith("bbsome-photo.webp")
+
+    def test_boost_order_is_respected(self) -> None:
+        # -tower-view is listed before -project-large-image, so it wins even
+        # when it arrives second.
+        out = self._gallery("aaproject-large-image1", "bbproject-tower-view1")
+        assert out[0].endswith("bbproject-tower-view1.webp")
+
+    def test_order_is_otherwise_the_portals_own(self) -> None:
+        out = self._gallery("aafirst-photo", "bbsecond-photo", "ccthird-photo")
+        assert [u.split("/")[-1] for u in out] == [
+            "aafirst-photo.webp", "bbsecond-photo.webp", "ccthird-photo.webp",
+        ]
