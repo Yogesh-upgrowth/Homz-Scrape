@@ -149,6 +149,8 @@ _SCALABLE_SNAP_PAD = 16
 _MATCH_THRESHOLD = 0.18
 #: How far from the nominal anchor that wider search looks.
 _SEARCH_PAD = 14
+#: Maximum inversion passes per placement. See the loop in `remove_watermark`.
+_MAX_PASSES = 3
 
 
 @dataclass(frozen=True)
@@ -313,13 +315,22 @@ def is_plan_image(image) -> bool:
     return bright > 0.45 and sat < 45
 
 
-def _placement_applies(placement: str, image) -> bool:
+def _placement_applies(placement: str, image, source: str | None = None) -> bool:
     """Whether this placement's mark can be on this particular frame."""
     if placement == "plan":
         return is_plan_image(image)
     if placement == "centre":
         # A plan carries the plan mark instead; trying the photo mark on it
         # only risks damage where the real mark is elsewhere and larger.
+        #
+        # Only where there *is* a plan mark to carry, though. SquareYards has
+        # one; MagicBricks does not, so this gate was handing those frames to
+        # nobody and leaving the centre mark fully intact -- on exactly the
+        # frames most likely to trip `is_plan_image`, since a bright,
+        # low-saturation photo of an empty white-walled room reads as line art
+        # by that measure, and this catalogue is full of them.
+        if source is not None and "plan" not in _placements(source):
+            return True
         return not is_plan_image(image)
     return True
 
@@ -359,6 +370,61 @@ _CONFIDENT_SCORE = 0.45
 _CONFIDENT_ENERGY = 0.25
 
 
+#: Per-frame gains tried against the calibrated alpha map. The calibration is
+#: an *average* over hundreds of frames, and only a mark rendered to a formula
+#: is the same on every one of them. SquareYards' is (always 20% of width,
+#: dead centre), so its average equals the truth and inversion is exact.
+#: MagicBricks composites a bitmap whose opacity varies frame to frame, so
+#: subtracting the average left a remnant wherever the real mark was stronger
+#: -- measured on 22.3% of stored MagicBricks images against 9.0% for
+#: SquareYards. Solving one scalar per frame closes that gap without
+#: recalibrating anything.
+_GAIN_CANDIDATES = (0.7, 0.85, 1.0, 1.15, 1.3, 1.5, 1.75)
+
+
+def _gain_params(params: dict, g: float) -> dict:
+    """`params` with the mark's opacity scaled by `g`.
+
+    The blend is `observed = (1-a)I + aW`. Scaling this frame's alpha to
+    `g*a` gives `slope = 1 - g*(1-slope)` and `c = g*c`, since the mark's
+    colour W is unchanged -- only how strongly it was laid down. Clamped so a
+    high gain over an already-opaque pixel cannot drive the divisor to zero.
+    """
+    import numpy as np
+
+    if g == 1.0:
+        return params
+    slope = np.maximum(1.0 - g * (1.0 - params["slope"]), 0.05)
+    return {**params, "slope": slope, "c": params["c"] * g}
+
+
+def _fit_gain(image, params, x: int, y: int, shape) -> tuple[dict, float]:
+    """The gain whose inversion leaves the least mark energy behind.
+
+    A one-dimensional search over a handful of candidates, scored by the same
+    `_mark_energy` the verification uses -- so "best" here means exactly what
+    "removed" means everywhere else in this module, rather than a second
+    notion of quality that could disagree with the first.
+    """
+    import numpy as np
+
+    th, tw = params["slope"].shape[:2]
+    patch = image[y : y + th, x : x + tw].astype(np.float32)
+    best, best_e = params, None
+    for g in _GAIN_CANDIDATES:
+        cand = _gain_params(params, g)
+        out = np.clip((patch - cand["c"]) / np.maximum(cand["slope"], 1e-3), 0, 255)
+        # Scored on the patch alone. Cloning the whole frame per candidate
+        # cost 3 MB a go and blew up under the ingest's thread pool, for a
+        # number that only ever depended on these few thousand pixels.
+        e = _patch_energy(out, shape)
+        if e is None:
+            continue
+        if best_e is None or abs(e) < abs(best_e):
+            best, best_e = cand, e
+    return best, (best_e if best_e is not None else 0.0)
+
+
 def _apply(image, params, x: int, y: int, detail: str, *, verify=None,
            finish=True) -> WatermarkResult:
     """Invert the blend over the mark box, then erase whatever survives.
@@ -391,12 +457,18 @@ def _apply(image, params, x: int, y: int, detail: str, *, verify=None,
     import cv2
     import numpy as np
 
-    slope = params["slope"]
-    c = params["c"]
-    th, tw = slope.shape[:2]
+    th, tw = params["slope"].shape[:2]
     if y < 0 or x < 0 or y + th > image.shape[0] or x + tw > image.shape[1]:
         return WatermarkResult(image, False, "anchor outside image bounds")
 
+    # Fit this frame's own opacity before inverting. Needs the mark's shape to
+    # score against, so it only runs on the verified paths -- which is every
+    # path that reaches here with a known location.
+    if verify is not None:
+        params, _ = _fit_gain(image, params, x, y, verify)
+
+    slope = params["slope"]
+    c = params["c"]
     patch = image[y : y + th, x : x + tw].astype(np.float32)
     recovered = (patch - c) / np.maximum(slope, 1e-3)
     out = image.copy()
@@ -449,8 +521,16 @@ def _mark_energy(image, shape, x: int, y: int, tw: int, th: int) -> float | None
 
     if y < 0 or x < 0 or y + th > image.shape[0] or x + tw > image.shape[1]:
         return None
-    patch = image[y : y + th, x : x + tw].mean(axis=2).astype(np.float32)
-    highpass = patch - cv2.GaussianBlur(patch, (0, 0), 7)
+    return _patch_energy(image[y : y + th, x : x + tw], shape)
+
+
+def _patch_energy(patch, shape) -> float | None:
+    """`_mark_energy` for a patch already in hand, with no frame to index."""
+    import cv2
+    import numpy as np
+
+    gray = patch.mean(axis=2).astype(np.float32)
+    highpass = gray - cv2.GaussianBlur(gray, (0, 0), 7)
     s = shape - shape.mean()
     hp = highpass - highpass.mean()
     denom = float(np.sqrt((s * s).sum() * (hp * hp).sum()))
@@ -598,17 +678,27 @@ def remove_watermark(image, source: str, url: str | None = None) -> WatermarkRes
     hits: list[str] = []
     misses: list[str] = []
     for placement in _placements(source):
-        if not _placement_applies(placement, image):
+        if not _placement_applies(placement, image, source):
             continue
         cal = _calibration_for(source, placement)
         if cal is None or not cal.load():
             continue
-        result = _remove_one(current, source, cal)
-        if result.removed:
-            current = result.image
-            hits.append(f"{placement}: {result.detail}")
-        elif result.removed is False:
-            misses.append(f"{placement}: {result.detail}")
+        # Repeat while the mark keeps measurably weakening. `_verify_improved`
+        # only asks that energy *fell*, not that it reached zero, so a partial
+        # subtraction is a legitimate result -- and used to be the final one.
+        # Bounded, because each pass that still finds something is doing real
+        # work and a mark that survives three is not going to yield to a
+        # fourth.
+        for attempt in range(_MAX_PASSES):
+            result = _remove_one(current, source, cal)
+            if result.removed:
+                current = result.image
+                hits.append(f"{placement}: {result.detail}"
+                            + (f" (pass {attempt + 2})" if attempt else ""))
+                continue
+            if result.removed is False and attempt == 0:
+                misses.append(f"{placement}: {result.detail}")
+            break
 
     if hits:
         return WatermarkResult(current, True, "; ".join(hits))

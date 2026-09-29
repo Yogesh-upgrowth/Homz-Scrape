@@ -139,3 +139,108 @@ class TestWatermark:
         blended = (1 - alpha) * original + alpha * 255.0
         recovered = (blended - alpha * 255.0) / np.maximum(1 - alpha, 1e-3)
         assert np.abs(recovered - original).max() < 0.5
+
+
+class TestPerFrameGain:
+    """The calibration is an average; a real frame's mark may be stronger.
+
+    SquareYards renders its mark to a formula, so the stacked average *is*
+    the mark and inversion is exact. MagicBricks composites a bitmap whose
+    opacity varies frame to frame, and subtracting the average left a visible
+    remnant on 22% of stored images. Fitting one scalar per frame closes it.
+    """
+
+    def _params(self, alpha: float = 0.2, w: int = 60, h: int = 20) -> dict:
+        """A calibration whose alpha map has *structure*.
+
+        A uniform rectangle would not do: `_shape_of` normalizes the alpha
+        map into a correlation template, and a constant template correlates
+        with nothing, so every energy reading comes back None. Real marks are
+        strokes on a transparent ground, so the fixture is too.
+        """
+        a = np.zeros((h, w), np.float32)
+        a[4:16, 6:18] = alpha          # two "strokes", like a wordmark
+        a[4:16, 26:50] = alpha
+        a3 = np.repeat(a[:, :, None], 3, axis=2)
+        return {"slope": (1.0 - a3).astype(np.float32),
+                "c": (a3 * 240.0).astype(np.float32), "x": 0, "y": 0}
+
+    def test_gain_scales_alpha_not_the_mark_colour(self) -> None:
+        from homz.images.watermark import _gain_params
+
+        p = self._params(alpha=0.2)
+        doubled = _gain_params(p, 2.0)
+        ink = p["slope"] < 1.0                      # where the mark actually is
+        # alpha 0.2 -> 0.4 over the strokes, so slope 0.8 -> 0.6
+        assert np.allclose(doubled["slope"][ink], 0.6)
+        # clear ground stays clear
+        assert np.allclose(doubled["slope"][~ink], 1.0)
+        # c = alpha * W, so it scales with alpha while W stays put
+        assert np.allclose(doubled["c"], p["c"] * 2.0)
+
+    def test_gain_of_one_is_the_identity(self) -> None:
+        from homz.images.watermark import _gain_params
+
+        p = self._params()
+        assert _gain_params(p, 1.0) is p
+
+    def test_slope_never_reaches_zero(self) -> None:
+        """`(observed - c) / slope` must stay well-conditioned at any gain."""
+        from homz.images.watermark import _gain_params
+
+        p = self._params(alpha=0.95)
+        assert _gain_params(p, 1.75)["slope"].min() >= 0.05
+
+    def test_fit_recovers_a_stronger_than_average_mark(self) -> None:
+        """A frame marked at 1.5x the calibrated alpha is still cleaned up."""
+        from homz.images.watermark import _fit_gain, _patch_energy, _shape_of
+
+        rng = np.random.default_rng(7)
+        scene = rng.integers(40, 200, (20, 60, 3)).astype(np.float32)
+        params = self._params()
+        true_alpha = (1.0 - params["slope"]) * 1.5
+        frame = ((1 - true_alpha) * scene + true_alpha * 240.0)
+
+        shape = _shape_of(params)
+        fitted, _ = _fit_gain(frame, params, 0, 0, shape)
+        inverted = (frame - fitted["c"]) / np.maximum(fitted["slope"], 1e-3)
+        naive = (frame - params["c"]) / np.maximum(params["slope"], 1e-3)
+
+        # The fit should land near the true 1.5x and beat the average.
+        assert abs(_patch_energy(inverted, shape)) <= abs(_patch_energy(naive, shape))
+        assert np.abs(inverted - scene).mean() < np.abs(naive - scene).mean()
+
+
+class TestPlacementGating:
+    """The plan gate must not silently disable a source's only centre mark."""
+
+    def _plan_like(self) -> np.ndarray:
+        # Bright and desaturated: what is_plan_image() keys on, and also what
+        # an empty white-walled room looks like to it.
+        return np.full((600, 800, 3), 240, np.uint8)
+
+    def test_magicbricks_keeps_centre_on_plan_like_frames(self) -> None:
+        """MagicBricks has no plan calibration to hand these off to.
+
+        Rejecting them from the centre placement meant nothing handled them
+        and the mark stayed whole — on exactly the bright, low-saturation
+        frames this catalogue is full of.
+        """
+        from homz.images.watermark import _placement_applies
+
+        assert _placement_applies("centre", self._plan_like(), "magicbricks")
+
+    def test_squareyards_still_routes_plans_to_the_plan_mark(self) -> None:
+        from homz.images.watermark import _placement_applies
+
+        img = self._plan_like()
+        assert not _placement_applies("centre", img, "squareyards")
+        assert _placement_applies("plan", img, "squareyards")
+
+    def test_photographs_are_unaffected_for_both(self) -> None:
+        from homz.images.watermark import _placement_applies
+
+        rng = np.random.default_rng(1)
+        photo = rng.integers(0, 255, (600, 800, 3), dtype=np.uint8)
+        for source in ("magicbricks", "squareyards"):
+            assert _placement_applies("centre", photo, source)
