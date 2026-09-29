@@ -159,12 +159,20 @@ class BlobStore:
             "watermark_removed": record.get("watermark_removed"),
         }
 
-    async def warm_from_mongo(self, db, collection: str = "property_images") -> int:
-        """Seed both dedupe tables from what previous runs already did.
+    async def warm_from_mongo(self, db, collection: str = "property_images",
+                              *, url_memo: bool = True) -> int:
+        """Seed the dedupe tables from what previous runs already did.
 
         Without this a resumed run re-downloads and re-uploads every shared
         photo, which on SquareYards means paying for the same file dozens of
         times over and spending most of the run on redundant transfers.
+
+        `url_memo=False` seeds only the content table, not the URL one. That
+        is what a *repair* run needs: the URL memo answers "we already have a
+        file for this photo", which is precisely the answer to refuse when the
+        point of the run is that the file we have is wrong. The content table
+        still applies, so any image whose reprocessing happens to produce
+        identical bytes costs no upload.
         """
         n = 0
         cursor = db[collection].aggregate([
@@ -179,7 +187,7 @@ class BlobStore:
             path = row["path"]
             digest = sha_of(path)
             self._seen[digest] = path
-            if row.get("src"):
+            if url_memo and row.get("src"):
                 self._by_url[row["src"]] = {
                     "path": path,
                     "bytes": row.get("bytes") or 0,

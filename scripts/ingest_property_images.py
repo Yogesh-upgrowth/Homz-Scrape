@@ -464,7 +464,9 @@ async def main(sources, limit, force, dry_run, reset, retry_failed=False,
         print(f"storage: Vercel Blob (prefix '{settings.blob_prefix}') "
               f"— MongoDB stores URLs")
         # Seed dedupe from previous runs so shared photos are not paid for twice.
-        await blob.warm_from_mongo(get_database(), COLLECTION)
+        # A --force run is a repair: the stored file is what we are replacing,
+        # so the URL memo must not hand it back instead of re-fetching.
+        await blob.warm_from_mongo(get_database(), COLLECTION, url_memo=not force)
     else:
         print("storage: MongoDB inline bytes (no HOMZ_BLOB_READ_WRITE_TOKEN set) "
               "— fine for a test batch, will exhaust a free tier at scale")
