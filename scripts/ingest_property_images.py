@@ -337,10 +337,15 @@ async def _ingest_property(client, db, doc: dict, stats: Stats, dry_run: bool,
 
 async def run_source(source: str, limit: int | None, force: bool, dry_run: bool,
                      stats: Stats, blob: BlobStore | None = None,
-                     min_free_mb: float = 0.0) -> None:
+                     min_free_mb: float = 0.0, archived_only: bool = False) -> None:
     db = get_database()
     ckpt = _checkpoint(source)
-    last_id = None if force else _load_last_id(ckpt)
+    # The checkpoint is honoured even under --force. A repair over 14,000
+    # properties does not fit in one window against this quota, so it runs in
+    # sittings and each must continue where the last stopped; restarting would
+    # re-do hours of work that is already correct. `--reset` is the way to
+    # start from the beginning, and says so.
+    last_id = _load_last_id(ckpt)
     query = {**BASE_FILTER, "source": source, "images.0": {"$exists": True}}
     total = await db[D.PROPERTIES].count_documents(query)
     print(f"\n===== {source}: {total} properties with images =====")
@@ -381,8 +386,20 @@ async def run_source(source: str, limit: int | None, force: bool, dry_run: bool,
                               f"{min_free_mb:.0f} MB floor, checkpoint saved")
                         stats.quota_stop = True
                         break
-                if not force and await db[COLLECTION].find_one(
-                        {"_id": doc["_id"]}, {"_id": 1}):
+                archived = await db[COLLECTION].find_one(
+                    {"_id": doc["_id"]}, {"_id": 1}) is not None
+                if not force and archived:
+                    last_id = doc["_id"]
+                    continue
+                # A repair confined to what is already stored. Rewriting an
+                # existing archive document is free -- same field set, and a
+                # content-addressed path is always the same length -- while a
+                # property never ingested adds ~4.6 KB. With the Atlas quota
+                # this close to full that difference decides whether the
+                # repair can finish at all, and a listing with no images of
+                # ours is already showing the placeholder rather than a
+                # portal watermark, so it is not what the repair is for.
+                if archived_only and not archived:
                     last_id = doc["_id"]
                     continue
                 stats.properties += 1
@@ -442,6 +459,7 @@ async def run_retry(sources, limit, dry_run, stats, blob) -> None:
 
 
 async def main(sources, limit, force, dry_run, reset, retry_failed=False,
+               archived_only=False,
                min_free_mb=0.0) -> None:
     for s in SOURCES:
         if reset:
@@ -479,7 +497,8 @@ async def main(sources, limit, force, dry_run, reset, retry_failed=False,
         for s in sources:
             if stats.quota_stop:
                 break
-            await run_source(s, per_source, force, dry_run, stats, blob, min_free_mb)
+            await run_source(s, per_source, force, dry_run, stats, blob, min_free_mb,
+                             archived_only)
 
     db = get_database()
     docs = await db[COLLECTION].count_documents({})
@@ -509,6 +528,9 @@ if __name__ == "__main__":
     ap.add_argument("--source", choices=[*SOURCES, "both"], default="both")
     ap.add_argument("--limit", type=int, default=None,
                     help="stop after N properties, split across sources")
+    ap.add_argument("--archived-only", action="store_true",
+                    help="repair only properties already stored; never add a new "
+                         "document (keeps the Atlas quota flat)")
     ap.add_argument("--force", action="store_true",
                     help="reprocess properties already stored")
     ap.add_argument("--dry-run", action="store_true", help="process but write nothing")
@@ -519,5 +541,9 @@ if __name__ == "__main__":
                     help="reprocess only properties that recorded image failures")
     a = ap.parse_args()
     chosen = list(SOURCES) if a.source == "both" else [a.source]
+    # Keywords, not position: a new parameter landing between two positional
+    # ones silently rebinds every argument after it.
     asyncio.run(main(chosen, a.limit, a.force, a.dry_run, a.reset,
-                 a.retry_failed, a.min_free_mb))
+                     retry_failed=a.retry_failed,
+                     archived_only=a.archived_only,
+                     min_free_mb=a.min_free_mb))
