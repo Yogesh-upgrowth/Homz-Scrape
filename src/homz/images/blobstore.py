@@ -141,6 +141,53 @@ class BlobStore:
             self._seen[digest] = path
         return path, digest, True
 
+    async def list_paths(self, client: httpx.AsyncClient, prefix: str | None = None):
+        """Every stored pathname under `prefix`, paginated. Yields dicts.
+
+        Blob's list endpoint caps a page at 1,000, so a store of ~100,000
+        files is ~100 round trips. Each is a "simple" operation, far cheaper
+        than the advanced ones `put` is throttled against, but the throttle
+        still applies so a sweep cannot eat the budget a concurrent ingest
+        needs.
+        """
+        cursor = None
+        while True:
+            await self._throttle()
+            params = {"limit": "1000", "prefix": prefix or self.prefix}
+            if cursor:
+                params["cursor"] = cursor
+            resp = await client.get(
+                f"{_API}/", params=params,
+                headers={"authorization": f"Bearer {self.token}",
+                         "x-api-version": "7"},
+                timeout=60.0)
+            if resp.status_code >= 400:
+                raise RuntimeError(f"blob list {resp.status_code}: {resp.text[:200]}")
+            body = resp.json()
+            for blob in body.get("blobs", []):
+                yield blob
+            cursor = body.get("cursor")
+            if not body.get("hasMore") or not cursor:
+                return
+
+    async def delete(self, client: httpx.AsyncClient, urls: list[str]) -> None:
+        """Permanently remove blobs by URL. There is no undo.
+
+        Batched, because the endpoint takes a list and one call per file
+        would spend the operation budget for no reason.
+        """
+        if not urls:
+            return
+        await self._throttle()
+        resp = await client.post(
+            f"{_API}/delete",
+            json={"urls": urls},
+            headers={"authorization": f"Bearer {self.token}",
+                     "x-api-version": "7"},
+            timeout=60.0)
+        if resp.status_code >= 400:
+            raise RuntimeError(f"blob delete {resp.status_code}: {resp.text[:200]}")
+
     def lookup_url(self, source_url: str) -> dict | None:
         """The stored record for a source URL already processed, if known.
 
