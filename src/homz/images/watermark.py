@@ -652,6 +652,71 @@ def _scalable_apply(image, cal: _Calibration, w: int, h: int) -> WatermarkResult
                   verify=shape, finish=confident)
 
 
+#: The reference box's measured vertical centre minus the true centre, as a
+#: fraction of frame height. See `mark_survived`.
+_SY_ANCHOR_ERR = 0.054
+#: The mark's height as a fraction of frame width (343px on a 1920px ref).
+_SY_MARK_HEIGHT_FRAC = 343 / 1920
+#: Anchor miss, measured in mark-heights, beyond which removal is not trusted.
+_SY_MAX_MISS = 0.25
+
+
+def mark_survived(record: dict, source: str) -> bool:
+    """Does this stored image still carry the portal's watermark?
+
+    Read against the archive record written at ingest, not by re-examining
+    pixels: a detector run over our own output has a false-positive floor of
+    44% on unmarked photos (flat walls and skies correlate with anything),
+    so it cannot answer this. The ingest's own verdict can.
+
+    The two portals need different readings of that verdict, because the
+    confidence in it differs:
+
+    * **MagicBricks** — only an explicit `False` counts, meaning a mark was
+      expected and could not be located. `None` there means the frame carried
+      no mark, and after the per-frame-gain repair that reading is reliable;
+      spot checks confirmed those frames are genuinely clean. Treating them
+      as marked would throw away real photographs.
+    * **SquareYards** — anything not confirmed removed counts. Detection here
+      is known broken: the mark is placed by a formula whose anchor comes
+      from one calibration box, that box is off-centre, and on a tall frame
+      the error reaches ~59px against a +-16px search. So `None` means "not
+      found", not "not there" — measured at 36.7% of the marked family, and
+      visible on the site as the portal's wordmark under our own logo.
+
+    Unmarked URL families are never affected: `secondaryPortal/` and
+    `mbimages/project/` carry no mark to survive.
+    """
+    config = SOURCE_CONFIG.get(source)
+    if config is None:
+        return False
+    if not config["marked"].search(record.get("source_url") or ""):
+        return False
+    removed = record.get("watermark_removed")
+    if source != "squareyards":
+        return removed is False
+    if removed is not True:
+        return True
+
+    # A SquareYards removal reported success can still have missed. The anchor
+    # error is a fixed *fraction* of height -- the reference box measures its
+    # centre at cy 0.554 against a mark that is actually centred -- so in
+    # pixels it grows as 0.054*h, while the mark is only 0.179*w tall. Their
+    # ratio is how much of the mark the subtraction failed to cover, and it
+    # depends entirely on the frame's aspect: harmless on a wide frame,
+    # ruinous on a tall one. That is why the observed failure rate climbs from
+    # 31.9% on landscape to 59.5% on portrait.
+    #
+    # Below a quarter of the mark's height the overlap is enough that the
+    # inversion did its job; above it the wordmark is left standing in part,
+    # which is exactly what a "removed" 818x765 frame looked like on the site.
+    w = record.get("width") or 0
+    h = record.get("height") or 0
+    if not (w and h):
+        return False
+    return (_SY_ANCHOR_ERR * h) / (_SY_MARK_HEIGHT_FRAC * w) >= _SY_MAX_MISS
+
+
 def remove_watermark(image, source: str, url: str | None = None) -> WatermarkResult:
     """Strip every known portal watermark from `image` (HxWx3 uint8 RGB).
 

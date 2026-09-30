@@ -40,6 +40,7 @@ sys.stdout.reconfigure(line_buffering=True)
 from homz.db import documents as D  # noqa: E402
 from homz.db.mongo import close_client, get_database  # noqa: E402
 from homz.images.blobstore import url_for  # noqa: E402
+from homz.images.watermark import mark_survived  # noqa: E402
 
 COLLECTION = "property_images"
 
@@ -52,9 +53,13 @@ async def sync_projects(db, dry_run: bool) -> None:
     only images are the portal's, watermark and all.
     """
     hosted: dict[str, str] = {}
-    async for archive in db[COLLECTION].find({}, {"images.source_url": 1, "images.path": 1}):
+    async for archive in db[COLLECTION].find(
+            {}, {"images.source_url": 1, "images.path": 1,
+                 "images.watermark_removed": 1}):
+        source = str(archive["_id"]).split(":")[0]
         for img in archive.get("images", []):
-            if img.get("source_url") and img.get("path"):
+            if (img.get("source_url") and img.get("path")
+                    and not mark_survived(img, source)):
                 hosted[img["source_url"]] = url_for(img["path"])
     print(f"{len(hosted)} distinct portal URLs already processed")
 
@@ -95,16 +100,22 @@ async def main(dry_run: bool, limit: int | None, projects: bool = False) -> None
 
     scanned = updated = images_linked = skipped = 0
 
-    cursor = db[COLLECTION].find({}, {"images.source_url": 1, "images.path": 1})
+    cursor = db[COLLECTION].find(
+        {}, {"images.source_url": 1, "images.path": 1, "images.watermark_removed": 1})
     if limit:
         cursor = cursor.limit(limit)
 
     async for archive in cursor:
         scanned += 1
+        # An image whose watermark survived is deliberately not served (see
+        # scripts/suppress_marked_images.py). Linking it here would hand it
+        # straight back, so this pass has to honour the same rule -- otherwise
+        # every sync would silently undo the suppression.
+        source = str(archive["_id"]).split(":")[0]
         hosted = {
             i["source_url"]: url_for(i["path"])
             for i in archive.get("images", [])
-            if i.get("source_url") and i.get("path")
+            if i.get("source_url") and i.get("path") and not mark_survived(i, source)
         }
         if not hosted:
             skipped += 1
