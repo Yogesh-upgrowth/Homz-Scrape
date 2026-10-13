@@ -18,7 +18,9 @@ const path = require("path");
 
 const SRC = path.join(process.cwd(), "data", "feed");
 const OUT = path.join(process.cwd(), "public", "feed");
-const PART_BYTES = 1_800_000;
+// 1.4 MB, not 1.8: Next stores a cached body base64-encoded (x1.33), so a 1.8 MB
+// part measured 2.4 MB and was refused by the 2 MB fetch-cache limit.
+const PART_BYTES = 1_400_000;
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
