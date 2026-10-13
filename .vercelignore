@@ -1,4 +1,4 @@
-# Only `api/` and `data/feed/` need to ship to Vercel — everything else here
+# Only `api/`, `data/feed/` and the build step scripts/split-feed.js need to ship to Vercel — everything else here
 # is the Python scraper/exporter, which doesn't run on Vercel at all.
 .venv/
 venv/
@@ -14,3 +14,4 @@ docs/
 web/
 *.js
 !api/*.js
+!scripts/split-feed.js
