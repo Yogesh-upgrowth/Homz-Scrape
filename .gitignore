@@ -44,3 +44,6 @@ pgdata/
 *.swp
 .vercel
 .env*
+
+# built by scripts/split-feed.js on every deploy
+public/feed/
