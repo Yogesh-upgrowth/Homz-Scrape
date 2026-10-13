@@ -77,8 +77,8 @@ class IngestStats:
             self.errors[k] = self.errors.get(k, 0) + v
 
 
-def _process_bytes(payload: bytes, source: str, url: str | None = None) -> tuple[bytes, int, int, bool | None]:
-    """Decode → de-watermark → orient → resize → WebP. Returns (bytes, w, h, dewm)."""
+def _process_bytes(payload: bytes, source: str, url: str | None = None) -> tuple[bytes, int, int, bool | None, str]:
+    """Decode → de-watermark → orient → resize → WebP. Returns (bytes, w, h, dewm, method)."""
     import numpy as np
     from PIL import Image as PILImage
     from PIL import ImageOps
@@ -87,10 +87,12 @@ def _process_bytes(payload: bytes, source: str, url: str | None = None) -> tuple
         im.load()
         # De-watermark on the AS-SERVED pixel grid, before any geometry change.
         dewm: bool | None = None
+        method = "invert"
         if settings.image_dewatermark:
             rgb = im.convert("RGB")
             result = remove_watermark(np.asarray(rgb), source, url)
             dewm = result.removed
+            method = result.method
             if result.removed:
                 im = PILImage.fromarray(result.image)
 
@@ -112,7 +114,7 @@ def _process_bytes(payload: bytes, source: str, url: str | None = None) -> tuple
 
         out = io.BytesIO()
         im.save(out, format="WEBP", quality=settings.image_webp_quality, method=4)
-        return out.getvalue(), im.size[0], im.size[1], dewm
+        return out.getvalue(), im.size[0], im.size[1], dewm, method
 
 
 async def _fetch_one(
@@ -169,7 +171,7 @@ async def _fetch_one(
     try:
         # Pillow work is CPU-bound and releases the GIL poorly; keep it off the
         # event loop so downloads for the rest of the listing keep flowing.
-        encoded, w, h, dewm = await asyncio.to_thread(_process_bytes, payload, source, image.url)
+        encoded, w, h, dewm, _method = await asyncio.to_thread(_process_bytes, payload, source, image.url)
     except Exception as exc:  # noqa: BLE001 - any decoder failure is just a skip
         stats.note_error("decode_failed")
         image.fetch_error = f"decode_failed:{type(exc).__name__}"

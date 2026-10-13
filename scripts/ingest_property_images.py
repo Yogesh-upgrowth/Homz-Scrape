@@ -204,7 +204,7 @@ async def _fetch_one(client, url: str, source: str, idx: int, stats: Stats, sem,
         return None
 
     try:
-        encoded, w, h, dewm = await asyncio.to_thread(_process_bytes, raw, source, url)
+        encoded, w, h, dewm, method = await asyncio.to_thread(_process_bytes, raw, source, url)
     except Exception as exc:  # noqa: BLE001 - any decoder failure is a skip
         stats.failed += 1
         stats.note_failure(url, f"decode:{type(exc).__name__}")
@@ -226,6 +226,8 @@ async def _fetch_one(client, url: str, source: str, idx: int, stats: Stats, sem,
         "bytes": len(encoded), "width": w, "height": h,
         "watermark_removed": dewm,
     }
+    if method != "invert":
+        record["wm_method"] = method
     if blob is not None and blob.enabled:
         try:
             path, _digest, was_new = await blob.put(client, encoded)
@@ -337,7 +339,8 @@ async def _ingest_property(client, db, doc: dict, stats: Stats, dry_run: bool,
 
 async def run_source(source: str, limit: int | None, force: bool, dry_run: bool,
                      stats: Stats, blob: BlobStore | None = None,
-                     min_free_mb: float = 0.0, archived_only: bool = False) -> None:
+                     min_free_mb: float = 0.0, archived_only: bool = False,
+                     all_types: bool = False) -> None:
     db = get_database()
     ckpt = _checkpoint(source)
     # The checkpoint is honoured even under --force. A repair over 14,000
@@ -460,7 +463,7 @@ async def run_retry(sources, limit, dry_run, stats, blob) -> None:
 
 async def main(sources, limit, force, dry_run, reset, retry_failed=False,
                archived_only=False,
-               min_free_mb=0.0) -> None:
+               min_free_mb=0.0, all_types=False) -> None:
     for s in SOURCES:
         if reset:
             _checkpoint(s).unlink(missing_ok=True)
@@ -498,7 +501,7 @@ async def main(sources, limit, force, dry_run, reset, retry_failed=False,
             if stats.quota_stop:
                 break
             await run_source(s, per_source, force, dry_run, stats, blob, min_free_mb,
-                             archived_only)
+                             archived_only, all_types)
 
     db = get_database()
     docs = await db[COLLECTION].count_documents({})
@@ -537,6 +540,8 @@ if __name__ == "__main__":
     ap.add_argument("--reset", action="store_true", help="clear checkpoints first")
     ap.add_argument("--min-free-mb", type=float, default=0.0,
                     help="stop cleanly once the Atlas quota has this much left")
+    ap.add_argument("--all-types", action="store_true",
+                    help="include every property type, not just apartments")
     ap.add_argument("--retry-failed", action="store_true",
                     help="reprocess only properties that recorded image failures")
     a = ap.parse_args()
@@ -546,4 +551,5 @@ if __name__ == "__main__":
     asyncio.run(main(chosen, a.limit, a.force, a.dry_run, a.reset,
                      retry_failed=a.retry_failed,
                      archived_only=a.archived_only,
-                     min_free_mb=a.min_free_mb))
+                     min_free_mb=a.min_free_mb,
+                     all_types=a.all_types))

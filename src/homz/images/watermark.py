@@ -160,6 +160,8 @@ class WatermarkResult:
     #: confidently located; None = this source/size carries no known mark.
     removed: bool | None
     detail: str
+    #: How a removal was done: "invert" (algebraic) or "lama" (inpainted).
+    method: str = "invert"
 
 
 class _Calibration:
@@ -693,6 +695,13 @@ def mark_survived(record: dict, source: str) -> bool:
     if not config["marked"].search(record.get("source_url") or ""):
         return False
     removed = record.get("watermark_removed")
+    # Inpainted-path frames are judged by their own verdict, not by the
+    # inversion's anchor geometry, which says nothing about a mark that was
+    # located and painted out directly (see `inpaint.py`). There `None` is a
+    # reliable "no mark on this frame" -- the locator's scores split cleanly --
+    # so only an explicit `False` (a plan, or a failed fill) counts.
+    if record.get("wm_method") == "lama":
+        return removed is False
     if source != "squareyards":
         return removed is False
     if removed is not True:
@@ -738,6 +747,22 @@ def remove_watermark(image, source: str, url: str | None = None) -> WatermarkRes
     pattern = SOURCE_CONFIG[source]["marked"]
     if url is not None and not pattern.search(url):
         return WatermarkResult(image, None, "url family carries no watermark")
+
+    # SquareYards: inversion cannot be made reliable here, so photographs have
+    # the mark located and inpainted. Plans are neither: inversion leaves the
+    # large wordmark legible across the drawing, and inpainting would alter a
+    # plan's content. They report a miss, which keeps them withheld.
+    if source == "squareyards":
+        if is_plan_image(image):
+            return WatermarkResult(image, False, "plan: SquareYards mark not removable",
+                                   method="lama")
+        from homz.images.inpaint import inpaint_wordmark
+
+        res = inpaint_wordmark(image)
+        if res.ok:
+            return WatermarkResult(res.image, True, res.detail, method="lama")
+        return WatermarkResult(image, None if res.absent else False, res.detail,
+                               method="lama")
 
     current = image
     hits: list[str] = []

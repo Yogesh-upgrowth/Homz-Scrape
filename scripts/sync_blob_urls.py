@@ -55,7 +55,7 @@ async def sync_projects(db, dry_run: bool) -> None:
     hosted: dict[str, str] = {}
     async for archive in db[COLLECTION].find(
             {}, {"images.source_url": 1, "images.path": 1,
-                 "images.watermark_removed": 1}):
+                 "images.watermark_removed": 1, "images.wm_method": 1}):
         source = str(archive["_id"]).split(":")[0]
         for img in archive.get("images", []):
             if (img.get("source_url") and img.get("path")
@@ -101,7 +101,7 @@ async def main(dry_run: bool, limit: int | None, projects: bool = False) -> None
     scanned = updated = images_linked = skipped = 0
 
     cursor = db[COLLECTION].find(
-        {}, {"images.source_url": 1, "images.path": 1, "images.watermark_removed": 1})
+        {}, {"images.source_url": 1, "images.path": 1, "images.watermark_removed": 1, "images.wm_method": 1})
     if limit:
         cursor = cursor.limit(limit)
 

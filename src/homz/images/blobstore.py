@@ -204,6 +204,7 @@ class BlobStore:
             "bytes": record.get("bytes", 0),
             "width": record.get("width", 0), "height": record.get("height", 0),
             "watermark_removed": record.get("watermark_removed"),
+            "wm_method": record.get("wm_method"),
         }
 
     async def warm_from_mongo(self, db, collection: str = "property_images",
@@ -228,7 +229,8 @@ class BlobStore:
             {"$project": {"_id": 0, "path": "$images.path",
                           "src": "$images.source_url", "bytes": "$images.bytes",
                           "width": "$images.width", "height": "$images.height",
-                          "wm": "$images.watermark_removed"}},
+                          "wm": "$images.watermark_removed",
+                          "wmm": "$images.wm_method"}},
         ])
         async for row in cursor:
             path = row["path"]
@@ -241,6 +243,7 @@ class BlobStore:
                     "width": row.get("width") or 0,
                     "height": row.get("height") or 0,
                     "watermark_removed": row.get("wm"),
+                    "wm_method": row.get("wmm"),
                 }
             n += 1
         if n:

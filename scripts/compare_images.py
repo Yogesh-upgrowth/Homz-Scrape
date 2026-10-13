@@ -112,7 +112,7 @@ def _render(idx: int, url: str, raw: bytes, out_dir: Path) -> dict | None:
 
     before_arr = np.asarray(before)
     try:
-        encoded, _w, _h, dewm = _process_bytes(raw, source, url)
+        encoded, _w, _h, dewm, _method = _process_bytes(raw, source, url)
     except Exception as exc:  # noqa: BLE001
         print(f"  [{idx}] process failed: {type(exc).__name__}: {exc}")
         return None
