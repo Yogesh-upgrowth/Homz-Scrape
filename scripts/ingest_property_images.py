@@ -349,7 +349,9 @@ async def run_source(source: str, limit: int | None, force: bool, dry_run: bool,
     # re-do hours of work that is already correct. `--reset` is the way to
     # start from the beginning, and says so.
     last_id = _load_last_id(ckpt)
-    query = {**BASE_FILTER, "source": source, "images.0": {"$exists": True}}
+    base = {k: v for k, v in BASE_FILTER.items()
+            if k not in ("property_type", "listing_type")} if all_types else BASE_FILTER
+    query = {**base, "source": source, "images.0": {"$exists": True}}
     total = await db[D.PROPERTIES].count_documents(query)
     print(f"\n===== {source}: {total} properties with images =====")
     if last_id:
