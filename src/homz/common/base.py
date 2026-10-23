@@ -82,6 +82,9 @@ class ScrapeReport:
     blocked: int = 0
     error_samples: list[str] = field(default_factory=list)
     fetcher_stats: dict[str, int] = field(default_factory=dict)
+    #: Source ids the portal showed us during discovery. A sighting is enough to
+    #: say a listing is still live, even when its page is not re-parsed.
+    seen_ids: set[str] = field(default_factory=set)
 
     @property
     def duration_s(self) -> float:
@@ -102,6 +105,7 @@ class ScrapeReport:
             "finished_at": self.finished_at.isoformat() if self.finished_at else None,
             "duration_s": round(self.duration_s, 2),
             "discovered": self.discovered,
+            "seen": len(self.seen_ids),
             "fetched": self.fetched,
             "parsed": self.parsed,
             "skipped_known": self.skipped_known,
@@ -203,6 +207,14 @@ class BaseScraper(ABC):
         """Override when a source needs a browser or special headers."""
         return await self.fetcher.get(url)
 
+    def source_ids_for_url(self, url: str) -> list[str]:
+        """Warehouse `source_id`s a discovered detail URL corresponds to.
+
+        Lets a sighting refresh `last_seen_at` without fetching the page. The
+        default (no ids) is safe: that source just gets no sighting credit.
+        """
+        return []
+
     # -- the run loop -------------------------------------------------------
 
     async def run_job(self, job: ScrapeJob) -> tuple[list[ScrapedRecord], ScrapeReport]:
@@ -224,6 +236,7 @@ class BaseScraper(ABC):
         try:
             async for url in self.discover(job, state):
                 report.discovered += 1
+                report.seen_ids.update(self.source_ids_for_url(url))
                 if report.parsed >= job.max_items:
                     self.log.info("job.max_items_reached", job=job.key, items=report.parsed)
                     break

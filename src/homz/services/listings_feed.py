@@ -35,6 +35,7 @@ from homz.services.feed import (
     has_own_images,
     published_cities,
 )
+from homz.services.freshness import feed_lifecycle, lifecycle_from_doc, removed_cutoff
 
 CATEGORY_LISTING_TYPES: dict[str, frozenset[ListingType]] = {
     "Sale": frozenset(
@@ -143,7 +144,9 @@ def to_listing_feed_record(record: PropertyRecord) -> dict[str, Any]:
         "masterPlan": master_plan,
         "landmarks": _landmarks(record),
         "listingUrl": record.listing_url,
-        "updatedAt": _iso(record.scraped_at),
+        # firstSeenAt / lastSeenAt / removedAt, and `updatedAt` as the later of
+        # the last scrape and the last portal sighting (see services/freshness).
+        **feed_lifecycle(record.raw.get("_lifecycle", {}), record.scraped_at),
         # Free, deterministic scores (0-100) from `homz enrich scores` — no
         # LLM involved. None until enrichment has run for this record.
         "investmentScore": enrichment.get("investment_score"),
@@ -241,13 +244,20 @@ async def load_properties(db: Any) -> list[PropertyRecord]:
     from homz.db import documents as D
 
     out: list[PropertyRecord] = []
+    # Active listings, plus ones removed within the retention window: those
+    # ship with `removedAt` set so the site can retire the page properly, then
+    # drop out of the export once the window passes.
+    cutoff = removed_cutoff()
     for city in CITY_KEYS:
         for types in CATEGORY_LISTING_TYPES.values():
             cursor = db[D.PROPERTIES].find(
                 {
                     "city": city.value,
                     "listing_type": {"$in": [t.value for t in types]},
-                    "is_active": True,
+                    "$or": [
+                        {"is_active": True},
+                        {"is_active": False, "delisted_at": {"$gte": cutoff}},
+                    ],
                     "canonical_id": None,
                 }
             )
@@ -267,5 +277,6 @@ async def load_properties(db: Any) -> list[PropertyRecord]:
                         "rera_registered_with": doc.get("rera_registered_with"),
                         "rera_certificate_url": doc.get("rera_certificate_url"),
                     }
+                    record.raw["_lifecycle"] = lifecycle_from_doc(doc)
                     out.append(record)
     return out

@@ -106,6 +106,25 @@ Identical to the existing Projects feed envelope — no new concept:
 
 Everything else (`price`, `size`, `possession`, `amenities`, `images`, …) is a formatted display value, same spirit as the Projects feed.
 
+### Freshness fields (additive; present on Properties **and** Projects records)
+
+| Field | Type | Meaning |
+|---|---|---|
+| `firstSeenAt` | `YYYY-MM-DD` \| null | First day the portal was seen listing it. |
+| `lastSeenAt` | `YYYY-MM-DD` \| null | Latest day the portal was seen listing it — a real sighting from a discovery crawl or a detail fetch, never the export date. |
+| `removedAt` | `YYYY-MM-DD` \| null | Set once the listing is gone from the portal (404/410, or unseen past the stale window). Removed records stay in the feed for **30 days**, then drop. `null` for live listings. |
+| `updatedAt` | ISO datetime | The later of the last detail scrape and the last sighting. Unchanged shape; it now moves when a listing is re-confirmed live. |
+
+Nothing is removed or renamed. A consumer that ignores these fields behaves as
+before, except that `removedAt`-marked records appear for their 30-day window
+and should be treated as gone.
+
+**Safeguards.** `homz export feed` refuses to write anything (exit code 2) if any
+segment would shrink below 80% of the file already published; `--force`
+overrides. Delisting (`homz etl run`) only runs for a source whose crawl was
+healthy: its latest run was not blocked/failed and at least 80% of its active
+records were seen inside the stale window.
+
 ## Client-side filtering — no extra requests
 
 Fetch the one file for the active category tab + city once. Every filter UI

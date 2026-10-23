@@ -31,6 +31,7 @@ from homz.common.enums import City, PossessionStatus
 from homz.common.parsing import format_price_inr
 from homz.common.schema import ProjectRecord
 from homz.enrichment.rera_matching import rera_badge_status
+from homz.services.freshness import feed_lifecycle, lifecycle_from_doc, removed_cutoff
 
 # Front-end city keys (see `CITY_KEYS` in lib/scraping/homzbackend.ts).
 CITY_KEYS: dict[City, str] = {
@@ -379,7 +380,9 @@ def to_feed_record(record: ProjectRecord) -> dict[str, Any]:
         "masterPlan": master_plan,
         "projectUrl": record.project_url,
         # Freshness the legacy feed never carried — see the module docstring.
-        "updatedAt": _iso(record.scraped_at),
+        # `updatedAt` is the later of the last scrape and the last time the
+        # portal was seen listing it (a real sighting, never export time).
+        **feed_lifecycle(record.raw.get("_lifecycle", {}), record.scraped_at),
     }
 
 
@@ -491,7 +494,15 @@ async def load_projects(db: Any, *, city: str | None = None) -> list[ProjectReco
     """Every project in the warehouse, newest scrape first."""
     from homz.db import documents as D
 
-    query: dict[str, Any] = {}
+    # Active projects, plus ones removed within the retention window (they ship
+    # with `removedAt` set, then drop out). `$ne: False` keeps legacy documents
+    # that predate the `is_active` field.
+    query: dict[str, Any] = {
+        "$or": [
+            {"is_active": {"$ne": False}},
+            {"is_active": False, "delisted_at": {"$gte": removed_cutoff()}},
+        ]
+    }
     if city:
         query["city"] = city
     cursor = db[D.PROJECTS].find(query).sort("scraped_at", -1)
@@ -508,5 +519,7 @@ async def load_projects(db: Any, *, city: str | None = None) -> list[ProjectReco
                 "rera_registered_with": doc.get("rera_registered_with"),
                 "rera_certificate_url": doc.get("rera_certificate_url"),
             }
+            # Freshness lives on the document too, outside the ProjectRecord schema.
+            record.raw["_lifecycle"] = lifecycle_from_doc(doc)
             out.append(record)
     return out

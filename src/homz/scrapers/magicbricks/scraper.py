@@ -182,6 +182,10 @@ class MagicBricksScraper(BaseScraper):
             if not parser.has_next_page(result.text):
                 break
 
+    def source_ids_for_url(self, url: str) -> list[str]:
+        listing_id = parser.extract_listing_id(url)
+        return [listing_id] if listing_id else []
+
     # -- parsing ------------------------------------------------------------
 
     async def parse_detail(self, result: FetchResult, job: ScrapeJob) -> list[ScrapedRecord]:

@@ -300,6 +300,15 @@ class SquareYardsScraper(BaseScraper):
             for url in urls:
                 yield url
 
+    def source_ids_for_url(self, url: str) -> list[str]:
+        """Rental/resale units are keyed by their listing id; a project PDP maps
+        to both its project row and the `project:`-prefixed property projection."""
+        if "/rental-" in url or "/resale-" in url:
+            match = parser._LISTING_ID_RE.search(url)
+            return [match.group(1)] if match else []
+        project_id = parser.extract_project_id(url)
+        return [project_id, f"project:{project_id}"] if project_id else []
+
     # -- fetch --------------------------------------------------------------
     # `fetch_detail` is inherited: a plain rate-limited GET is enough.
 

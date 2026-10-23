@@ -118,6 +118,10 @@ class HousingScraper(BaseScraper):
             return await self.browser.render(url, wait_for="h1", scroll=True, scroll_steps=3)
         return result
 
+    def source_ids_for_url(self, url: str) -> list[str]:
+        listing_id = parser.extract_listing_id(url)
+        return [str(listing_id)] if listing_id else []
+
     async def parse_detail(self, result: FetchResult, job: ScrapeJob) -> list[ScrapedRecord]:
         url = result.final_url or result.url
         is_project = "/project" in url or job.name == "projects"

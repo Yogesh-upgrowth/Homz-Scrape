@@ -113,6 +113,54 @@ def scrape_source(
     _render_pipeline_results([result])
 
 
+@scrape_app.command("refresh")
+def scrape_refresh(
+    source: str = typer.Argument(..., help="magicbricks | squareyards"),
+    city: str = typer.Option("gurgaon", "--city"),
+    listing_type: str = typer.Option(None, "--listing-type", help="sale | rent | resale"),
+    property_type: str = typer.Option(None, "--property-type"),
+    max_pages: int = typer.Option(None, "--max-pages", help="Discovery depth (default: full sweep)"),
+    detail_budget: int = typer.Option(
+        300, "--detail-budget", help="Max detail pages to fetch: new ids first, then the stalest"
+    ),
+    max_minutes: float = typer.Option(
+        None, "--max-minutes", help="Stop fetching details after this long"
+    ),
+    dry_run: bool = typer.Option(
+        False, "--dry-run", help="Discover and report only; write nothing, fetch no details"
+    ),
+    sweep_localities: bool = typer.Option(
+        False, "--sweep-localities",
+        help="MagicBricks flats: discover one locality at a time (beats the 100-page cap)",
+    ),
+) -> None:
+    """Freshness pass: confirm what is still live, then fetch only new/oldest listings.
+
+    Discovery marks every listing it sees as seen today (no page fetch needed).
+    The detail budget then goes to ids the warehouse has never seen, followed
+    by the records with the oldest `last_seen_at`. Same robots.txt, rate limits
+    and stop-on-block as every other scrape.
+    """
+    from homz.etl.refresh import build_job, load_mb_localities, refresh_source
+
+    if sweep_localities and (source.lower() != "magicbricks" or city.lower() != "gurgaon"):
+        raise typer.BadParameter("--sweep-localities is MagicBricks + gurgaon only")
+    job = build_job(
+        source.lower(), city=city, listing_type=listing_type,
+        property_type=property_type, max_pages=max_pages,
+    )
+    localities = load_mb_localities(job.listing_type or "sale") if sweep_localities else None
+    result = asyncio.run(
+        refresh_source(
+            source.lower(), job, detail_budget=detail_budget,
+            max_minutes=max_minutes, dry_run=dry_run, localities=localities,
+        )
+    )
+    _print_json(result.as_dict())
+    if result.status.value in ("blocked", "failed"):
+        raise typer.Exit(code=1)
+
+
 @scrape_app.command("hrera")
 def scrape_hrera() -> None:
     """Sync the Haryana RERA (Gurugram) registered-projects registry.
@@ -786,6 +834,10 @@ def export_feed(
     out: str = typer.Option("./data/feed", "--out", help="Directory to write segment JSON into"),
     limit: int = typer.Option(500, "--limit", help="Records per page, matching the API default"),
     indent: bool = typer.Option(False, "--indent", help="Pretty-print (larger files)"),
+    force: bool = typer.Option(
+        False, "--force",
+        help="Publish even if a segment shrank below 80% of the already-published file",
+    ),
 ) -> None:
     """Write the website's `/api/data` payloads from the warehouse.
 
@@ -813,6 +865,28 @@ def export_feed(
     (project_buckets, project_withheld), (listing_buckets, listing_withheld) = asyncio.run(_run())
     target = Path(out)
     target.mkdir(parents=True, exist_ok=True)
+
+    # Safeguard: a crawl that was blocked, errored or only saw part of the
+    # catalogue must not overwrite a good published feed. Compare each segment
+    # with the file already on disk (what git/Vercel currently serve) and write
+    # nothing at all if any shrank below the threshold.
+    from homz.services.freshness import read_segment_total, segment_regressions
+
+    new_counts = {
+        **{s: len(r) for s, r in project_buckets.items()},
+        **{s: len(r) for s, r in listing_buckets.items()},
+    }
+    previous = {s: read_segment_total(target / f"{s}.json") for s in new_counts}
+    regressions = segment_regressions(previous, new_counts)
+    if regressions and not force:
+        console.print("[red]Refusing to publish — the feed would shrink:[/red]")
+        for line in regressions:
+            console.print(f"  [red]{line}[/red]")
+        console.print(
+            "[yellow]Nothing was written. Investigate the last scrape run "
+            "(`homz ops status`), or re-run with --force if the drop is real.[/yellow]"
+        )
+        raise typer.Exit(code=2)
 
     def _write_segments(
         buckets: dict[str, list], build_response, kind: str, *, full: bool = False

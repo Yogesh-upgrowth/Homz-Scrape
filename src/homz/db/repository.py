@@ -252,6 +252,9 @@ class Repository:
             "raw": to_bson_safe(record.raw),
             "raw_html_key": record.raw_html_key,
             "scraped_at": record.scraped_at,
+            "last_seen_at": record.scraped_at,
+            "is_active": True,
+            "delisted_at": None,
             "updated_at": now,
         }
         preserve = _without_nulls({
@@ -272,7 +275,10 @@ class Repository:
 
         await self.db[D.PROJECTS].update_one(
             {"_id": key},
-            {"$set": {**always, **preserve}, "$setOnInsert": {"created_at": now}},
+            {
+                "$set": {**always, **preserve},
+                "$setOnInsert": {"created_at": now, "first_seen_at": record.scraped_at},
+            },
             upsert=True,
         )
         return key
@@ -636,6 +642,7 @@ class Repository:
             "finished_at": _as_datetime(report["finished_at"]),
             "duration_s": report["duration_s"],
             "discovered": report["discovered"],
+            "seen": report.get("seen", 0),
             "fetched": report["fetched"],
             "parsed": report["parsed"],
             "inserted": inserted,
@@ -663,6 +670,141 @@ class Repository:
         if count:
             log.info("repo.marked_delisted", source=source, count=count, days=older_than_days)
         return count
+
+    # ------------------------------------------------------------------ freshness
+
+    async def touch_seen(
+        self, source: str, source_ids: list[str], *, seen_at: datetime | None = None
+    ) -> int:
+        """Record that these ids were present on the portal, without re-parsing them.
+
+        A search/sitemap sighting is enough to say a listing is still live, so
+        this bumps `last_seen_at` (and clears any delisting) for ids we already
+        hold. Ids we do not hold are ignored — they need a detail fetch.
+        Returns how many documents were touched across both collections.
+        """
+        if not source_ids:
+            return 0
+        seen_at = seen_at or utcnow()
+        keys = sorted({D.natural_key(source, sid) for sid in source_ids if sid})
+        touched = 0
+        for collection in (D.PROPERTIES, D.PROJECTS):
+            for start in range(0, len(keys), 1000):
+                result = await self.db[collection].update_many(
+                    {"_id": {"$in": keys[start : start + 1000]}},
+                    {"$set": {"last_seen_at": seen_at, "is_active": True, "delisted_at": None}},
+                )
+                touched += result.modified_count
+        return touched
+
+    async def backfill_freshness(self) -> int:
+        """Give documents that predate the freshness fields a sane starting point.
+
+        Only touches documents missing `last_seen_at`, so it is idempotent. The
+        starting point is their last real scrape — never "now", which would
+        pretend unverified records were just confirmed.
+        """
+        total = 0
+        for collection in (D.PROPERTIES, D.PROJECTS):
+            result = await self.db[collection].update_many(
+                {"last_seen_at": {"$exists": False}},
+                [{"$set": {
+                    "last_seen_at": "$scraped_at",
+                    "first_seen_at": {"$ifNull": ["$first_seen_at", {"$ifNull": ["$created_at", "$scraped_at"]}]},
+                    "is_active": {"$ifNull": ["$is_active", True]},
+                }}],
+            )
+            total += result.modified_count
+        return total
+
+    async def stalest_urls(self, source: str, limit: int) -> list[dict[str, str]]:
+        """Active listings seen longest ago, oldest first — the refresh rotation.
+
+        Returns `{"id": <source_id>, "url": <detail url>}` rows. Uses the
+        existing `(is_active, last_seen_at)` index.
+        """
+        rows: list[dict[str, str]] = []
+        for collection, url_field in ((D.PROPERTIES, "listing_url"), (D.PROJECTS, "project_url")):
+            cursor = (
+                self.db[collection]
+                .find(
+                    {"source": source, "is_active": {"$ne": False}, url_field: {"$ne": None}},
+                    projection={"source_id": 1, url_field: 1, "last_seen_at": 1},
+                )
+                .sort("last_seen_at", ASCENDING)
+                .limit(limit)
+            )
+            async for doc in cursor:
+                rows.append({
+                    "id": doc["source_id"],
+                    "url": doc[url_field],
+                    "_seen": doc.get("last_seen_at") or datetime.min.replace(tzinfo=UTC),
+                })
+        rows.sort(key=lambda r: r["_seen"])
+        return [{"id": r["id"], "url": r["url"]} for r in rows[:limit]]
+
+    async def mark_removed(self, source: str, source_id: str) -> None:
+        """The portal answered 404/410 for this listing: it is gone, say so now."""
+        # A SquareYards project also exists as a `project:`-prefixed property.
+        keys = [D.natural_key(source, source_id), D.natural_key(source, f"project:{source_id}")]
+        now = utcnow()
+        for collection in (D.PROPERTIES, D.PROJECTS):
+            await self.db[collection].update_many(
+                {"_id": {"$in": keys}, "is_active": {"$ne": False}},
+                {"$set": {"is_active": False, "delisted_at": now}},
+            )
+
+    async def guarded_mark_stale(
+        self, source: str, *, older_than_days: int = 21, min_coverage: float | None = None
+    ) -> tuple[int, str | None]:
+        """`mark_stale_inactive`, but only when the crawl looks healthy.
+
+        Returns `(delisted, skip_reason)`. Refuses — and delists nothing — when
+        the latest scrape run for the source was blocked/failed, or when fewer
+        than `min_coverage` of its active records were seen inside the window.
+        That second test is what stops a long outage from flipping the whole
+        catalogue to inactive on the first run afterwards.
+        """
+        from datetime import timedelta
+
+        from homz.services.freshness import MIN_COVERAGE, delist_skip_reason
+
+        coverage = MIN_COVERAGE if min_coverage is None else min_coverage
+        cutoff = utcnow() - timedelta(days=older_than_days)
+        await self.backfill_freshness()
+
+        active_total = 0
+        fresh = 0
+        for collection in (D.PROPERTIES, D.PROJECTS):
+            base = {"source": source, "is_active": {"$ne": False}}
+            active_total += await self.db[collection].count_documents(base)
+            fresh += await self.db[collection].count_documents(
+                {**base, "last_seen_at": {"$gte": cutoff}}
+            )
+
+        latest = await self.db[D.SCRAPE_RUNS].find_one(
+            {"source": source}, sort=[("started_at", DESCENDING)], projection={"status": 1}
+        )
+        reason = delist_skip_reason(
+            active_total=active_total,
+            fresh=fresh,
+            latest_run_status=(latest or {}).get("status"),
+            min_coverage=coverage,
+        )
+        if reason:
+            log.warning("repo.delist_skipped", source=source, reason=reason)
+            return 0, reason
+
+        delisted = 0
+        for collection in (D.PROPERTIES, D.PROJECTS):
+            result = await self.db[collection].update_many(
+                {"source": source, "is_active": {"$ne": False}, "last_seen_at": {"$lt": cutoff}},
+                {"$set": {"is_active": False, "delisted_at": utcnow()}},
+            )
+            delisted += result.modified_count
+        if delisted:
+            log.info("repo.marked_delisted", source=source, count=delisted, days=older_than_days)
+        return delisted, None
 
     async def link_duplicate(
         self, canonical_id: str, duplicate_id: str, score: float, reason: str

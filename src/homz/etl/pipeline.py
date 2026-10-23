@@ -99,8 +99,12 @@ class PipelineResult:
 # ---------------------------------------------------------------------------
 
 
-async def load_records(records: list[ScrapedRecord]) -> LoadResult:
-    """Persist a batch of normalized records. Idempotent."""
+async def load_records(records: list[ScrapedRecord], *, ingest: bool = True) -> LoadResult:
+    """Persist a batch of normalized records. Idempotent.
+
+    `ingest=False` skips photo processing, for callers that have already
+    carried over each record's processed images (see `etl.refresh`).
+    """
     result = LoadResult()
     if not records:
         return result
@@ -112,7 +116,8 @@ async def load_records(records: list[ScrapedRecord]) -> LoadResult:
     # `apartment_backfill`, the on-demand service and the re-scrape runner
     # alike. Wiring it into the callers instead would mean new images picked
     # up by a scheduled run silently kept their portal watermark.
-    await _ingest_record_images(records, result)
+    if ingest:
+        await _ingest_record_images(records, result)
 
     db = get_database()
     property_ids: dict[str, str] = {}
@@ -295,6 +300,12 @@ async def run_source(
         outcome.load = await load_records(records)
 
     repo = Repository(db)
+    # Sightings: everything discovery showed us is confirmed live today, even
+    # the listings whose unchanged pages were skipped rather than re-written.
+    seen: set[str] = set().union(*(r.seen_ids for r in reports)) if reports else set()
+    if seen:
+        touched = await repo.touch_seen(source, sorted(seen))
+        log.info("etl.sightings_recorded", source=source, seen=len(seen), touched=touched)
     for report in reports:
         # record_run takes the serialised form, not the ScrapeReport object.
         await repo.record_run(
@@ -374,9 +385,16 @@ async def finalize(
     repo = Repository(get_database())
 
     delisted = 0
+    skipped: dict[str, str] = {}
     for source in PROPERTY_SOURCES:
-        delisted += await repo.mark_stale_inactive(source, older_than_days=mark_stale_days)
+        count, reason = await repo.guarded_mark_stale(source, older_than_days=mark_stale_days)
+        delisted += count
+        if reason:
+            skipped[source] = reason
     summary["delisted"] = delisted
+    if skipped:
+        # Surfaced in the run summary so a skipped delist is reported, not silent.
+        summary["delist_skipped"] = skipped
 
     if refresh_views:
         await repo.refresh_market_views()
