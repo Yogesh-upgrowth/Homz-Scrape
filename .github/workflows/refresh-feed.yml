@@ -1,0 +1,163 @@
+name: Refresh listings feed
+
+# Unattended freshness pass: discover what is live on each portal, fetch a
+# bounded number of new/stale detail pages, export the warehouse, and push the
+# feed to main (Vercel then rebuilds the site's static feed parts).
+#
+# Compliance is unchanged from COMPLIANCE.md: every request goes through the
+# scrapers' Fetcher (robots.txt, per-host rate limit). A captcha/WAF/403 wall
+# STOPS that source and the run is reported as failed; nothing here retries or
+# routes around a block. GitHub runners use datacenter IPs, so a portal may
+# block them -- if so, that is a signal to move this to a different host, not to
+# add evasion.
+#
+# One-time setup (repo Settings -> Secrets and variables -> Actions -> Secrets):
+#   HOMZ_MONGODB_URI        warehouse connection string (Atlas must allow
+#                           GitHub's runner IPs, or 0.0.0.0/0 with a strong
+#                           user/password)
+#   HOMZ_MONGODB_DATABASE   database name
+# Settings -> Actions -> General -> Workflow permissions: "Read and write".
+
+on:
+  schedule:
+    - cron: "30 20 * * *"   # 02:00 IST daily, off-peak for the portals
+  workflow_dispatch:
+    inputs:
+      detail_budget:
+        description: "Max detail pages to fetch per source (new ids first, then stalest)"
+        default: "300"
+      max_minutes:
+        description: "Stop fetching details for a source after this many minutes"
+        default: "45"
+      publish:
+        description: "Export and push the feed to main when done"
+        type: boolean
+        default: true
+
+# Never two runs at once: they share one warehouse and one git branch.
+concurrency:
+  group: feed-pipeline
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  PYTHONIOENCODING: utf-8
+  HOMZ_LOG_JSON: "true"
+  HOMZ_RESPECT_ROBOTS: "true"
+  HOMZ_ABORT_ON_BLOCK: "true"
+  HOMZ_MONGODB_URI: ${{ secrets.HOMZ_MONGODB_URI }}
+  HOMZ_MONGODB_DATABASE: ${{ secrets.HOMZ_MONGODB_DATABASE }}
+  DETAIL_BUDGET: ${{ github.event.inputs.detail_budget || '300' }}
+  MAX_MINUTES: ${{ github.event.inputs.max_minutes || '45' }}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300   # GitHub's hard cap is 360 per job
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Check secrets are configured
+        run: |
+          if [ -z "$HOMZ_MONGODB_URI" ] || [ -z "$HOMZ_MONGODB_DATABASE" ]; then
+            echo "::error::Add HOMZ_MONGODB_URI and HOMZ_MONGODB_DATABASE as repository secrets (see the header of this workflow)."
+            exit 1
+          fi
+
+      - name: Install
+        run: |
+          pip install -r requirements.txt
+          pip install -e .
+
+      - name: Warehouse reachable
+        run: |
+          python - <<'EOF'
+          import asyncio
+          from homz.db.mongo import get_database
+          async def main():
+              r = await get_database().command("hello")
+              assert r.get("isWritablePrimary"), "no writable primary"
+              print("warehouse ok")
+          asyncio.run(main())
+          EOF
+
+      # Each source runs even if an earlier one was blocked or failed; the
+      # final step fails the run if any did, so it is never silently green.
+      - name: MagicBricks rent (Gurgaon)
+        id: mb_rent
+        continue-on-error: true
+        run: >
+          homz scrape refresh magicbricks --city gurgaon --listing-type rent
+          --detail-budget "$DETAIL_BUDGET" --max-minutes "$MAX_MINUTES"
+
+      - name: MagicBricks sale (Gurgaon)
+        id: mb_sale
+        continue-on-error: true
+        run: >
+          homz scrape refresh magicbricks --city gurgaon --listing-type sale
+          --detail-budget "$DETAIL_BUDGET" --max-minutes "$MAX_MINUTES"
+
+      - name: SquareYards projects (Gurgaon)
+        id: sy_projects
+        continue-on-error: true
+        run: >
+          homz scrape refresh squareyards --city gurgaon
+          --detail-budget "$DETAIL_BUDGET" --max-minutes "$MAX_MINUTES"
+
+      - name: Export feed
+        id: export
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.publish == 'true' }}
+        # Exits 2 and writes NOTHING if any segment would shrink below 80% of
+        # the published file (homz export feed's own safeguard), so a blocked
+        # or partial crawl cannot overwrite a good feed.
+        run: homz export feed --out data/feed
+
+      - name: Size guard (GitHub rejects files over 100 MB)
+        id: size
+        if: steps.export.outcome == 'success'
+        run: |
+          limit=$((95 * 1024 * 1024))
+          bad=0
+          for f in data/feed/*.json; do
+            s=$(stat -c %s "$f")
+            if [ "$s" -gt "$limit" ]; then
+              echo "::error::$f is $((s / 1024 / 1024)) MB; GitHub rejects files over 100 MB. The feed must move out of git (e.g. Vercel Blob) before it can be published again."
+              bad=1
+            fi
+          done
+          exit $bad
+
+      - name: Publish to main
+        id: publish
+        if: steps.size.outcome == 'success'
+        run: |
+          if git diff --quiet -- data/feed; then
+            echo "feed unchanged, nothing to publish"
+            exit 0
+          fi
+          git config user.name  "homz-feed-bot"
+          git config user.email "homz-feed-bot@users.noreply.github.com"
+          git add data/feed
+          git commit -q -m "Publish feed refreshed by scheduled run $(date -u +%Y-%m-%d)"
+          git pull --rebase -q origin main
+          git push origin HEAD:main
+
+      - name: Fail the run if any source failed
+        if: always()
+        run: |
+          fail=0
+          for pair in "mb_rent=${{ steps.mb_rent.outcome }}" "mb_sale=${{ steps.mb_sale.outcome }}" "sy_projects=${{ steps.sy_projects.outcome }}" "export=${{ steps.export.outcome }}" "size=${{ steps.size.outcome }}" "publish=${{ steps.publish.outcome }}"; do
+            name=${pair%%=*}; out=${pair#*=}
+            echo "$name: $out"
+            if [ "$out" = "failure" ]; then fail=1; fi
+          done
+          exit $fail
